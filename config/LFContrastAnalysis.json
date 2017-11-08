@@ -1,0 +1,28 @@
+[
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "config/LFContrastAnalysisLocalHookTemplate.m",
+		"name": "LFContrastAnalysis",
+		"pathPlacement": "append",
+		"subfolder": ["toolbox"],
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/gkaguirrelab/LFContrastAnalysis.git"
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "flywheelMRSupport",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "include",
+		"update": "",
+		"url": ""
+	}
+]
