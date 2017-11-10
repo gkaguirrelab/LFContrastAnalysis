@@ -28,57 +28,26 @@ function LFContrastAnalsysisLocalHook
 fprintf('LFContrastAnalsysis local hook.\n');
 projectName = 'LFContrastAnalsysis';
 
-% %% UnitTestToolbox and RemoteDataToolbox setup.
-% %
-% % If you customize your rdt-config json file, you will want to place it
-% % somewhere outside the repository and change the path to point to your
-% % copy.  The usual reason for doing this is so that you can add your
-% % username and password and have write permission.
-% projectBaseDir = tbLocateProject(projectName);
-% rdtConfig = fullfile(projectBaseDir, 'configuration', ['rdt-config-' projectName '.json']);
-% p = struct(...
-%     'projectName',           projectName, ...                                                                                 % The project's name (also the preferences group name)
-%     'validationRootDir',     IBIOCDValidationDir, ...                                                                         % Directory location where the 'scripts' subdirectory resides.
-%     'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
-%     'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
-%     'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
-%     'remoteDataToolboxConfig', rdtConfig, ...                                                                                 % Struct, file path, or project name with Remote Data Toolbox configuration.
-%     'clonedWikiLocation',    '', ...                                                                                          % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
-%     'clonedGhPagesLocation', '', ...                                                                                          % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
-%     'githubRepoURL',         '', ...                                                                                          % Github URL for the project. This is only used for publishing tutorials.
-%     'generateGroundTruthDataIfNotFound',true,...                                                                              % Flag indicating whether to generate ground truth if one is not found
-%     'listingScript',         'IBIOCDValidateListAllValidationDirs', ...                                                       % Script that lists dirs to find validation scripts in
-%     'coreListingScript',     '', ...                                                                                          % Not used in this project
-%     'numericTolerance',      1e-11 ...                                                                                        % Numeric tolerance for comparisons with validation data.
-%     );
-% 
-% generatePreferenceGroup(p);
-% UnitTest.usePreferencesForProject(p.projectName);
-% 
-% 
-% %% Output directory.
-% %
-% % This is where the project writes its output.  By default, we'll stick it
-% % in a subfolder of a folder called output, in the tbUserFolder.  But you
-% % may want it somewhere else.
-% outputBaseDir = fullfile(tbUserFolder(), 'output', projectName);
-% if (7 ~= exist(outputBaseDir, 'dir'))
-%     mkdir(outputBaseDir);
-% end
-% 
-% setpref(projectName, 'outputBaseDir', outputBaseDir);
-% 
-% end
-% 
-% 
-% %% Generate preferences that work with UnitTest toolbox.
-% function generatePreferenceGroup(p)
-% % Remove any existing preferences for this project
-% if ispref(p.projectName)
-%     rmpref(p.projectName);
-% end
-% 
-% % Renerate and save the project-specific preferences
-% setpref(p.projectName, 'projectSpecificPreferences', p);
-% fprintf('Generated and saved preferences specific to the ''%s'' project.\n', p.projectName);
-% end
+%% Delete any old prefs
+if (ispref(projectName))
+    rmpref(projectName);
+end
+
+%% Specify base paths for materials and data
+[~, userID] = system('whoami');
+userID = strtrim(userID);
+switch userID
+    case {'melanopsin' 'pupillab'}
+        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+    case {'dhb'}
+        materialsBasePath = ['/Users1'  '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];     
+    case {'nicolas'}
+        materialsBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_materials';
+        dataBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_data';
+    otherwise
+        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+end
+
