@@ -48,7 +48,42 @@ for ii = 1:length(projectSessions)
     end
     
     % Get acquisitions for each session
-    sessionAcqs{ii} = fw.getSessionAcquisitions(sessionId{ii})
-    sessionAnalyses{ii} = fw.getSessionAnalysis(sessionId{ii})
+    sessionAcqs{ii} = fw.getSessionAcquisitions(sessionId{ii});
 end
 
+%% Try to download the output of an analysis
+%
+% Given some analysis label, download the files that were generated.
+%
+% For this we use: 
+%   fw.downloadFileFromAnalysis(session_id, analysis_id, file_name, output_name)
+
+% The label for the analysis 
+analysis_label = 'fmriprep 10/26/2017 22:17:09';
+
+% Where do you want the files stored? 
+out_dir = getpref('LFContrastAnalysis','analysisScratchDir');
+if (~exist(out_dir,'dir'))
+    mkdir(out_dir);
+end
+
+%% Set-up search structure and search 
+searchStruct = struct('return_type', 'file', ...
+    'filters', {{struct('term', ...
+    struct('analysis0x2elabel', analysis_label))}});
+results = fw.search(searchStruct);
+
+methods Flywheel
+fw.getSdkVersion
+
+% Iterate over results and download the files
+for ii = 1:numel(results)
+    file_name = results(ii).file.name;
+    output_name = fullfile(out_dir, file_name);
+    
+    session_id = results(ii).session.x_id;
+    analysis_id = results(ii).analysis.x_id;
+
+    fprintf('Downloading %dMB file: %s ... \n', round(results(ii).file.size / 1000000), file_name);
+    tic; fw.downloadFileFromAnalysis(session_id, analysis_id, file_name, output_name); toc
+end
