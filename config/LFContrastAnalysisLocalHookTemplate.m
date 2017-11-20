@@ -1,13 +1,13 @@
-function LFContrastAnalsysisLocalHook
+function LFContrastAnalysisLocalHook
 %  LFContrastAnalsysisLocalHook
 %
-% Configure things for working on the  LFContrastAnalsysis project.
+% Configure things for working on the  LFContrastAnalysis project.
 %
 % For use with the ToolboxToolbox.
 %
 % If you 'git clone' ILFContrastAnalsysis into your ToolboxToolbox "projectRoot"
 % folder, then run in MATLAB
-%   tbUseProject('LFContrastAnalsysis')
+%   tbUseProject('LFContrastAnalysis')
 % ToolboxToolbox will set up IBIOColorDetect and its dependencies on
 % your machine.
 %
@@ -16,7 +16,7 @@ function LFContrastAnalsysisLocalHook
 % The defalt location for this would be
 %   ~/localToolboxHooks/LFContrastAnalsysisLocalHook.m
 %
-% Each time you run tbUseProject('LFContrastAnalsysis'), ToolboxToolbox will
+% Each time you run tbUseProject('LFContrastAnalysis'), ToolboxToolbox will
 % execute your local copy of this file to do setup for LFContrastAnalsysis.
 %
 % You should edit your local copy with values that are correct for your
@@ -25,8 +25,8 @@ function LFContrastAnalsysisLocalHook
 
 
 %% Say hello.
-fprintf('LFContrastAnalsysis local hook.\n');
-projectName = 'LFContrastAnalsysis';
+fprintf('LFContrastAnalysis local hook.\n');
+projectName = 'LFContrastAnalysis';
 
 %% Delete any old prefs
 if (ispref(projectName))
@@ -51,3 +51,5 @@ switch userID
         dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
 end
 
+%% Specify where output goes
+setpref(projectName,'analysisScratchDir','/tmp/flywheel');
