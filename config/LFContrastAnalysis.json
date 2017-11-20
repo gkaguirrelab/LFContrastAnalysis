@@ -22,7 +22,7 @@
 		"subfolder": "",
 		"toolboxRoot": "",
 		"type": "include",
-		"update": "",
+		"update": "never",
 		"url": ""
 	}
 ]
