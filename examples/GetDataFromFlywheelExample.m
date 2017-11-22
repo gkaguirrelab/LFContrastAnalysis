@@ -3,6 +3,9 @@
 % Description:
 %   Use our machinery to snag a sample dataset from flywheel
 %
+% See also:
+%   GetDataFromFlywheelExample
+%
 
 % History
 %  11/10/17  dhb, gka, mab  Wrote it because we are so excited.
@@ -86,4 +89,17 @@ for ii = 1:numel(results)
 
     fprintf('Downloading %dMB file: %s ... \n', round(results(ii).file.size / 1000000), file_name);
     tic; fw.downloadFileFromAnalysis(session_id, analysis_id, file_name, output_name); toc
+    
+    % Figure out if it's zipped, and unzip if so.  This unpacks into a
+    % whole directory tree that matches the structure on our flywheel
+    % server.  This may or may not be what we want.
+    %
+    % We don't know quite what happens if we unzip more than one file, but
+    % sooner or later we will find out.
+    [~,body,ext] = fileparts(file_name);
+    switch (ext)
+        case '.zip'
+            fprintf('Unzipping %s\n',output_name);
+            system(['unzip ' output_name]);
+    end
 end
