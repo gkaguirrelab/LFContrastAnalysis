@@ -10,9 +10,6 @@ function applyRetAtlas2Functional(retFiles,funcData,varargin)
 %       funcData            =  full path to the function run
 %
 %   varargin:
-%       params.runNum       = 1; % first bold directory
-%       params.roiType      = 'V1'; % could also be 'V2V3' and 'LGN'
-%       params.func         = 'wdrf.tf';
 %
 %   Output:
 %       NONE
@@ -52,13 +49,9 @@ bbregName= 'register.dat';
 
 system(['bbregister --mov ' funcData ' --bold --s ' subjId ' --init-fsl --reg ' fullFileReg]);
 
-
-
-bbregName                   = 'register.dat';
-
 %% Set the file names
-areaInName          = '_native.template_areas.nii.gz';
-areaOutName         = 'mh.areas.func.vol.nii.gz';
+areaInName          =[subjId '_native.template_areas.nii.gz'];
+areaOutName         = [subjId, '_reg2func.areas.nii.gz'];
 
 
 %% Project area template to functional space
@@ -69,8 +62,3 @@ cmd = ['mri_vol2vol --mov ' fullfile(params.sessionDir,funcData{params.runNum},[
     ' --targ ' areaInFile ' --o ' areas ...
     ' --reg ' bbregFile ' --inv --nearest'];
 unix(cmd);
-
-
-system(['mri_vol2vol --mov ' fullfile(params.sessionDir,funcData{params.runNum},[params.func '.nii.gz']) ...
-    ' --targ ' eccInFile ' --o ' eccOutFile ...
-    ' --reg ' bbregFile ' --inv --nearest']);
