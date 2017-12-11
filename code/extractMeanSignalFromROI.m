@@ -16,4 +16,3 @@ function meanSignal = extractMeanSignalFromROI(timeSeries,ROI)
 
 % MAB 2017 -- started function
 
-
