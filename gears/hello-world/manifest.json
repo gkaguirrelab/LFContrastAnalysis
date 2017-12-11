@@ -1,0 +1,33 @@
+{
+  "name": "HellowWorld",
+  "label": "Simple gear that does very little",
+  "description": "Goal is to print some text into a file and dump into a file",
+  "maintainer": "Michael Barnett <micalan@sas.upenn.edu>",
+  "author": "Penn Flywheel Team",
+  "url": "https://github.com/gkaguirrelab/LFContrast/gears/hello-world",
+  "source": "https://github.com/gkaguirrelab/LFContrast/gears/hello-world",
+  "license": "GPL-2.0",
+  "flywheel": "0",
+  "version": "0.0.0",
+  "custom": {
+  },
+  "inputs": {
+    "anatomical": {
+      "description": "OPTIONAL: Anatomical (e.g., t1-weighted) NIfTI file. During the initial phase of processing the diffusion data (b=0 images) will be aligned to this image. By default the dwi data will be aligned to the MNI_EPI template.",
+      "base": "file",
+      "optional": true,
+      "type": {
+        "enum": [
+          "nifti"
+        ]
+      }
+    }
+  },
+  "config": {
+    "anInput": {
+      "description": "This flag is an integer that does nothing. DEFAULT=0",
+      "default": 0,
+      "type": "integer"
+    }
+  }
+}
