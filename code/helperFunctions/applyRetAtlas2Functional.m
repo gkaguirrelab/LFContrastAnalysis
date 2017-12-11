@@ -30,14 +30,16 @@ function path2ResampAtlas = applyRetAtlas2Functional(retFiles,path2FuncData,para
 pathToSubjFS = ['/tmp/flywheel/' params.subjID '/flywheel/v0/output/fmriprep_output/freesurfer/'];
 setenv('SUBJECTS_DIR',pathToSubjFS)
 
+
+
+%% Option to run bbregister 
 % Create a registration file for the anatomical to the functional
 path2FuncData  = fullfile('tmp','flywheel', params.subjID, 'flywheel', 'v0', 'output','fmriprep_output','fmriprep',['sub-' params.subjID ], params.session, 'func');
 funcFileName   = ['sub-' params.subjID '_' params.session '_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'];
 funcFullFile   = [path2FuncData funcFileName];
 fullFileReg    = ['/path/' params.regFileName]; % <-- NEED TO FIND A PLACE TO PUT THIS
 
-
-% Option to run bbregister 
+% Run bbregister 
 system(['bbregister --mov ' funcFullFile ' --bold --s ' subjId ' --init-fsl --reg ' params.regFileName  fullFileReg]);
 
 %% Set the file names
@@ -46,10 +48,14 @@ areaOutName         = [subjId, '_reg2func.areas.nii.gz'];
 
 
 %% Project area template to functional space
-areaInFile                  = fullfile(params.sessionDir,'anat_templates',areaInName);
+areaInFile          = fullfile(params.sessionDir,'anat_templates',areaInName);
+areaOutFile         = fullfile(params.sessionDir,path2FuncData,areaOutName);
 
-areas                 = fullfile(params.sessionDir,path2FuncData{params.runNum},areaOutName);
-cmd = ['mri_vol2vol --mov ' fullfile(params.sessionDir,path2FuncData{params.runNum},[params.func '.nii.gz']) ...
-    ' --targ ' areaInFile ' --o ' areas ...
+% run mri_vol2vol -- this should resample the functional data to the resolution of the anatomical. 
+cmd = ['mri_vol2vol --mov ' funcFullFile ' --targ ' areaInFile ' --o ' areaOutFile ...
     ' --reg ' bbregFile ' --inv --nearest'];
 unix(cmd);
+
+end
+
+
