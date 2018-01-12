@@ -29,7 +29,7 @@ projects = fw.getAllProjects();
 %fprintf('Avaliable projects\n');
 for ii = 1:length(projects)
     %fprintf('\t%s\n',projects{ii}.label)
-    if (strcmp(theProject,projects{ii}.label))
+    if (strcmp(theProject,projects(ii).label))
         theProjectIndex = ii;
         break;
     end
@@ -37,8 +37,8 @@ end
 if (isempty(theProjectIndex))
     error('Could not find specified project %s\n',theProject);
 end
-fprintf('Found project %s!\n',projects{theProjectIndex}.label);
-projectId = projects{ii}.id;
+fprintf('Found project %s!\n',projects(theProjectIndex).label);
+projectId = projects(ii).id;
 
 %% Try to get output from fmriPrep for each session
 projectSessions = fw.getProjectSessions(projectId);
@@ -62,7 +62,8 @@ end
 %   fw.downloadFileFromAnalysis(session_id, analysis_id, file_name, output_name)
 
 % The label for the analysis 
-analysis_label = 'fmriprep 10/26/2017 22:17:09';
+%analysis_label = 'fmriprep 10/26/2017 22:17:09';
+analysis_label = 'retinotopy-templates 11/22/2017 13:21:46';
 
 % Where do you want the files stored? 
 out_dir = getpref('LFContrastAnalysis','analysisScratchDir');
@@ -75,9 +76,6 @@ searchStruct = struct('return_type', 'file', ...
     'filters', {{struct('term', ...
     struct('analysis0x2elabel', analysis_label))}});
 results = fw.search(searchStruct);
-
-methods Flywheel
-fw.getSdkVersion
 
 % Iterate over results and download the files
 for ii = 1:numel(results)
