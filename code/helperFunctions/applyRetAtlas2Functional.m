@@ -1,4 +1,4 @@
-function path2ResampAtlas = applyRetAtlas2Functional(retFiles,path2FuncData,params)
+function path2ResampAtlas = applyRetAtlas2Functional(retFiles,warpFile,params,varargin)
 % applyRetAtlas2Functional -- Apply the output of the Benson retinotopy
 %                             gear to the functional data.
 %
@@ -27,34 +27,17 @@ function path2ResampAtlas = applyRetAtlas2Functional(retFiles,path2FuncData,para
 % this should changed to an input and smartly done with the parser once data directory
 % structure is figured out in /tmp/flywheel/
 
-pathToSubjFS = ['/tmp/flywheel/' params.subjID '/flywheel/v0/output/fmriprep_output/freesurfer/'];
-setenv('SUBJECTS_DIR',pathToSubjFS)
+p = inputParser;
+p.addParameter('verbose',1,@isnumeric);
+p.addParameter('dimensions',3,@isnumeric);
+
+for ii = 1:length(retFiles)
+p.parse(varargin{:});/home/mbarnett/Documents/flywheel/retAtlas/sub-HEROgka1/HERO_gka1_native.template_areas_MNIresampled2func.nii.gz 
+
+cmd = antsApplyTransforms -d 3 -o /home/mbarnett/Documents/flywheel/retAtlas/sub-HEROgka1/HERO_gka1_native.template_areas_MNIresampled2func.nii.gz -v 1 -t /home/mbarnett/Documents/flywheel/fmriprep/sub-HEROgka1/ses-201709191435/anat/sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5 -i /home/mbarnett/Documents/flywheel/retAtlas/sub-HEROgka1/HERO_gka1_native.template_areas.nii.gz -r /home/mbarnett/Documents/flywheel/fmriprep/sub-HEROgka1/ses-201709191435/func/sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz
 
 
 
-%% Option to run bbregister 
-% Create a registration file for the anatomical to the functional
-path2FuncData  = fullfile('tmp','flywheel', params.subjID, 'flywheel', 'v0', 'output','fmriprep_output','fmriprep',['sub-' params.subjID ], params.session, 'func');
-funcFileName   = ['sub-' params.subjID '_' params.session '_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'];
-funcFullFile   = [path2FuncData funcFileName];
-fullFileReg    = ['/path/' params.regFileName]; % <-- NEED TO FIND A PLACE TO PUT THIS
-
-% Run bbregister 
-system(['bbregister --mov ' funcFullFile ' --bold --s ' subjId ' --init-fsl --reg ' params.regFileName  fullFileReg]);
-
-%% Set the file names
-areaInName          =[subjId '_native.template_areas.nii.gz'];
-areaOutName         = [subjId, '_reg2func.areas.nii.gz'];
-
-
-%% Project area template to functional space
-areaInFile          = fullfile(params.sessionDir,'anat_templates',areaInName);
-areaOutFile         = fullfile(params.sessionDir,path2FuncData,areaOutName);
-
-% run mri_vol2vol -- this should resample the functional data to the resolution of the anatomical. 
-cmd = ['mri_vol2vol --mov ' funcFullFile ' --targ ' areaInFile ' --o ' areaOutFile ...
-    ' --reg ' bbregFile ' --inv --nearest'];
-unix(cmd);
 
 end
 
