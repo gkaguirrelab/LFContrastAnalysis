@@ -1,0 +1,14 @@
+% Run applyRetAtlas2Functional
+
+% retinotopy file inputs
+retFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz'};
+% path to the retinotopy files
+params.path2ret= '/home/mbarnett/Documents/flywheel/retAtlas/sub-HEROgka1';
+
+    
+params.path2ref = '/home/mbarnett/Documents/flywheel/fmriprep/sub-HEROgka1/ses-201709191435/func';
+
+
+params.refFileName = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
+params.path2warp
+params.warpFileName
