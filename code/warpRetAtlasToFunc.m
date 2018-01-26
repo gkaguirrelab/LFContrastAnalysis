@@ -11,7 +11,7 @@ warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_space-MNI152NLin2009cAsym_warp
 
 for ii = 1:length(inFiles)
     % input file
-    inFile = fullfile(path2input,inFiles{ii})
+    inFile = fullfile(path2input,inFiles{ii});
     
     % output file
     [~,tempName,~] = fileparts(inFile);
