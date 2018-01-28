@@ -4,12 +4,12 @@
 		"hook": "",
 		"importance": "",
 		"localHookTemplate": "",
-		"name": "flywheelMRSupport_OSX",
+		"name": "flywheelMRSupport",
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
 		"type": "include",
-		"update": "never",
+		"update": "",
 		"url": ""
 	},
 	{
