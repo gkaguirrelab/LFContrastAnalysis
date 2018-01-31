@@ -26,6 +26,14 @@ fprintf('I am %s %s\n', me.firstname, me.lastname);
 %% Get a list of our projects
 theProjectIndex = [];
 projects = fw.getAllProjects();
+
+%% In the case of a user only have one project on flywheel. Turns the struct 
+%  into a cell so that the indexing  
+if ~iscell(projects)
+    tmpProject{1} = projects;
+    projects = tmpProject;
+end
+
 %fprintf('Avaliable projects\n');
 for ii = 1:length(projects)
     %fprintf('\t%s\n',projects{ii}.label)
