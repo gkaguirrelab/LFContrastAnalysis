@@ -11,6 +11,11 @@
 % History
 %  11/22/17  dhb, gka, mab  Tomorrow we give thanks, but today we code.
 
+% TODO.  Need to pass this to GetDataFromFlywheel, once that routine is
+% added here.
+analysisScratchDir = getpref('LFContrastAnalysis','analysisScratchDir');
+
+
 %% Clear
 clear; close all;
 
