@@ -1,10 +1,10 @@
-function meanSignal = extractMeanSignalFromROI(timeSeries,ROI)
+function meanSignal = extractMeanSignalFromROI(timeSeries,areaMap,eccMap)
 %extractMeanSignalFromROI -- extracts and plot the mean signal of an roi
 %
 % Inputs:
 %   timeSeries -- BOLD timeseries nifti volume.
 %   ROI        -- The nifti file that tage the voxels of interest.
-%
+%  
 % Outputs:
 %   meanSignal -- The mean signal across voxels of the ROI per timepoint.
 % 
