@@ -1,4 +1,4 @@
-function meanSignal = extractMeanSignalFromROI(timeSeries,areaMap,eccMap)
+function meanSignal = extractMeanSignalFromROI(timeSeries,areaMap,eccMap,area, eccTresh)
 %extractMeanSignalFromROI -- extracts and plot the mean signal of an roi
 %
 % Inputs:
