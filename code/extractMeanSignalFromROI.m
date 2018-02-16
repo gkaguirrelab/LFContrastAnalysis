@@ -19,7 +19,7 @@ function meanSignal = extractMeanSignalFromROI(funcRuns,areaMap,eccMap,area, ecc
 % clean up area map from the output of non linear warp
 if length(unique(areaMap)) ~= 4
     areaMap(areaMap <0.7) = 0;
-    areaMap(areaMap > 0.75 & areaMap2 <=1.5) = 1;
+    areaMap(areaMap > 0.75 & areaMap <=1.5) = 1;
     areaMap(areaMap > 1.5 & areaMap <=2.25) = 2;
     areaMap(areaMap > 2.25 & areaMap <=3.0) = 3;
 end

@@ -21,7 +21,7 @@ path2input   = ['~/Documents/flywheel/retAtlas/',subjID];
 path2ref     = ['~/Documents/flywheel/fmriprep/',subjID,'/',session,'/func'];
 refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 path2warp    = ['~/Documents/flywheel/fmriprep/', subjID, '/', session, '/anat'];
-warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_space-MNI152NLin2009cAsym_warp.h5';
+warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 for ii = 1:length(inRetFiles)
     % input file
@@ -38,7 +38,7 @@ for ii = 1:length(inRetFiles)
     % warp file
     warpFile = fullfile(path2warp,warpFileName);
     if ~exist(outFile)
-        applyANTsWarpToData(inFile, outFile, warpFile, refFile)
+        applyANTsWarpToData(inFile, outFile, warpFile, refFile);
     end
 end
 
@@ -47,13 +47,13 @@ end
 eccenPos = find(~cellfun(@isempty,strfind(inRetFiles,'eccen')));
 [~,tempName,~] = fileparts(inRetFiles{eccenPos});
 [~,outName,~] = fileparts(tempName);
-eccenOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz'])
+eccenOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz']);
 eccen = MRIread(eccenOutFileName);
 % load areas
 areasPos = find(~cellfun(@isempty,strfind(inRetFiles,'areas')));
 [~,tempName,~] = fileparts(inRetFiles{areasPos});
 [~,outName,~] = fileparts(tempName);
-areasOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz'])
+areasOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz']);
 areas = MRIread(areasOutFileName);
 
 % get maps
@@ -61,7 +61,19 @@ eccenMap = eccen.vol;
 areasMap = areas.vol;
 
 areaVal   = 1; % 1 = v1 2 = v2 3 = v3
-eccenThresh = 30;
-funcRuns = strcat(path2ref,funcRuns);
-meanSignal = extractMeanSignalFromROI(funcRuns,areasMap,eccenMap,areaVal, eccenThresh)
+eccenThresh = 25;
+funcRuns = fullfile(path2ref,funcRuns);
+meanSignal = extractMeanSignalFromROI(funcRuns,areasMap,eccenMap,areaVal, eccenThresh);
 
+%% Get trial order info:
+trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
+trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat', 'session_1_scan7.mat'};
+
+for jj = 1:length(trialOrderFiles)
+
+    dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
+    TR = 0.800;
+    expParams = getExpParams(dataParamFile,TR);
+
+    
+end
