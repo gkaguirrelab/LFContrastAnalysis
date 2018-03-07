@@ -44,6 +44,7 @@ function [expParams] = getExpParams(dataParamFile,TR, varargin)
 
 p = inputParser;
 p.addParameter('stripInitialTRs',1,@islogical);
+p.addParameter('hrfOffset',1,@islogical);
 p.parse(varargin{:});
 
 
@@ -62,6 +63,9 @@ end
 
 if p.Results.stripInitialTRs
    expParams = expParams + [2*ones(size(expParams,1),2) zeros(size(expParams,1),1)];
+end
+if p.Results.hrfOffset
+   expParams = expParams + [5*ones(size(expParams,1),1) zeros(size(expParams,1),2)];
 end
 
 end

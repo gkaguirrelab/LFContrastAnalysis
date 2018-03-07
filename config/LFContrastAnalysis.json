@@ -45,7 +45,7 @@
 		"localHookTemplate": "config/LFContrastAnalysisLocalHookTemplate.m",
 		"name": "LFContrastAnalysis",
 		"pathPlacement": "append",
-		"subfolder": ["toolbox"],
+		"subfolder": ["toolbox","code"],
 		"toolboxRoot": "",
 		"type": "git",
 		"update": "",
