@@ -34,7 +34,7 @@ eccMap(eccMap <=  eccThresh) = 1;
 eccMap(eccMap >  eccThresh) = 0; 
 eccMap = logical(eccMap);
 
-mask = areaMap & eccMap == 1;
+mask = (areaMap & eccMap) == 1;
 
 for ii = 1:length(funcRuns)
     % load nifti for functional run
