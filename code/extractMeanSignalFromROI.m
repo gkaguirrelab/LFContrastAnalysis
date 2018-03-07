@@ -18,8 +18,8 @@ function meanSignal = extractMeanSignalFromROI(funcRuns,areaMap,eccMap,area, ecc
 
 % clean up area map from the output of non linear warp
 if length(unique(areaMap)) ~= 4
-    areaMap(areaMap <0.7) = 0;
-    areaMap(areaMap > 0.75 & areaMap <=1.5) = 1;
+    areaMap(areaMap <0.35) = 0;
+    areaMap(areaMap > 0.35 & areaMap <=1.5) = 1;
     areaMap(areaMap > 1.5 & areaMap <=2.25) = 2;
     areaMap(areaMap > 2.25 & areaMap <=3.0) = 3;
 end
@@ -46,3 +46,14 @@ for ii = 1:length(funcRuns)
         meanSignal(jj,ii) = mean(vol(mask));
     end
 end
+
+
+% %% Debug checks
+% 
+% A = vol + 10000*mask;
+% 
+% for ii = 1:size(vol,3)
+%     imagesc(A(:,:,ii)) 
+%     colormap jet
+%     waitforbuttonpress
+% end

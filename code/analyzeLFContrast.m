@@ -64,6 +64,10 @@ areaVal   = 1; % 1 = v1 2 = v2 3 = v3
 eccenThresh = 15;
 funcRuns = fullfile(path2ref,funcRuns);
 meanSignal = extractMeanSignalFromROI(funcRuns,areasMap,eccenMap,areaVal, eccenThresh);
+plot(zscore(meanSignal(3:end,:)))
+xlabel('TRs')
+ylabel('Z-scored scanner values')
+
 
 %% Get trial order info:
 trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
@@ -77,6 +81,15 @@ for jj = 1:length(trialOrderFiles)
     [avgPerCond(:,jj), blockAvg] = sortDataByConditions(meanSignal(:,jj),expParams);
     
 end
+
+
+%%plot stuff
+
+% load the last param file (doesnt matter because all were the same
+load(dataParamFile);
+plotTimeCourse(meanSignal,block,responseStruct);
+
+%plot CRF
 A = repmat(avgPerCond(end,:),[6,1])
 B = (avgPerCond - A)./A
 plot([.8,.4,.2,.1,.05,0],mean(B,2))

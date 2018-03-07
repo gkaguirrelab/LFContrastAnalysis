@@ -20,6 +20,7 @@ function [] = PlotStimulationTime(responseStruct,block,varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('verbose',true,@islogical);
+p.addParameter('plotTimeCourse')
 p.parse(varargin{:});
 
 %% Print out general information about the scan.
