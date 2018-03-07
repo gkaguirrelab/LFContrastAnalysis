@@ -90,10 +90,11 @@ load(dataParamFile);
 plotTimeCourse(meanSignal,block,responseStruct);
 
 %plot CRF
+figure;
 A = repmat(avgPerCond(end,:),[6,1])
 B = (avgPerCond - A)./A
 plot([.8,.4,.2,.1,.05,0],mean(B,2))
 ylabel('Scanner Units')
 xlabel('Contrast Level')
-legend('Run 1','Run 2','Run 3','Run 4','Run 5','Run 6')
+
 title('Contrast Response Function')
