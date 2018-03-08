@@ -42,15 +42,18 @@ for ii = 1:length(responseStruct.events)
 end
 
 subplot(3,1,3); hold on;
-title('Z-Scored Time Course') 
+title('percent signal change (relative to mean)') 
 timepoints = 0.8.*[1:size(timeCourse)]-0.8;
-zTimeCourse = zscore(timeCourse);
-plot(timepoints,zTimeCourse);
-for ii = 1:length(responseStruct.events)
-    plot([trialStartTime(ii) trialStartTime(ii)]-0.1, [-5 5],'r','LineWidth',2);
-    plot([trialEndTime(ii) trialEndTime(ii)], [-5 5],'b','LineWidth',2);
-    plot([trialWaitTime(ii) trialWaitTime(ii) ], [-5 5],'g--');
-end
-ylim([-4 4])
+meanMat = repmat(mean(timeCourse,1),[size(timeCourse,1),1]);
 
+PSC = 100.*((timeCourse - meanMat)./meanMat);
+plot(timepoints,PSC);
+for ii = 1:length(responseStruct.events)
+    plot([trialStartTime(ii) trialStartTime(ii)]-0.1, [-10 10],'r','LineWidth',2);
+    plot([trialEndTime(ii) trialEndTime(ii)], [-10 10],'b','LineWidth',2);
+    plot([trialWaitTime(ii) trialWaitTime(ii) ], [-10 10],'g--');
+end
+ylim([-3 3])
+yticks([-3 -2 -1 0 1 2 3])
+set(gca, 'YGrid', 'on', 'XGrid', 'off')
 end

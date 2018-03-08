@@ -1,4 +1,4 @@
-%% Analyze LFContrast Data.
+%%     Analyze LFContrast Data.
 %
 % This script calls function in order to analyze the data for the
 % LFContrast experiment.
@@ -15,7 +15,7 @@ funcRuns     = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold
 % Run applyRetAtlas2Functional
 
 % retinotopy file inputs
-inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz'};
+inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz','HERO_gka1_T1.nii.gz'};
 % path to the retinotopy files
 path2input   = ['~/Documents/flywheel/retAtlas/',subjID];
 path2ref     = ['~/Documents/flywheel/fmriprep/',subjID,'/',session,'/func'];
@@ -34,6 +34,7 @@ for ii = 1:length(inRetFiles)
     
     % reference file
     refFile = fullfile(path2ref,refFileName);
+    
     
     % warp file
     warpFile = fullfile(path2warp,warpFileName);
@@ -64,9 +65,6 @@ areaVal   = 1; % 1 = v1 2 = v2 3 = v3
 eccenThresh = 15;
 funcRuns = fullfile(path2ref,funcRuns);
 meanSignal = extractMeanSignalFromROI(funcRuns,areasMap,eccenMap,areaVal, eccenThresh);
-plot(zscore(meanSignal(3:end,:)))
-xlabel('TRs')
-ylabel('Z-scored scanner values')
 
 
 %% Get trial order info:
