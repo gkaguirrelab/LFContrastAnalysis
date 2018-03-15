@@ -25,7 +25,6 @@ if length(unique(areaMap)) ~= 4
 end
 
 % make mask
-areaMap = areaMap;
 areaMap(areaMap ~= area) = 0;
 areaMap(areaMap == area) = 1;
 areaMap = logical(areaMap);

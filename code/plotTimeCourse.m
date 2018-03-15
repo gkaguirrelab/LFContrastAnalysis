@@ -48,6 +48,7 @@ meanMat = repmat(mean(timeCourse,1),[size(timeCourse,1),1]);
 
 PSC = 100.*((timeCourse - meanMat)./meanMat);
 plot(timepoints,PSC);
+y = plot(timepoints,mean(PSC,2),'--k');
 for ii = 1:length(responseStruct.events)
     plot([trialStartTime(ii) trialStartTime(ii)]-0.1, [-10 10],'r','LineWidth',2);
     plot([trialEndTime(ii) trialEndTime(ii)], [-10 10],'b','LineWidth',2);
@@ -56,4 +57,7 @@ end
 ylim([-3 3])
 yticks([-3 -2 -1 0 1 2 3])
 set(gca, 'YGrid', 'on', 'XGrid', 'off')
+
+set(y,'LineWidth',2)
+legend(y,'Mean PSC')
 end

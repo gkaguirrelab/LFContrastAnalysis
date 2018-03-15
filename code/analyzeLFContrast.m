@@ -12,16 +12,39 @@ funcRuns     = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold
                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
-% Run applyRetAtlas2Functional
 
-% retinotopy file inputs
-inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz','HERO_gka1_T1.nii.gz'};
+%% Apply Warping to MNI space            
+% Set up vars in order to run applyANTsWarpToData
+
+% nifti input volumes (can be output or benson atlas or any nifti needed to
+% be tranformed into preproc space. 
+inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
+
 % path to the retinotopy files
 path2input   = ['~/Documents/flywheel/retAtlas/',subjID];
 path2ref     = ['~/Documents/flywheel/fmriprep/',subjID,'/',session,'/func'];
 refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 path2warp    = ['~/Documents/flywheel/fmriprep/', subjID, '/', session, '/anat'];
 warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5';
+
+% load ecc nifti file
+eccenPos = find(~cellfun(@isempty,strfind(inRetFiles,'eccen')));
+[~,tempName,~] = fileparts(inRetFiles{eccenPos});
+[~,outName,~] = fileparts(tempName);
+eccenFileName = fullfile(path2input,[outName '.nii.gz']);
+eccen = MRIread(eccenFileName);
+
+% load areas nifti file
+areasPos = find(~cellfun(@isempty,strfind(inRetFiles,'areas')));
+[~,tempName,~] = fileparts(inRetFiles{areasPos});
+[~,outName,~] = fileparts(tempName);
+areasOutFileName = fullfile(path2input,outName);
+areas = MRIread(areasOutFileName);
+
+[maskFullFile] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,savePath);
+
+
+files2warp = {'HERO_gka1_T1.nii.gz');
 
 for ii = 1:length(inRetFiles)
     % input file
@@ -44,28 +67,23 @@ for ii = 1:length(inRetFiles)
 end
 
 %% Extract Signal from voxels
-% load ecc nifti file
-eccenPos = find(~cellfun(@isempty,strfind(inRetFiles,'eccen')));
-[~,tempName,~] = fileparts(inRetFiles{eccenPos});
-[~,outName,~] = fileparts(tempName);
-eccenOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz']);
-eccen = MRIread(eccenOutFileName);
-% load areas nifti file
-areasPos = find(~cellfun(@isempty,strfind(inRetFiles,'areas')));
+% Load mask nifti
+maskPos = find(~cellfun(@isempty,strfind(inRetFiles,'mask')));
 [~,tempName,~] = fileparts(inRetFiles{areasPos});
 [~,outName,~] = fileparts(tempName);
-areasOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz']);
-areas = MRIread(areasOutFileName);
+maskOutFileName = fullfile(path2input,[outName '_MNI_resampled.nii.gz']);
+mask = MRIread(areasOutFileName);
 
 % get data matrix from struct
 eccenMap = eccen.vol;
 areasMap = areas.vol;
+maskVol = mask.vol;
 
 areaVal   = 1; % 1 = v1 2 = v2 3 = v3
 eccenThresh = 15;
 funcRuns = fullfile(path2ref,funcRuns);
-meanSignal = extractMeanSignalFromROI(funcRuns,areasMap,eccenMap,areaVal, eccenThresh);
 
+meanSignal = extractMeanSignalFromROI_mask(funcRuns,maskVol);
 
 %% Get trial order info:
 trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
