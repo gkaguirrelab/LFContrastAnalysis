@@ -22,14 +22,14 @@ function [maskFullFile,saveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenR
 
 % check that the marticies are the same size 
 % if this fails check the voxel resolutions
-assert(size(eccen.vol) == size(areas.vol))
+assert(all(size(eccen.vol) == size(areas.vol)))
 
 % Restrict to voxel bewteen min and max eccentricity
 eccMap = zeros(size(eccen.vol));
-eccMap(eccen.vol >= eccenRange(1) & eccen.vol <= eccRange(2)) =  1;
+eccMap(eccen.vol >= eccenRange(1) & eccen.vol <= eccenRange(2)) =  1;
 
 % Restrict to voxel of a particular visual area
-areaMap = zeros(size(area.vol));
+areaMap = zeros(size(areas.vol));
 areaMap(areas.vol == areaNum) =  1;
 
 % Take the intercest of area and eccen

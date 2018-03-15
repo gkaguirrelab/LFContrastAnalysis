@@ -1,4 +1,4 @@
-%%     Analyze LFContrast Data.
+%%Analyze LFContrast Data.
 %
 % This script calls function in order to analyze the data for the
 % LFContrast experiment.
@@ -16,8 +16,8 @@ funcRuns     = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold
 %% Apply Warping to MNI space            
 % Set up vars in order to run applyANTsWarpToData
 
-% nifti input volumes (can be output or benson atlas or any nifti needed to
-% be tranformed into preproc space. 
+% nifti input volumes (can be output of benson atlas or any nifti needed to
+% be tranformed into preproc space) 
 inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
 
 % path to the retinotopy files
@@ -38,13 +38,15 @@ eccen = MRIread(eccenFileName);
 areasPos = find(~cellfun(@isempty,strfind(inRetFiles,'areas')));
 [~,tempName,~] = fileparts(inRetFiles{areasPos});
 [~,outName,~] = fileparts(tempName);
-areasOutFileName = fullfile(path2input,outName);
-areas = MRIread(areasOutFileName);
+areasFileName = fullfile(path2input,[outName,'.nii.gz']);
+areas = MRIread(areasFileName);
 
-[maskFullFile] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,savePath);
+% could add polar angle here but required current analysis
+areaNum = 1;
+eccenRange = [5 10];
+[~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,path2input);
 
-
-files2warp = {'HERO_gka1_T1.nii.gz');
+files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
 
 for ii = 1:length(inRetFiles)
     % input file
