@@ -1,31 +1,27 @@
-%%Analyze LFContrast Data.
+%%Analyze Flash Data.
 %
 % This script calls function in order to analyze the data for the
 % LFContrast experiment.
 
 %% Set up params.
-subjID       = 'sub-HEROgka1';
-session      = 'ses-201709191435';
-funcRuns     = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+subjID       = 'sub-TOME3016';
+session      = 'ses-Session2';
+funcRuns     = {'sub-TOME3016_ses-Session2_task-tfMRIFLASHAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+                'sub-TOME3016_ses-Session2_task-tfMRIFLASHPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
 
 %% Apply Warping to MNI space            
 % Set up vars in order to run applyANTsWarpToData
 
 % nifti input volumes (can be output of benson atlas or any nifti needed to
 % be tranformed into preproc space) 
-inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
+inRetFiles = {'tome_3016_native.template_angle.nii.gz','tome_3016_native.template_areas.nii.gz','tome_3016_native.template_eccen.nii.gz',};
 
 % path to the retinotopy files
 path2input   = ['~/Documents/flywheel/retAtlas/',subjID];
 path2ref     = ['~/Documents/flywheel/fmriprep/',subjID,'/',session,'/func'];
-refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
+refFileName  = 'sub-TOME3016_ses-Session2_task-tfMRIFLASHAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 path2warp    = ['~/Documents/flywheel/fmriprep/', subjID, '/', session, '/anat'];
-warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5';
+warpFileName = 'sub-TOME3016_ses-Session2_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 % load ecc nifti file
 eccenPos = find(~cellfun(@isempty,strfind(inRetFiles,'eccen')));
@@ -43,10 +39,10 @@ areas = MRIread(areasFileName);
 
 % could add polar angle here but required current analysis
 areaNum = 1;
-eccenRange = [3 20];
+eccenRange = [0 20];
 [~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,path2input);
 
-files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
+files2warp = {'tome_3016_T1.nii.gz',maskSaveName};
 
 for ii = 1:length(files2warp)
     % input file
@@ -79,34 +75,42 @@ maskVol = mask.vol;
 % make full file path to funvtional runs
 funcRuns = fullfile(path2ref,funcRuns);
 
+% get the mean signal in the mask for all time points and runs
 meanSignal = extractMeanSignalFromMask(funcRuns,maskVol);
 
-%% Get trial order info:
-trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
-trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
+% convert to percent signal change relative to the mean of the run 
+meanOfRun = repmat(mean(meanSignal),[size(meanSignal,1),1]);
+PSC = 100*((meanSignal - meanOfRun)./meanOfRun);
 
-for jj = 1:length(trialOrderFiles)
-
-    dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
-    TR = 0.800;
-    expParams = getExpParams(dataParamFile,TR);
-    [avgPerCond(:,jj), blockAvg] = sortDataByConditions(meanSignal(:,jj),expParams);
-    
+figure; hold on
+title('Time Course for TOME-3016') 
+timepoints = 0.8.*[1:size(PSC,1)]-0.8;
+plot(timepoints,PSC,'--');
+plot(timepoints,mean(PSC,2),'k', 'LineWidth',2);
+minVal = -5;
+maxVal = 5;
+times = 0:12:(size(PSC,1).*0.8);
+for ii = 1:length(times)
+    plot([times(ii) times(ii)], [minVal maxVal],'Color',[0.5 0.5 0.5],'LineWidth',1);
 end
+ylim([-3 3]);
+legend('Run 1','Run 2','Mean of Runs')
+ylabel('Percent Signal Change (V1 0-20 deg)')
+xlabel('Time (Seconds)')
 
 
 %%plot stuff
 
 % load the last param file (doesnt matter because all were the same
-load(dataParamFile);
-plotTimeCourse(meanSignal,block,responseStruct);
+% load(dataParamFile);
+% plotTimeCourse(meanSignal,block,responseStruct);
 
-%plot CRF
-figure;
-A = repmat(avgPerCond(end,:),[6,1]);
-B = 100*((avgPerCond - A)./A);
-plot([.8,.4,.2,.1,.05,0],mean(B,2))
-ylabel('Percent Signal Change')
-xlabel('Contrast Level')
-
-title('Contrast Response Function')
+% %plot CRF
+% figure;
+% A = repmat(avgPerCond(end,:),[6,1]);
+% B = 100*((avgPerCond - A)./A);
+% plot([.8,.4,.2,.1,.05,0],mean(B,2))
+% ylabel('Percent Signal Change')
+% xlabel('Contrast Level')
+% 
+% title('Contrast Response Function')
