@@ -1,6 +1,12 @@
-% Run applyRetAtlas2Functional
+% warpRetAtlasToFunc.m
+%
+% Example of how to call applyRetAtlas2Functional.m to transform the 
+% retinotopy files from the benson atlas into MNI space using ANTs and the 
+% warp file from fmriprep 
+% 
+% This can be deleted or turned into a demo -- not needed for analyzeLFContrast
 
-% retinotopy file inputs
+% retinotopy file inputs -- from the benson atlas gear on flywheel 
 inFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz'};
 % path to the retinotopy files
 path2input   = '~/Documents/flywheel/retAtlas/sub-HEROgka1';
@@ -24,5 +30,6 @@ for ii = 1:length(inFiles)
     % warp file
     warpFile = fullfile(path2warp,warpFileName);
     
+    % run the warp
     applyANTsWarpToData(inFile, outFile, warpFile, refFile)
 end

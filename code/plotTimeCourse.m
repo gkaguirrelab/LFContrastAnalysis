@@ -1,7 +1,32 @@
 function []= plotTimeCourse(timeCourse,block,responseStruct)
-% using this to look at stuff not meant for anything more right now...
-% i will turn this into a proper function with comments soon 
+% plotTimeCourse
+%
+% Description:
+%   Takes the timecourse data and protocol file saved when OLApproach_TrialSequenceMR
+%   is run and plots the power levels, the raw average timecourse and the percent signal 
+%   change relative to the mean.
+%
+% Inputs:
+%   timeCourse      = The TR (mean of all voxels in ROI) by run matrix from 
+%                     extractMeanSignalFromMask.m 
+%   block           = The information about the power levels in the exp
+%                     from loading the param file save from each run of 
+%                     OLApproach_TrialSequenceMR
+%   responseStruct  = The timing information from the experiment for block
+%                     start and stop times loaded from the param file from 
+%                     each run of OLApproach_TrialSequenceMR
+%
+% Outputs:
+%   a figure with 3 subplots
+%
+% Optional key/value pairs:
+%   none
+%
+% Example: 
+%   plotTimeCourse(timeCourse,block,responseStruct)
 
+% History
+%  3/18  mab  Created.
 
 
 %% Plotting the power levels and trial starts, trial stops, and trial wait times.
