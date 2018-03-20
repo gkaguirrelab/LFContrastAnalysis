@@ -12,7 +12,7 @@ end
 
 %% Set up fmriprep directory and download
 
-fmriprepDir = fullfile(projectDir,'fmriprep')
+fmriprepDir = fullfile(projectDir,'fmriprep');
 
 if ~exist(fmriprepDir)
     mkdir(fmriprepDir)
@@ -21,5 +21,5 @@ end
 % download the data 
 theProject    = 'LFContrast';
 analysisLabel = 'fmriprep 02/09/2018 11:40:55';
-analysis_id = getAnalysisFromFlywheel(theProject,analysisLabel,fmriprepDir, 'verbose', true)
+[analysis_id, session_id] = getAnalysisFromFlywheel(theProject,analysisLabel,fmriprepDir, 'verbose', true);
 
