@@ -53,5 +53,5 @@ end
 
 %% Specify where output goes
 setpref(projectName,'analysisScratchDir','/tmp/flywheel');
-setpref(projectName,'projectRootDir',fullfile('~/Documents/flywheel',projectName));
+setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
 
