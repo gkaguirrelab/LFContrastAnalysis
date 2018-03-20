@@ -79,7 +79,13 @@ maskVol = mask.vol;
 % make full file path to funvtional runs
 funcRuns = fullfile(path2ref,funcRuns);
 
+% extract the mean signal from voxels
 meanSignal = extractMeanSignalFromMask(funcRuns,maskVol);
+
+% convert to percent signal change relative to the mean 
+A = repmat(mean(meanSignal,1),[size(meanSignal,1),1]);
+PSC = 100*((meanSignal - A)./A);
+
 
 %% Get trial order info:
 trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
@@ -90,7 +96,7 @@ for jj = 1:length(trialOrderFiles)
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
     TR = 0.800;
     expParams = getExpParams(dataParamFile,TR);
-    [avgPerCond(:,jj), blockAvg] = sortDataByConditions(meanSignal(:,jj),expParams);
+    [avgPerCond(:,jj), blockOrder(:,jj)] = sortDataByConditions(PSC(:,jj),expParams);
     
 end
 
@@ -102,11 +108,14 @@ load(dataParamFile);
 plotTimeCourse(meanSignal,block,responseStruct);
 
 %plot CRF
-figure;
-A = repmat(avgPerCond(end,:),[6,1]);
-B = 100*((avgPerCond - A)./A);
-plot([.8,.4,.2,.1,.05,0],mean(B,2))
-ylabel('Percent Signal Change')
+figure; hold on
+zeroCondMean = repmat(avgPerCond(6,:),[size(avgPerCond,2),1]);
+CRF = avgPerCond -zeroCondMean; 
+plot([.8,.4,.2,.1,.05,0],mean(CRF,2),'k','LineWidth',2)
+plot([.8,.4,.2,.1,.05,0],CRF,'--o')
+ylabel('Percent Signal Change (diff from zero cond)')
 xlabel('Contrast Level')
-
+legend('Mean of Runs', 'Run 1', 'Run 2', 'Run 3', 'Run 4', 'Run 5', 'Run 6')
+axis square
+set(gca, 'YGrid', 'on', 'XGrid', 'off')
 title('Contrast Response Function')

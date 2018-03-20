@@ -57,7 +57,7 @@ end
 ylim([-3 3])
 yticks([-3 -2 -1 0 1 2 3])
 set(gca, 'YGrid', 'on', 'XGrid', 'off')
-
+legend('Run 1', 'Run 2', 'Run 3', 'Run 4', 'Run 5', 'Run 6','Mean of Runs')
 set(y,'LineWidth',2)
-legend(y,'Mean PSC')
+
 end

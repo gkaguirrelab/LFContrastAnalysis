@@ -1,4 +1,4 @@
-function [avgPerCond, blockAvg] = sortDataByConditions(meanSignal,expParams)
+function [avgPerCond, conditions] = sortDataByConditions(meanSignal,expParams)
 
 for ii = 1:length(expParams)
     blockAvg(ii) = mean(meanSignal(expParams(ii,1):expParams(ii,2)));
