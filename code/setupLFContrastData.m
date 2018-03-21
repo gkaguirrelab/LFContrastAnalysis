@@ -1,8 +1,10 @@
 %% setupLFContrastData
 %
-% MAB: Write a script here to download the analysis products from flywheel
-% into the  directory specified in the local hook file and organize it in a
-% nice way
+% Script that downloads the analysis products from flywheel into the 
+% directory specified in the local hook file and organizes it in a
+% standard format.
+
+% MAB 03/2018
 
 %% Check for/make the project level directory 
 projectDir = getpref('LFContrastAnalysis','projectRootDir');
