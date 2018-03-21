@@ -52,6 +52,20 @@ switch userID
 end
 
 %% Specify where output goes
-setpref(projectName,'analysisScratchDir','/tmp/flywheel');
-setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
 
+if ismac
+    % Code to run on Mac plaform
+    setpref(projectName,'analysisScratchDir','/tmp/flywheel');
+    setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
+
+elseif isunix
+    % Code to run on Linux plaform
+    setpref(projectName,'analysisScratchDir','/tmp/flywheel');
+    setpref(projectName,'projectRootDir',fullfile('/home/',userID,'/Documents/flywheel',projectName));
+
+elseif ispc
+    % Code to run on Windows platform
+    warning('No supported for PC')
+else
+    disp('What are you using?')
+end
