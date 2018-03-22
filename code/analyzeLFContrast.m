@@ -1,7 +1,17 @@
-%%Analyze LFContrast Data.
+%% analyzeLFContrast
 %
 % This script calls function in order to analyze the data for the
 % LFContrast experiment.
+
+%% Convenience variables
+projectName = 'LFContrastAnalysis';
+flywheelName = 'LFContrast';
+
+%% Analysis labels that we are going to go and get
+fmriprepLabel = 'fmriprep 02/09/2018 11:40:55';
+neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
+[fwInfo] = getAnalysisFromFlywheel(flywheelName,fmriprepLabel,fmriprepDir, 'verbose', true, 'searchDir', projectDir, 'nodownload', true);
+
 
 %% Set up params.
 subjID       = 'sub-HEROgka1';
@@ -21,8 +31,11 @@ funcRuns     = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold
 inRetFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
 
 % path to the retinotopy files
+
 path2input   = ['~/Documents/flywheel/retAtlas/',subjID];
-path2ref     = ['~/Documents/flywheel/fmriprep/',subjID,'/',session,'/func'];
+path2input = fullfile(getpref(projectName,'projectRootDir'),'neuropythy');
+
+path2ref     = ['~/Documents/flywheel/fmriprep/',[subjID '_' ,'/',session,'/func'];
 refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 path2warp    = ['~/Documents/flywheel/fmriprep/', subjID, '/', session, '/anat'];
 warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5';

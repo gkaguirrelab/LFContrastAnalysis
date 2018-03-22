@@ -6,6 +6,14 @@
 
 % MAB 03/2018
 
+%% Convenience variables
+projectName = 'LFContrastAnalysis';
+flywheelName = 'LFContrast';
+
+%% Analysis labels that we are going to go and get
+fmriprepLabel = 'fmriprep 02/09/2018 11:40:55';
+neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
+
 %% Check for/make the project level directory
 projectDir = getpref('LFContrastAnalysis','projectRootDir');
 if ~exist(projectDir)
@@ -19,10 +27,7 @@ if ~exist(fmriprepDir)
 end
 
 % download the data
-theProject    = 'LFContrast';
-analysisLabel = 'fmriprep 02/09/2018 11:40:55';
-[fwInfo] = getAnalysisFromFlywheel(theProject,analysisLabel,fmriprepDir, 'verbose', true, 'searchDir', projectDir);
-
+[fwInfo] = getAnalysisFromFlywheel(flywheelName,fmriprepLabel,fmriprepDir, 'verbose', true, 'searchDir', projectDir);
 
 %% make session dir
 sessionDate = fwInfo.timestamp(1:10);
@@ -74,9 +79,7 @@ end
 
 %% Download Benson Gear (Neuropythy) output
 clear fwInfo
-theProject    = 'LFContrast';
-analysisLabel = 'retinotopy-templates 11/22/2017 13:21:46';
-[fwInfo] = getAnalysisFromFlywheel(theProject,analysisLabel,bensonDir, 'verbose', true, 'searchDir', projectDir);
+[fwInfo] = getAnalysisFromFlywheel(flywheelName,neuropythyLabel,bensonDir, 'verbose', true, 'searchDir', projectDir);
 
 %% Benson bookkeeping file
 %
