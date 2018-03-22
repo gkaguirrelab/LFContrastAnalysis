@@ -36,13 +36,12 @@ areaMap(areas.vol == areaNum) =  1;
 mask = zeros(size(eccMap));
 mask(areaMap == 1 & eccMap == 1) = 1;
 
-% Save mask out as nifti
+%% Save mask out as nifti
 
 % get proper fields form a prior nifti
 maskNii = eccen;
 
 % set save name
-
 saveName = ['mask_area_V', num2str(areaNum), '_ecc_', num2str(eccenRange(1)), '_to_', num2str(eccenRange(2)), '.nii.gz'];
 maskFullFile = fullfile(savePath,saveName);
 

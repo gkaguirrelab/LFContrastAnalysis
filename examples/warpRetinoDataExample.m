@@ -1,7 +1,8 @@
-%% analyzeLFContrast
+%% warpRetinoDataExample
 %
-% This script calls function in order to analyze the data for the
-% LFContrast experiment.
+% This script is an exaple that show how to create a V1 mask restricted by
+% visual area and eccentricity anf how to warp that mask into the MNI space
+% using the .h5 file from fmriprep and ANTs. 
 
 %% Convenience variables
 projectName  = 'LFContrastAnalysis';
@@ -14,17 +15,6 @@ fmriprepLabel   = 'fmriprep 02/09/2018 11:40:55';
 neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
 fwInfo          = getAnalysisFromFlywheel(flywheelName,fmriprepLabel,'', 'nodownload', true);
 sessionDir      = fullfile(getpref('LFContrastAnalysis','projectRootDir'),[fwInfo.subject,'_', fwInfo.timestamp(1:10)]);
-
-%% Relevant Nifti names for analysis
-
-% functional runs
-functionalRuns = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-    'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-    'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-    'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-    'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-    'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
-
 % brain mask of function run for the reference volume in ANTs step
 refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 
@@ -84,54 +74,3 @@ for ii = 1:length(files2warp)
         display(sprintf('%s already exist in the specified directory',fileName));
     end
 end
-
-%% Extract Signal from voxels
-% Load mask nifti
-[~,tmpName,~] = fileparts(maskSaveName);
-[~,outName,~] = fileparts(tmpName);
-maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
-mask = MRIread(maskOutFileName);
-maskVol = mask.vol;
-
-% make full file path to funvtional runs
-functionalRuns = fullfile(functionalPath,functionalRuns);
-
-% extract the mean signal from voxels
-meanSignal = extractMeanSignalFromMask(functionalRuns,maskVol);
-
-% convert to percent signal change relative to the mean
-meanMat = repmat(mean(meanSignal,1),[size(meanSignal,1),1]);
-PSC = 100*((meanSignal - meanMat)./meanMat);
-
-
-%% Get trial order info:
-trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
-trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
-
-for jj = 1:length(trialOrderFiles)
-    dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
-    TR = 0.800;
-    expParams = getExpParams(dataParamFile,TR);
-    [avgPerCond(:,jj), blockOrder(:,jj)] = sortDataByConditions(PSC(:,jj),expParams);   
-end
-
-%% create contrast response function
-zeroCondMean = repmat(avgPerCond(6,:),[size(avgPerCond,2),1]);
-CRF = avgPerCond -zeroCondMean;
-
-%%plot stuff
-
-% load the last param file (doesnt matter because all were the same
-load(dataParamFile);
-plotTimeCourse(meanSignal,block,responseStruct);
-
-%plot CRF
-figure; hold on
-plot([.8,.4,.2,.1,.05,0],mean(CRF,2),'k','LineWidth',2)
-plot([.8,.4,.2,.1,.05,0],CRF,'--o')
-ylabel('Percent Signal Change (diff from zero cond)')
-xlabel('Contrast Level')
-legend('Mean of Runs', 'Run 1', 'Run 2', 'Run 3', 'Run 4', 'Run 5', 'Run 6')
-axis square
-set(gca, 'YGrid', 'on', 'XGrid', 'off')
-title('Contrast Response Function')
