@@ -87,6 +87,8 @@ end
 
 %% Extract Signal from voxels
 % Load mask nifti
+maskPos       = find(~cellfun(@isempty,strfind(files2warp,'mask')));
+[~,tempName,~] = fileparts(files2warp{maskPos});
 [~,tmpName,~] = fileparts(maskSaveName);
 [~,outName,~] = fileparts(tmpName);
 maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
@@ -97,8 +99,8 @@ maskVol = mask.vol;
 functionalRuns = fullfile(functionalPath,functionalRuns);
 
 % extract the mean signal from voxels
-meanSignal = extractMeanSignalFromMask(functionalRuns,maskVol);
-
+[voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol);
+meanSignal = squeeze(mean(voxelTimeSeries,1));
 % convert to percent signal change relative to the mean
 meanMat = repmat(mean(meanSignal,1),[size(meanSignal,1),1]);
 PSC = 100*((meanSignal - meanMat)./meanMat);
