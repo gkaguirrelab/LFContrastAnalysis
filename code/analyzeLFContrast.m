@@ -110,11 +110,25 @@ PSC = 100*((meanSignal - meanMat)./meanMat);
 trialOrderDir = '~/Dropbox (Aguirre-Brainard Lab)/MELA_data/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1';
 trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
 
+
+%% Create a cell of stimulusStruct (one struct per run)  
 for jj = 1:length(trialOrderFiles)
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
     TR = 0.800;
-    expParams = getExpParams(dataParamFile,TR);
+    expParams = getExpParams(dataParamFile,TR,'hrfOffset', false, 'stripInitialTRs', false);
     [avgPerCond(:,jj), blockOrder(:,jj)] = sortDataByConditions(PSC(:,jj),expParams);   
+    
+    % make stimulus timebase
+    totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
+    deltaT = 800;
+    stimulusStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
+    
+    % make stimulus values 
+    % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6; 
+    stimulusStruct.values = zeros(totalTime/deltaT,length(unique(expParams(:,3))));
+    for kk = 1:size(expParams,1) 
+         stimulusStruct.values(expParams(kk,1):expParams(kk,2), expParams(kk,3)) = 1;
+    end  
 end
 
 %% create contrast response function
