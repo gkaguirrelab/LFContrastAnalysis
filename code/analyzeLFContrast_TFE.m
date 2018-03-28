@@ -150,15 +150,19 @@ for jj = 1:length(trialOrderFiles)
     %% Create a cell of responseStruct (one struct per run)
     responseStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
     
-    % loop over voxels
+    % loop over voxels --> returns a "cleaned" time series
     for vxl = 1:size(meanSignal,1)
         responseStruct.values = PSC(vxl,:,jj);
         thePacket.response = responseStruct;
         
-        % TFE goes here
+        % TFE linear regression here
         
     end
         
+    % take mean across voxels
+    
+    
+   % use TFE to run our model on the V1 mean 
         
 end
 
