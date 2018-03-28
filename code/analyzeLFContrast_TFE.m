@@ -95,7 +95,7 @@ maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
 mask = MRIread(maskOutFileName);
 maskVol = mask.vol;
 
-% make full file path to funvtional runs
+% make full file path to functional runs
 functionalRuns = fullfile(functionalPath,functionalRuns);
 
 % extract the mean signal from voxels
@@ -110,6 +110,10 @@ PSC = 100*((meanSignal - meanMat)./meanMat);
 %% Get trial order info:
 trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1');
 trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
+
+%% Construct the model object
+temporalFit = tfeIAMP('verbosity','none');
+
 
 %% Create a cell of stimulusStruct (one struct per run)
 for jj = 1:length(trialOrderFiles)
@@ -129,7 +133,10 @@ for jj = 1:length(trialOrderFiles)
     for kk = 1:size(expParams,1)
         stimulusStruct.values(expParams(kk,3),expParams(kk,1):expParams(kk,2)) = 1;
     end
-    
+    % Set the number of instances. Right now hard-coded; should get this
+    % from the stimulus information
+    defaultParamsInfo.nInstances = 6;
+
     % Define HRF Copied from the t_BTRMBasic demo (a double gamma HRF)
     hrfParams.gamma1 = 6;   % positive gamma parameter (roughly, time-to-peak in secs)
     hrfParams.gamma2 = 12;  % negative gamma parameter (roughly, time-to-peak in secs)
@@ -143,21 +150,36 @@ for jj = 1:length(trialOrderFiles)
     % prepare this kernelStruct for use in convolution as a BOLD HRF
     kernelStruct.values=kernelStruct.values-kernelStruct.values(1);
     kernelStruct=normalizeKernelArea(kernelStruct);
+        
     
     % make the stimulus portion of packet for fitting
     thePacket.stimulus = stimulusStruct;
     
-    %% Create a cell of responseStruct (one struct per run)
+    % add the response field
     responseStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
+    thePacket.response.timebase = responseStruct.timebase;
+    thePacket.response.values = PSC(3:end,jj)';
     
-    % loop over voxels --> returns a "cleaned" time series
-    for vxl = 1:size(meanSignal,1)
-        responseStruct.values = PSC(vxl,:,jj);
-        thePacket.response = responseStruct;
-        
-        % TFE linear regression here
-        
-    end
+    % add the kernel field
+    thePacket.kernel = kernelStruct;
+    
+    % add a metaData field
+    thePacket.metaData = [];
+    
+    %% Perform the fit
+    [paramsFit,fVal,modelResponseStruct] = ...
+        temporalFit.fitResponse(thePacket,...
+        'defaultParamsInfo', defaultParamsInfo, ...
+        'searchMethod','linearRegression');
+    
+%     % loop over voxels --> returns a "cleaned" time series
+%     for vxl = 1:size(meanSignal,1)
+%         responseStruct.values = PSC(vxl,:,jj);
+%         thePacket.response = responseStruct;
+%         
+%         % TFE linear regression here
+%         
+%     end
         
     % take mean across voxels
     
