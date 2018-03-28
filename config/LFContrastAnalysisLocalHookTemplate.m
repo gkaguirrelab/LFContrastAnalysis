@@ -43,9 +43,9 @@ switch userID
     case {'dhb'}
         materialsBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];     
-    case {'nicolas'}
-        materialsBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_materials';
-        MELA_dataBasePath = '/Volumes/Manta TM HD/Dropbox (Aguirre-Brainard Lab)/MELA_data';
+    case {'mbarnett'}
+        materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
     otherwise
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
@@ -57,12 +57,12 @@ if ismac
     % Code to run on Mac plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
-
+    setpref(projectName,'melaDataPath', MELA_dataBasePath);
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/home/',userID,'/Documents/flywheel',projectName));
-
+    setpref(projectName,'melaDataPath', MELA_dataBasePath);
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
