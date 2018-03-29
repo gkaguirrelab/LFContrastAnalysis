@@ -108,9 +108,10 @@ functionalRuns = fullfile(functionalPath,functionalRuns);
 % extract the mean signal from voxels
 [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol);
 
-% convert to percent signal change relative to the mean
-
-
+% Clip first two data points from the time series, as the signal is not yet
+% steady state. We need to do more to either prevent these volumes from
+% being saved, or to automatically detect this condition.
+voxelTimeSeries = voxelTimeSeries(:,3:end,:);
 
 %% Get trial order info:
 trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1');
@@ -128,7 +129,13 @@ for jj = 1:numAcquisitions
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
     load(dataParamFile);
     TR = 0.800;
+    
+    % We are about to load the data param file. First silence the warning
+    % for EnumberableClass. Save and restore the warning state.
+    warningState = warning();
+    warning('off','MATLAB:class:EnumerableClassNotFound')
     expParams = getExpParams(dataParamFile,TR,'hrfOffset', false, 'stripInitialTRs', false);
+    warning(warningState);
     
     % make stimulus timebase
     totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
@@ -149,13 +156,16 @@ for jj = 1:numAcquisitions
     runData = voxelTimeSeries(:,:,jj);
     
     % convert to percent signal change relative to the mean
-    meanMat = repmat(mean(runData,2),[1, size(runData,2)]);
-    PSC = 100*((runData - meanMat)./meanMat);
-    
+    voxelMeanVec = mean(runData,2);
+    PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
+
+    % timebase will be the same for every voxel
+    thePacket.response.timebase = stimulusStruct.timebase;
+
     % loop over voxels --> returns a "cleaned" time series
     for vxl = 1:size(PSC,1)
-        thePacket.response.values = PSC(vxl,3:end);
-        thePacket.response.timebase = stimulusStruct.timebase;
+        % place time series from this voxel into the packet
+        thePacket.response.values = PSC(vxl,:);
         
         % TFE linear regression here
         [paramsFit,fVal,modelResponseStruct] = temporalFit.fitResponse(thePacket,...
