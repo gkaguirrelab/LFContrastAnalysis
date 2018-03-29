@@ -24,13 +24,14 @@ functionalRuns = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bo
                   'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                   'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                   'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
-confoundFiles = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
-                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
-                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_confounds.tsv', ...
-                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
-                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
-                 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_confounds.tsv'};
-
+confoundFiles  = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_confounds.tsv'};
+              
+numAcquisitions = length(functionalRuns);
 % brain mask of function run for the reference volume in ANTs step
 refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 
@@ -106,23 +107,24 @@ functionalRuns = fullfile(functionalPath,functionalRuns);
 
 % extract the mean signal from voxels
 [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol);
-meanSignal = squeeze(mean(voxelTimeSeries,1));
 
 % convert to percent signal change relative to the mean
-meanMat = repmat(mean(meanSignal,1),[size(meanSignal,1),1]);
-PSC = 100*((meanSignal - meanMat)./meanMat);
+
 
 
 %% Get trial order info:
 trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1');
 trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
 
+% make full file path to counfound tsv files
+fullFileConfounds = fullfile(functionalPath,confoundFiles);
+
 %% Construct the model object
 temporalFit = tfeIAMP('verbosity','none');
 
 
 %% Create a cell of stimulusStruct (one struct per run)
-for jj = 1:length(trialOrderFiles)
+for jj = 1:numAcquisitions
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
     load(dataParamFile);
     TR = 0.800;
@@ -132,6 +134,35 @@ for jj = 1:length(trialOrderFiles)
     totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
     deltaT = 800;
     stimulusStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
+    responseStruct.timebase = stimulusStruct.timebase;
+    
+    % get confound regressors 
+    confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
+
+    thePacket.kernel = [];
+    thePacket.metaData = [];
+    thePacket.stimulus.timebase = stimulusStruct.timebase;
+    thePacket.stimulus.values = confoundRegressors(3:end,:)';
+    
+    defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
+    % get the data for all masked voxel in a run 
+    runData = voxelTimeSeries(:,:,jj);
+    
+    % convert to percent signal change relative to the mean
+    meanMat = repmat(mean(runData,2),[1, size(runData,2)]);
+    PSC = 100*((runData - meanMat)./meanMat);
+    
+    % loop over voxels --> returns a "cleaned" time series
+    for vxl = 1:size(PSC,1)
+        thePacket.response.values = PSC(vxl,3:end);
+        thePacket.response.timebase = stimulusStruct.timebase;
+        
+        % TFE linear regression here
+        [paramsFit,fVal,modelResponseStruct] = temporalFit.fitResponse(thePacket,...
+        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+        cleanRunData(vxl,:) = thePacket.response.values - modelResponseStruct.values;
+    end
+
     
     % make stimulus values
     % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
@@ -159,12 +190,12 @@ for jj = 1:length(trialOrderFiles)
         
     
     % make the stimulus portion of packet for fitting
-    thePacket.stimulus = stimulusStruct;
+    thePacket.stimulus.timebase = stimulusStruct.timebase;
+    thePacket.stimulus.values   = stimulusStruct.values;
     
     % add the response field
-    responseStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
-    thePacket.response.timebase = responseStruct.timebase;
-    thePacket.response.values = PSC(3:end,jj)';
+    thePacket.response.timebase =stimulusStruct.timebase;
+    thePacket.response.values = mean(cleanRunData,1);
     
     % add the kernel field
     thePacket.kernel = kernelStruct;
@@ -178,20 +209,8 @@ for jj = 1:length(trialOrderFiles)
         'defaultParamsInfo', defaultParamsInfo, ...
         'searchMethod','linearRegression');
     
-%     % loop over voxels --> returns a "cleaned" time series
-%     for vxl = 1:size(meanSignal,1)
-%         responseStruct.values = PSC(vxl,:,jj);
-%         thePacket.response = responseStruct;
-%         
-%         % TFE linear regression here
-%         
-%     end
-        
-    % take mean across voxels
+    betas(:,jj)= paramsFit.paramMainMatrix;
     
-    
-   % use TFE to run our model on the V1 mean 
-        
 end
 
     
