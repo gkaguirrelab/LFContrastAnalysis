@@ -123,18 +123,25 @@ fullFileConfounds = fullfile(functionalPath,confoundFiles);
 %% Construct the model object
 temporalFit = tfeIAMP('verbosity','none');
 
+% Define the TR
+    TR = 0.800;
 
 %% Create a cell of stimulusStruct (one struct per run)
 for jj = 1:numAcquisitions
-    dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
-    load(dataParamFile);
-    TR = 0.800;
     
+    % identify the data param file
+    dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
+
     % We are about to load the data param file. First silence the warning
-    % for EnumberableClass. Save and restore the warning state.
+    % for EnumberableClass. Save the warning state.
     warningState = warning();
     warning('off','MATLAB:class:EnumerableClassNotFound')
+
+    % Load and process the data param file
+    load(dataParamFile);    
     expParams = getExpParams(dataParamFile,TR,'hrfOffset', false, 'stripInitialTRs', false);
+
+    % restore warning state
     warning(warningState);
     
     % make stimulus timebase
@@ -146,10 +153,15 @@ for jj = 1:numAcquisitions
     % get confound regressors 
     confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
 
+    % trim the first two frames, and normalize the regressors
+    confoundRegressors = confoundRegressors(3:end,:);
+    confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
+    confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
+    
     thePacket.kernel = [];
     thePacket.metaData = [];
     thePacket.stimulus.timebase = stimulusStruct.timebase;
-    thePacket.stimulus.values = confoundRegressors(3:end,:)';
+    thePacket.stimulus.values = confoundRegressors';
     
     defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
     % get the data for all masked voxel in a run 
@@ -168,11 +180,14 @@ for jj = 1:numAcquisitions
         thePacket.response.values = PSC(vxl,:);
         
         % TFE linear regression here
-        [paramsFit,fVal,modelResponseStruct] = temporalFit.fitResponse(thePacket,...
-        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+        [paramsFit, ~, modelResponseStruct] = temporalFit.fitResponse(thePacket,...
+            'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+        confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
         cleanRunData(vxl,:) = thePacket.response.values - modelResponseStruct.values;
     end
 
+    % Store the mean across voxel confound values for this acquisition
+    confoundBetasByAcq(:,jj) = mean(confoundBetas,2);
     
     % make stimulus values
     % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
@@ -205,7 +220,7 @@ for jj = 1:numAcquisitions
     
     % add the response field
     thePacket.response.timebase =stimulusStruct.timebase;
-    thePacket.response.values = mean(cleanRunData,1);
+    thePacket.response.values = median(cleanRunData,1);
     
     % add the kernel field
     thePacket.kernel = kernelStruct;
