@@ -242,7 +242,8 @@ for jj = 1:numAcquisitions
         'searchMethod','linearRegression');
     
     betas(:,jj)= paramsFit.paramMainMatrix;
-    
+    packetPocket{jj} = thePacket;
+    modelResponses{jj} = modelResponseStruct;
 end
 
     
