@@ -140,7 +140,7 @@ for jj = 1:numAcquisitions
     % Load and process the data param file
     load(dataParamFile);    
     expParams = getExpParams(dataParamFile,TR,'hrfOffset', false, 'stripInitialTRs', false);
-
+    
     % restore warning state
     warning(warningState);
     
@@ -195,9 +195,16 @@ for jj = 1:numAcquisitions
     for kk = 1:size(expParams,1)
         stimulusStruct.values(expParams(kk,3),expParams(kk,1):expParams(kk,2)) = 1;
     end
+    
+    % get attention event regressor 
+    [attentionEventTimes, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.response.timebase);
+    
+    % add attention events to regressor matrix 
+    stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
+    
     % Set the number of instances. Right now hard-coded; should get this
     % from the stimulus information
-    defaultParamsInfo.nInstances = 6;
+    defaultParamsInfo.nInstances = 7;
 
     % Define HRF Copied from the t_BTRMBasic demo (a double gamma HRF)
     hrfParams.gamma1 = 6;   % positive gamma parameter (roughly, time-to-peak in secs)
