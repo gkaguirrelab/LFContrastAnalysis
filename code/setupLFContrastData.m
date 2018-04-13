@@ -11,8 +11,8 @@ projectName = 'LFContrastAnalysis';
 flywheelName = 'LFContrast';
 
 %% Analysis labels that we are going to go and get
-fmriprepLabel = 'fmriprep 02/09/2018 11:40:55';
-neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
+fmriprepLabel = 'fmriprep 04/12/2018 15:16:06'
+% neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
 
 %% Check for/make the project level directory
 projectDir = getpref('LFContrastAnalysis','projectRootDir');

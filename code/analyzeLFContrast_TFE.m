@@ -7,10 +7,10 @@
 projectName  = 'LFContrastAnalysis';
 flywheelName = 'LFContrast';
 subjID       = 'sub-HEROgka1';
-session      = 'ses-201709191435';
+session      = 'ses-0411181853PM';
 
 %% Analysis labels that we are going to go and get
-fmriprepLabel   = 'fmriprep 02/09/2018 11:40:55';
+fmriprepLabel   = 'fmriprep 04/12/2018 15:16:06';
 neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
 fwInfo          = getAnalysisFromFlywheel(flywheelName,fmriprepLabel,'', 'nodownload', true);
 sessionDir      = fullfile(getpref('LFContrastAnalysis','projectRootDir'),[fwInfo.subject,'_', fwInfo.timestamp(1:10)]);
@@ -18,18 +18,16 @@ sessionDir      = fullfile(getpref('LFContrastAnalysis','projectRootDir'),[fwInf
 %% Relevant Nifti names for analysis
 
 % functional runs
-functionalRuns = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
-confoundFiles  = {'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-3_bold_confounds.tsv', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
-                  'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastPA_run-3_bold_confounds.tsv'};
+functionalRuns = {'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+confoundFiles  = {'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
+                  'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-3_bold_confounds.tsv'};
               
 numAcquisitions = length(functionalRuns);
 % brain mask of function run for the reference volume in ANTs step
@@ -106,21 +104,25 @@ maskVol = mask.vol;
 functionalRuns = fullfile(functionalPath,functionalRuns);
 
 % extract the mean signal from voxels
-[voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol);
+[voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
 
 % Clip first two data points from the time series, as the signal is not yet
 % steady state. We need to do more to either prevent these volumes from
 % being saved, or to automatically detect this condition.
-voxelTimeSeries = voxelTimeSeries(:,3:end,:);
+voxelTimeSeries = voxelTimeSeries(:,1:end,:);
 
 %% Get trial order info:
-trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2017-09-19/session_1');
-trialOrderFiles = {'session_1_CRF_scan1.mat', 'session_1_scan2.mat', 'session_1_scan3.mat', 'session_1_scan4.mat', 'session_1_scan5.mat', 'session_1_scan6.mat'};
-
+trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2018-04-11/session_1');
+trialOrderFiles = {'CRF_session_1_scan1.mat', ...
+                   'CRF_session_1_scan2.mat', ...
+                   'CRF_session_1_scan3.mat', ...
+                   'CRF_session_1_scan4.mat', ...
+                   'CRF_session_1_scan5.mat'};
+               
 % make full file path to counfound tsv files
 fullFileConfounds = fullfile(functionalPath,confoundFiles);
 
-%% Construct the model object
+%% Construct the model object 
 temporalFit = tfeIAMP('verbosity','none');
 
 % Define the TR
@@ -154,7 +156,7 @@ for jj = 1:numAcquisitions
     confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
 
     % trim the first two frames, and normalize the regressors
-    confoundRegressors = confoundRegressors(3:end,:);
+    confoundRegressors = confoundRegressors(1:end,:);
     confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
     confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
     
