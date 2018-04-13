@@ -202,9 +202,8 @@ for jj = 1:numAcquisitions
     % add attention events to regressor matrix 
     stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
     
-    % Set the number of instances. Right now hard-coded; should get this
-    % from the stimulus information
-    defaultParamsInfo.nInstances = 7;
+    % Set the number of instances.
+    defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
 
     % Define HRF Copied from the t_BTRMBasic demo (a double gamma HRF)
     hrfParams.gamma1 = 6;   % positive gamma parameter (roughly, time-to-peak in secs)
