@@ -9,12 +9,7 @@ flywheelName = 'LFContrast';
 subjID       = 'sub-HEROgka1';
 session      = 'ses-0411181853PM';
 
-%% Analysis labels that we are going to go and get
-fmriprepLabel   = 'fmriprep 04/12/2018 15:16:06';
-neuropythyLabel = 'retinotopy-templates 11/22/2017 13:21:46';
-fwInfo          = getAnalysisFromFlywheel(flywheelName,fmriprepLabel,'', 'nodownload', true);
-sessionDir      = fullfile(getpref('LFContrastAnalysis','projectRootDir'),[fwInfo.subject,'_', fwInfo.timestamp(1:10)]);
-
+  
 %% Relevant Nifti names for analysis
 
 % functional runs
