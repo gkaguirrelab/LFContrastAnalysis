@@ -8,8 +8,9 @@ projectName  = 'LFContrastAnalysis';
 flywheelName = 'LFContrast';
 subjID       = 'sub-HEROgka1';
 session      = 'ses-0411181853PM';
+sessionFolderName = 'HERO_gka1_2018-04-11';
+sessionDir = fullfile(getpref('LFContrastAnalysis','projectRootDir'),sessionFolderName);
 
-  
 %% Relevant Nifti names for analysis
 
 % functional runs
@@ -18,6 +19,7 @@ functionalRuns = {'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-1_bo
                   'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                   'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                   'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+
 confoundFiles  = {'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
                   'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
                   'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
@@ -26,13 +28,13 @@ confoundFiles  = {'sub-HEROgka1_ses-0411181853PM_task-tfMRILFContrastPA_run-1_bo
               
 numAcquisitions = length(functionalRuns);
 % brain mask of function run for the reference volume in ANTs step
-refFileName  = 'sub-HEROgka1_ses-201709191435_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
+refFileName  = 'sub-HEROgka1_ses-0411181853PM_task-tfMRIFLASHAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 
 % output files of Neuropythy (retinotopy template)
 retinoFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
 
 % warp file name (product of running fmriprep)
-warpFileName = 'sub-HEROgka1_ses-201709191435_T1w_target-MNI152NLin2009cAsym_warp.h5';
+warpFileName = 'sub-HEROgka1_ses-0411181853PM_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 % Set up paths to nifti and .h5 files
 retinoPath     = fullfile(sessionDir,'neuropythy');
@@ -57,7 +59,7 @@ areas          = MRIread(areasFileName);
 
 % make mask from the area and eccentricity maps
 areaNum     = 1;
-eccenRange  = [3 20];
+eccenRange  = [1 7];
 [~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,retinoPath);
 
 %% Apply the warp to the mask and T1 files using ANTs
@@ -193,6 +195,10 @@ for jj = 1:numAcquisitions
         stimulusStruct.values(expParams(kk,3),expParams(kk,1):expParams(kk,2)) = 1;
     end
     
+    %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
+    %istead of set here]
+    responseStruct.timeStep = 1/100;
+    
     % get attention event regressor 
     [attentionEventTimes, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.response.timebase);
     
@@ -242,8 +248,16 @@ for jj = 1:numAcquisitions
     modelResponses{jj} = modelResponseStruct;
 end
 
-    
-    
+%% Plot the CRF
+
+meanBetas = mean(betas,2);
+semBeta = std(betas,0,2)./sqrt(numAcquisitions);
+contrastVals = [80, 40, 20,10,5,0];
+figure; hold on
+errorbar(contrastVals,meanBetas(1:6),semBeta(1:6))
+title('Contrast Response Function')
+xlabel('Contrast Level')
+ylabel('Mean Beta Weight')
     
     
     

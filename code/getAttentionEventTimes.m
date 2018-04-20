@@ -60,7 +60,7 @@ for ii = 1:length(responseStruct.events)
         trialStartTime = responseStruct.events(ii).tTrialStart - expStartTime;
         
         % get the time step 
-        timeStep = block(ii).modulationData.modulationParams.timeStep;
+        timeStep = responseStruct.timeStep;
         
         % get the attention time from start of trial  
         attentionStart =  block(ii).attentionTask.theStartBlankIndex.*timeStep + responseStruct.events(ii).trialWaitTime;
