@@ -55,10 +55,15 @@ load(dataParamFile)
 experimentStart = responseStruct.events(1).tTrialStart;
 
 %% calculate stim duration
+%this retuns a matrix that is organized in columns of 1) block start TR 2)
+%block stop TR 3) contrast level 4) direction
 for ii = 1: length(responseStruct.events)
     expParams(ii,1) = round((responseStruct.events(ii).tStimulusStart - experimentStart)/TR)+1;
     expParams(ii,2) = round((responseStruct.events(ii).tStimulusEnd - experimentStart)/TR);
-    expParams(ii,3) = protocolParams.trialTypeOrder(ii);
+    expParams(ii,3) = protocolParams.trialTypeOrder(1,ii);
+    if size(protocolParams.trialTypeOrder,1) >=2
+        expParams(ii,4) = protocolParams.trialTypeOrder(2,ii);
+    end
 end
 
 if p.Results.stripInitialTRs
