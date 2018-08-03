@@ -204,11 +204,7 @@ for jj = 1:numAcquisitions
     
     % make stimulus values
     % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-    stimulusStruct.values = zeros(length(unique(expParams(:,3)))*length(unique(expParams(:,4))),totalTime/deltaT);
-    for kk = 1:size(expParams,1)
-        rowIndx(kk) = expParams(kk,3)+(length(unique(expParams(:,3)))*(expParams(kk,4)-1));
-        stimulusStruct.values(rowIndx(kk),expParams(kk,1):expParams(kk,2)) = 1;
-    end
+    stimulusStruct.values = createRegressors(expParams,baselineCondNum,totalTime,deltaT);
     
     %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
     %istead of set here]
