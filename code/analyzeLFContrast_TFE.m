@@ -3,7 +3,7 @@
 % This script calls function in order to analyze the data for the
 % LFContrast experiment.
 
-%% Convenience variables
+% Convenience variables
 projectName  = 'LFContrastAnalysis';
 flywheelName = 'LFContrast';
 subjID       = 'sub-HEROGKA1';
@@ -68,7 +68,7 @@ areas          = MRIread(areasFileName);
 
 % make mask from the area and eccentricity maps
 areaNum     = 1;
-eccenRange  = [1 7];
+eccenRange  = [3 20];
 [~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,retinoPath);
 
 %% Apply the warp to the mask and T1 files using ANTs
@@ -166,8 +166,7 @@ for jj = 1:numAcquisitions
     % get confound regressors 
     confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
 
-    % trim the first two frames, and normalize the regressors
-    confoundRegressors = confoundRegressors(1:end,:);
+    %mean center the regressors
     confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
     confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
     
@@ -204,7 +203,8 @@ for jj = 1:numAcquisitions
     
     % make stimulus values
     % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-    stimulusStruct.values = createRegressors(expParams,baselineCondNum,totalTime,deltaT);
+    baselineCondNum = 6;
+    stimulusStruct.values =  (expParams,baselineCondNum,totalTime,deltaT);
     
     %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
     %istead of set here]
@@ -259,20 +259,44 @@ for jj = 1:numAcquisitions
     modelResponses{jj} = modelResponseStruct;
 end
 
-%% Plot the CRF
 
+% calculate mean and SEM if the bets
 meanBetas = mean(betas,2);
 semBeta = std(betas,0,2)./sqrt(numAcquisitions);
-contrastVals = [80, 40, 20,10,5,0];
-figure; hold on
-errorbar(contrastVals,meanBetas(1:6),semBeta(1:6))
-title('Contrast Response Function')
-xlabel('Contrast Level')
+xPos = [100,50,25,12.5,6.25];
+
+% plot
+subplot(2,2,1)
+y1 = meanBetas(1:5)+ abs(meanBetas(21));
+error1 = semBeta(1:5);
+errorbar(xPos,y1,error1)
+title('L-M: Max Contrast = 6%')
 ylabel('Mean Beta Weight')
-    
-    
-    
-    
-    
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,2)
+y2 = meanBetas(6:10)+abs(meanBetas(21));
+error2 = semBeta(6:10);
+errorbar(xPos,y2,error2)
+title('L+M: Max Contrast = 40%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,3)
+y3 = meanBetas(11:15)+abs(meanBetas(21));
+error3 = semBeta(11:15);
+errorbar(xPos,y3,error3)
+title('L Isolating: Max Contrast = 10%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,4)
+y4 = meanBetas(16:20)+abs(meanBetas(21));
+error4 = semBeta(16:20);
+errorbar(xPos,y4,error4)
+title('M Isolating: Max Contrast = 10%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
     
     
