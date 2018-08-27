@@ -24,7 +24,7 @@ functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
-functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+%functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
 
 confoundFiles  = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
                   'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
@@ -44,7 +44,7 @@ refFileName  = 'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bo
 retinoFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
 
 % warp file name (product of running fmriprep)
-warpFileName = 'sub-HEROgka1_ses-0411181853PM_T1w_target-MNI152NLin2009cAsym_warp.h5';
+warpFileName = 'sub-HEROGKA1_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 % Set up paths to nifti and .h5 files
 retinoPath     = fullfile(sessionDir,'neuropythy');
@@ -214,7 +214,7 @@ for jj = 1:numAcquisitions
     % Set up stim order info to creat LMS contrast by timepoint matrix
     contrastCoding = [1, .5, .25, .125, .0625, 0];
     directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M; 
-    maxContrastPerDir = [.6,.40,.10,.10]; % max contrast in the same order as above
+    maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
     stimulusStruct.values = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrastPerDir,totalTime,deltaT);
     
     if theDimension == 2
