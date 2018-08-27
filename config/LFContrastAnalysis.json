@@ -17,7 +17,7 @@
 		"hook": "",
 		"importance": "",
 		"localHookTemplate": "",
-		"name": "temporalFittingEngine",
+		"name": "tfeQCM",
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
