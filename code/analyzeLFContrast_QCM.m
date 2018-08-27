@@ -24,6 +24,7 @@ functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
 
 confoundFiles  = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
                   'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
@@ -271,7 +272,6 @@ end
  
 
 %% get mean params
-
 for pp = 1:length(packetParamsFit)
     elipLength(pp)  = packetParamsFit{pp}.Qvec(1);
     elipAngle(pp)   = packetParamsFit{pp}.Qvec(2);
@@ -280,8 +280,7 @@ for pp = 1:length(packetParamsFit)
     elipcrfSemi(pp) = packetParamsFit{pp}.crfSemi;
     elipFalloff(pp) = packetParamsFit{pp}.expFalloff;
     elipoffset(pp)  = packetParamsFit{pp}.offset;
-end
-    
+end   
 
 meanParams.Qvec        = [mean(elipLength), mean(elipAngle)];
 meanParams.crfAmp      = mean(elipcrfAmp);
@@ -291,7 +290,6 @@ meanParams.expFalloff  = mean(elipFalloff);
 meanParams.offset      = mean(elipoffset);
 
 %% set up contract values to for compute responce
-
 expStimDirs = stimulusStruct.values;
 stimulusStruct.values  = unique(expStimDirs','rows')';
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
