@@ -41,8 +41,8 @@ switch userID
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
     case {'dhb'}
-        materialsBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];     
+        materialsBasePath = ['/Users1' '/DropboxLab/MELA_materials'];
+        MELA_dataBasePath = ['/Users1' '/DropboxLab/MELA_data/'];     
     case {'mbarnett'}
         materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];

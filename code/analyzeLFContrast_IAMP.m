@@ -224,22 +224,23 @@ for jj = 1:numAcquisitions
     hrfParams.gamma2 = 12;  % negative gamma parameter (roughly, time-to-peak in secs)
     hrfParams.gammaScale = 10; % scaling factor between the positive and negative gamma componenets
     kernelStruct.timebase=stimulusStruct.timebase;
+    
     % The timebase is converted to seconds within the function, as the gamma
     % parameters are defined in seconds.
     hrf = gampdf(kernelStruct.timebase/1000, hrfParams.gamma1, 1) - ...
         gampdf(kernelStruct.timebase/1000, hrfParams.gamma2, 1)/hrfParams.gammaScale;
     kernelStruct.values=hrf;
+    
     % prepare this kernelStruct for use in convolution as a BOLD HRF
     kernelStruct.values=kernelStruct.values-kernelStruct.values(1);
     kernelStruct=normalizeKernelArea(kernelStruct);
         
-    
     % make the stimulus portion of packet for fitting
     thePacket.stimulus.timebase = stimulusStruct.timebase;
     thePacket.stimulus.values   = stimulusStruct.values;
     
     % add the response field
-    thePacket.response.timebase =stimulusStruct.timebase;
+    thePacket.response.timebase = stimulusStruct.timebase;
     thePacket.response.values = median(cleanRunData,1);
     
     % add the kernel field
@@ -262,8 +263,7 @@ for jj = 1:numAcquisitions
     modelResponses{jj} = modelResponseStruct;
 end
 
-
-% calculate mean and SEM if the bets
+% calculate mean and SEM of the betas
 meanBetas = mean(betas,2);
 semBeta = std(betas,0,2)./sqrt(numAcquisitions);
 xPos = [100,50,25,12.5,6.25];

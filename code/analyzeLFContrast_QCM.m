@@ -73,7 +73,6 @@ eccenRange  = [3 20];
 [~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,retinoPath);
 
 %% Apply the warp to the mask and T1 files using ANTs
-
 files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
 for ii = 1:length(files2warp)
     % input file
@@ -216,7 +215,6 @@ for jj = 1:numAcquisitions
     contrastCoding = [1, .5, .25, .125, .0625, 0];
     directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M; 
     maxContrastPerDir = [.6,.40,.10,.10]; % max contrast in the same order as above
-
     stimulusStruct.values = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrastPerDir,totalTime,deltaT);
     
     if theDimension == 2
@@ -231,22 +229,23 @@ for jj = 1:numAcquisitions
     hrfParams.gamma2 = 12;  % negative gamma parameter (roughly, time-to-peak in secs)
     hrfParams.gammaScale = 10; % scaling factor between the positive and negative gamma componenets
     kernelStruct.timebase=stimulusStruct.timebase;
+    
     % The timebase is converted to seconds within the function, as the gamma
     % parameters are defined in seconds.
     hrf = gampdf(kernelStruct.timebase/1000, hrfParams.gamma1, 1) - ...
         gampdf(kernelStruct.timebase/1000, hrfParams.gamma2, 1)/hrfParams.gammaScale;
     kernelStruct.values=hrf;
+    
     % prepare this kernelStruct for use in convolution as a BOLD HRF
     kernelStruct.values=kernelStruct.values-kernelStruct.values(1);
     kernelStruct=normalizeKernelArea(kernelStruct);
         
-    
     % make the stimulus portion of packet for fitting
     thePacket.stimulus.timebase = stimulusStruct.timebase;
     thePacket.stimulus.values   = stimulusStruct.values;
     
     % add the response field
-    thePacket.response.timebase =stimulusStruct.timebase;
+    thePacket.response.timebase = stimulusStruct.timebase;
     thePacket.response.values = median(cleanRunData,1);
     
     % add the kernel field
@@ -264,13 +263,11 @@ for jj = 1:numAcquisitions
     
     temporalFitQCM.paramPrint(paramsFit)
     
-    
     packetParamsFit{jj} = paramsFit;
     packetPocket{jj} = thePacket;
     modelResponses{jj} = modelResponseStruct;
 end
  
-
 %% get mean params
 for pp = 1:length(packetParamsFit)
     elipLength(pp)  = packetParamsFit{pp}.Qvec(1);
