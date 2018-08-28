@@ -288,13 +288,10 @@ meanParams.offset      = mean(elipoffset);
 
 %% set up contract values to for compute responce
 maxContDir  = bsxfun(@times,directionCoding,maxContrastPerDir);
-fullContDir = repelem(maxContDir,1,length(contrastCoding))
-fullContCode = repelem(contrastCoding,1,length(maxContrastPerDir));
-expStimDirs = bsxfun(@times,fullContDir,fullContCode)
+fullContDir = repelem(maxContDir,1,length(contrastCoding));
+fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
 
-
-expStimDirs = stimulusStruct.values;
-stimulusStruct.values  = unique(expStimDirs','rows')';
+stimulusStruct.values  =  [bsxfun(@times,fullContDir,fullContCode),[0;0]];
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
 %% compute response
