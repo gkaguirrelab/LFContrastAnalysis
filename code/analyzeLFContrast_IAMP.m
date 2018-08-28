@@ -11,31 +11,33 @@ session      = 'ses-ResearchAguirre';
 sessionFolderName = 'HERO_GKA1_2018-07-28';
 sessionDir = fullfile(getpref('LFContrastAnalysis','projectRootDir'),sessionFolderName);
 
+showPlots = false;
+
 %% Relevant Nifti names for analysis
 
 % functional runs
 functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-3_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_space-MNI152NLin2009cAsym_preproc.nii.gz'};
 
 confoundFiles  = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-3_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-3_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-4_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_confounds.tsv', ...
-                  'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_confounds.tsv'};
-              
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-2_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-3_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-3_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-4_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-4_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-5_bold_confounds.tsv', ...
+    'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-5_bold_confounds.tsv'};
+
 numAcquisitions = length(functionalRuns);
 % brain mask of function run for the reference volume in ANTs step
 refFileName  = 'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
@@ -120,38 +122,38 @@ voxelTimeSeries = voxelTimeSeries(:,1:end,:);
 %% Get trial order info:
 trialOrderDir = fullfile(getpref(projectName,'melaDataPath'),'/Experiments/OLApproach_TrialSequenceMR/MRContrastResponseFunction/DataFiles/HERO_gka1/2018-07-28/session_1');
 trialOrderFiles = {'CRF_session_1_scan1.mat' ...
-                   'CRF_session_1_scan2.mat', ...
-                   'CRF_session_1_scan3.mat', ...
-                   'CRF_session_1_scan4.mat', ...
-                   'CRF_session_1_scan5.mat', ...
-                   'CRF_session_1_scan6.mat', ...
-                   'CRF_session_1_scan7.mat', ...
-                   'CRF_session_1_scan8.mat', ...
-                   'CRF_session_1_scan9.mat', ...
-                   'CRF_session_1_scan10.mat'};
-               
+    'CRF_session_1_scan2.mat', ...
+    'CRF_session_1_scan3.mat', ...
+    'CRF_session_1_scan4.mat', ...
+    'CRF_session_1_scan5.mat', ...
+    'CRF_session_1_scan6.mat', ...
+    'CRF_session_1_scan7.mat', ...
+    'CRF_session_1_scan8.mat', ...
+    'CRF_session_1_scan9.mat', ...
+    'CRF_session_1_scan10.mat'};
+
 % make full file path to counfound tsv files
 fullFileConfounds = fullfile(functionalPath,confoundFiles);
 
-%% Construct the model object 
+%% Construct the model object
 temporalFit = tfeIAMP('verbosity','none');
 
 % Define the TR
-    TR = 0.800;
+TR = 0.800;
 
 %% Create a cell of stimulusStruct (one struct per run)
 for jj = 1:numAcquisitions
     
     % identify the data param file
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
-
+    
     % We are about to load the data param file. First silence the warning
     % for EnumberableClass. Save the warning state.
     warningState = warning();
     warning('off','MATLAB:class:EnumerableClassNotFound')
-
+    
     % Load and process the data param file
-    load(dataParamFile);    
+    load(dataParamFile);
     expParams = getExpParams(dataParamFile,TR,'hrfOffset', false, 'stripInitialTRs', false);
     
     % restore warning state
@@ -163,9 +165,9 @@ for jj = 1:numAcquisitions
     stimulusStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
     responseStruct.timebase = stimulusStruct.timebase;
     
-    % get confound regressors 
+    % get confound regressors
     confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
-
+    
     %mean center the regressors
     confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
     confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
@@ -176,16 +178,16 @@ for jj = 1:numAcquisitions
     thePacket.stimulus.values = confoundRegressors';
     
     defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
-    % get the data for all masked voxel in a run 
+    % get the data for all masked voxel in a run
     runData = voxelTimeSeries(:,:,jj);
     
     % convert to percent signal change relative to the mean
     voxelMeanVec = mean(runData,2);
     PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
-
+    
     % timebase will be the same for every voxel
     thePacket.response.timebase = stimulusStruct.timebase;
-
+    
     % loop over voxels --> returns a "cleaned" time series
     for vxl = 1:size(PSC,1)
         % place time series from this voxel into the packet
@@ -197,7 +199,7 @@ for jj = 1:numAcquisitions
         confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
         cleanRunData(vxl,:) = thePacket.response.values - modelResponseStruct.values;
     end
-
+    
     % Store the mean across voxel confound values for this acquisition
     confoundBetasByAcq(:,jj) = mean(confoundBetas,2);
     
@@ -210,15 +212,15 @@ for jj = 1:numAcquisitions
     %istead of set here]
     responseStruct.timeStep = 1/100;
     
-    % get attention event regressor 
+    % get attention event regressor
     [attentionEventTimes, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.response.timebase);
     
-    % add attention events to regressor matrix 
+    % add attention events to regressor matrix
     stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
     
     % Set the number of instances.
     defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
-
+    
     % Define HRF Copied from the t_BTRMBasic demo (a double gamma HRF)
     hrfParams.gamma1 = 6;   % positive gamma parameter (roughly, time-to-peak in secs)
     hrfParams.gamma2 = 12;  % negative gamma parameter (roughly, time-to-peak in secs)
@@ -234,7 +236,7 @@ for jj = 1:numAcquisitions
     % prepare this kernelStruct for use in convolution as a BOLD HRF
     kernelStruct.values=kernelStruct.values-kernelStruct.values(1);
     kernelStruct=normalizeKernelArea(kernelStruct);
-        
+    
     % make the stimulus portion of packet for fitting
     thePacket.stimulus.timebase = stimulusStruct.timebase;
     thePacket.stimulus.values   = stimulusStruct.values;
@@ -269,37 +271,83 @@ semBeta = std(betas,0,2)./sqrt(numAcquisitions);
 xPos = [100,50,25,12.5,6.25];
 
 % plot
-subplot(2,2,1)
-y1 = meanBetas(1:5)+ abs(meanBetas(21));
-error1 = semBeta(1:5);
-errorbar(xPos,y1,error1)
-title('L-M: Max Contrast = 6%')
-ylabel('Mean Beta Weight')
-xlabel('Percent of Max Contrast')
 
-subplot(2,2,2)
-y2 = meanBetas(6:10)+abs(meanBetas(21));
-error2 = semBeta(6:10);
-errorbar(xPos,y2,error2)
-title('L+M: Max Contrast = 40%')
-ylabel('Mean Beta Weight')
-xlabel('Percent of Max Contrast')
+LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21));
+LplusMbetas = meanBetas(6:10)+abs(meanBetas(21));
+LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
+MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
 
-subplot(2,2,3)
-y3 = meanBetas(11:15)+abs(meanBetas(21));
-error3 = semBeta(11:15);
-errorbar(xPos,y3,error3)
-title('L Isolating: Max Contrast = 10%')
-ylabel('Mean Beta Weight')
-xlabel('Percent of Max Contrast')
-
-subplot(2,2,4)
-y4 = meanBetas(16:20)+abs(meanBetas(21));
-error4 = semBeta(16:20);
-errorbar(xPos,y4,error4)
-title('M Isolating: Max Contrast = 10%')
-ylabel('Mean Beta Weight')
-xlabel('Percent of Max Contrast')
-
+if showPlots
+    subplot(2,2,1)
+    error1 = semBeta(1:5);
+    errorbar(xPos,LminusMbetas,error1)
+    title('L-M: Max Contrast = 6%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
     
+    subplot(2,2,2)
+    error2 = semBeta(6:10);
+    errorbar(xPos,LplusMbetas,error2)
+    title('L+M: Max Contrast = 40%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
     
+    subplot(2,2,3)
+    error3 = semBeta(11:15);
+    errorbar(xPos,LIsoBetas,error3)
+    title('L Isolating: Max Contrast = 10%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
+    
+    subplot(2,2,4)
+    error4 = semBeta(16:20);
+    errorbar(xPos,MIsoBetas,error4)
+    title('M Isolating: Max Contrast = 10%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
+end
+
+%% Set parameters
+theDimension = 2;
+generatePlots = true;
+
+%% Construct the model object
+temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
+
+%% set up contract values to for compute responce
+
+% Set up stim order info to creat LMS contrast by timepoint matrix
+contrastCoding = [1, .5, .25, .125, .0625, 0];
+directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M;
+maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
+
+maxContDir  = bsxfun(@times,directionCoding,maxContrastPerDir);
+fullContDir = repelem(maxContDir,1,length(contrastCoding));
+fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
+
+stimulusStruct.values   = bsxfun(@times,fullContDir,fullContCode);
+stimulusStruct.timebase = 1:length(stimulusStruct.values);
+
+responseStruct.values = meanBetas(1:20)
+responseStruct.timebase = 1:length(responseStruct.values);
+
+%% Construct a packet
+thePacket.stimulus = stimulusStruct;
+thePacket.response = responseStruct;
+thePacket.kernel = [];
+thePacket.metaData = [];
+
+%% Fit
+[paramsFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
+fprintf('Model parameter from fits:\n');
+temporalFitQCM.paramPrint(paramsFit);
+
+%% Plot fit on top of data
+if (generatePlots)
+    temporalFitQCM.plot(fitResponseStruct,'Color',[0 1 0],'NewWindow',false);
+end
+
+
+
+
+
