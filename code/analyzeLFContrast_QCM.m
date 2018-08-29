@@ -287,6 +287,11 @@ meanParams.expFalloff  = mean(elipFalloff);
 meanParams.offset      = mean(elipoffset);
 
 %% set up contract values to for compute responce
+if theDimension == 2
+    directionCoding(3,:) = [];
+end
+contrastCoding(find(contrastCoding==0)) = [];
+
 maxContDir  = bsxfun(@times,directionCoding,maxContrastPerDir);
 fullContDir = repelem(maxContDir,1,length(contrastCoding));
 fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
@@ -296,6 +301,38 @@ stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
 %% compute response
 modelResponseStruct = computeResponse(temporalFitQCM,meanParams,stimulusStruct,[])
+xPos = [100,50,25,12.5,6.25];
+predBetas = modelResponseStruct.values;
+
+% plot
+figure
+subplot(2,2,1)
+y1 = predBetas(1:5)+ abs(predBetas(21));
+plot(xPos,y1)
+title('L-M: Max Contrast = 6%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,2)
+y2 = predBetas(6:10)+abs(predBetas(21));
+plot(xPos,y2)
+title('L+M: Max Contrast = 40%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,3)
+y3 = predBetas(11:15)+abs(predBetas(21));
+plot(xPos,y3)
+title('L Isolating: Max Contrast = 10%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
+
+subplot(2,2,4)
+y4 = predBetas(16:20)+abs(predBetas(21));
+plot(xPos,y4)
+title('M Isolating: Max Contrast = 10%')
+ylabel('Mean Beta Weight')
+xlabel('Percent of Max Contrast')
 
 
 

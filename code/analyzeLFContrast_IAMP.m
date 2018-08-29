@@ -270,42 +270,10 @@ meanBetas = mean(betas,2);
 semBeta = std(betas,0,2)./sqrt(numAcquisitions);
 xPos = [100,50,25,12.5,6.25];
 
-% plot
-
 LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21));
 LplusMbetas = meanBetas(6:10)+abs(meanBetas(21));
 LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
 MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
-
-if showPlots
-    subplot(2,2,1)
-    error1 = semBeta(1:5);
-    errorbar(xPos,LminusMbetas,error1)
-    title('L-M: Max Contrast = 6%')
-    ylabel('Mean Beta Weight')
-    xlabel('Percent of Max Contrast')
-    
-    subplot(2,2,2)
-    error2 = semBeta(6:10);
-    errorbar(xPos,LplusMbetas,error2)
-    title('L+M: Max Contrast = 40%')
-    ylabel('Mean Beta Weight')
-    xlabel('Percent of Max Contrast')
-    
-    subplot(2,2,3)
-    error3 = semBeta(11:15);
-    errorbar(xPos,LIsoBetas,error3)
-    title('L Isolating: Max Contrast = 10%')
-    ylabel('Mean Beta Weight')
-    xlabel('Percent of Max Contrast')
-    
-    subplot(2,2,4)
-    error4 = semBeta(16:20);
-    errorbar(xPos,MIsoBetas,error4)
-    title('M Isolating: Max Contrast = 10%')
-    ylabel('Mean Beta Weight')
-    xlabel('Percent of Max Contrast')
-end
 
 %% Set parameters
 theDimension = 2;
@@ -317,23 +285,29 @@ temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
 %% set up contract values to for compute responce
 
 % Set up stim order info to creat LMS contrast by timepoint matrix
-contrastCoding = [1, .5, .25, .125, .0625, 0];
+contrastCoding = [1, .5, .25, .125, .0625];
 directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M;
 maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
+
+if theDimension == 2 & size(directionCoding,1) ~=2
+   directionCoding(3,:) = []; 
+end
 
 maxContDir  = bsxfun(@times,directionCoding,maxContrastPerDir);
 fullContDir = repelem(maxContDir,1,length(contrastCoding));
 fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
 
-stimulusStruct.values   = bsxfun(@times,fullContDir,fullContCode);
+stimulusStruct.values   = [bsxfun(@times,fullContDir,fullContCode),[0;0]];
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
-responseStruct.values = meanBetas(1:20)
-responseStruct.timebase = 1:length(responseStruct.values);
+thePacket.response.values = meanBetas(1:21)';
+thePacket.response.timebase = 1:length(thePacket.response.values);
+if (generatePlots)
+    temporalFitQCM.plot(thePacket.response,'Color',[1 0 0]);
+end
 
 %% Construct a packet
 thePacket.stimulus = stimulusStruct;
-thePacket.response = responseStruct;
 thePacket.kernel = [];
 thePacket.metaData = [];
 
@@ -342,12 +316,47 @@ thePacket.metaData = [];
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsFit);
 
-%% Plot fit on top of data
+
+% %% Plot fit on top of data
+% if (generatePlots)
+%     temporalFitQCM.plot(fitResponseStruct,'Color',[0 1 0],'NewWindow',false);
+% end
+
+
 if (generatePlots)
-    temporalFitQCM.plot(fitResponseStruct,'Color',[0 1 0],'NewWindow',false);
+    figure
+    legend('IAMP CRF','QCM CRF')
+    subplot(2,2,1); hold on 
+    error1 = semBeta(1:5);
+    errorbar(xPos,LminusMbetas,error1)
+    plot(xPos,fitResponseStruct.values(1:5)+abs(fitResponseStruct.values(21)))
+    title('L-M: Max Contrast = 6%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
+    
+    subplot(2,2,2); hold on
+    error2 = semBeta(6:10);
+    errorbar(xPos,LplusMbetas,error2)
+    plot(xPos,fitResponseStruct.values(6:10)+abs(fitResponseStruct.values(21)))
+    title('L+M: Max Contrast = 40%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
+    
+    subplot(2,2,3); hold on
+    error3 = semBeta(11:15);
+    errorbar(xPos,LIsoBetas,error3)
+    plot(xPos,fitResponseStruct.values(11:15)+abs(fitResponseStruct.values(21)))
+    title('L Isolating: Max Contrast = 10%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
+    
+    subplot(2,2,4); hold on
+    error4 = semBeta(16:20);
+    errorbar(xPos,MIsoBetas,error4)
+    plot(xPos,fitResponseStruct.values(16:20)+abs(fitResponseStruct.values(21)))
+    title('M Isolating: Max Contrast = 10%')
+    ylabel('Mean Beta Weight')
+    xlabel('Percent of Max Contrast')
 end
-
-
-
 
 
