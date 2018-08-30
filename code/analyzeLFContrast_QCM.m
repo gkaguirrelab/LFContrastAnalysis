@@ -254,10 +254,19 @@ for jj = 1:numAcquisitions
     
     % add a metaData field
     thePacket.metaData = [];
+        
+    %% Hack. Override starting params with what we got from fitting IAMP crfs
+%     startParams.Qvec =  [4.90 43];
+%     startParams.crfAmp =  2.6556;
+%     startParams.crfExponent =  1.0;
+%     startParams.crfSemi =  0.27;
+%     startParams.expFalloff =  0.3;
+%     startParams.offset =  -0.33;
+    startParams = [];
     
     %% Perform the fit
     [paramsFit,fVal,modelResponseStruct] = ...
-        temporalFitQCM.fitResponse(thePacket);
+        temporalFitQCM.fitResponse(thePacket,'defaultParams',startParams);
     
     temporalFitQCM.plot(thePacket.response,'Color',[1 0 0]);
     temporalFitQCM.plot(modelResponseStruct,'Color',[0 1 0],'NewWindow',false);
@@ -286,7 +295,6 @@ meanParams.crfExponent = mean(elipcrfExp);
 meanParams.crfSemi     = mean(elipcrfSemi);
 meanParams.expFalloff  = mean(elipFalloff);
 meanParams.offset      = mean(elipoffset);
-
 save tempQCMOutput
 
 % Quadratic ellipse lengths: 1.00, 4.90
@@ -307,7 +315,7 @@ fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
 
 stimulusStruct.values  =  [bsxfun(@times,fullContDir,fullContCode),[0;0]];
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
-
+         
 %% compute response
 modelResponseStruct = computeResponse(temporalFitQCM,meanParams,stimulusStruct,[])
 xPos = [100,50,25,12.5,6.25];
