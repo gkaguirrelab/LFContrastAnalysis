@@ -1,3 +1,5 @@
 /flywheel
 
 *.m~
+/tempIAMPOutput.mat
+/tempQCMOutput.mat

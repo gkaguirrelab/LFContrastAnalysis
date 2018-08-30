@@ -265,48 +265,58 @@ for jj = 1:numAcquisitions
     modelResponses{jj} = modelResponseStruct;
 end
 
-% calculate mean and SEM of the betas
+% Calculate mean and SEM of the betas
 meanBetas = mean(betas,2);
 semBeta = std(betas,0,2)./sqrt(numAcquisitions);
 xPos = [100,50,25,12.5,6.25];
 
+%% Save IAMP fit to time series data
+save tempIAMPOutput
+
+%% Fit IAMP crfs with QCM
+%
+% Break out coefficients by stimulus color direction.
+% Note that it is all hard coded, which we will need to 
+% fix up at some point.
 LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21));
 LplusMbetas = meanBetas(6:10)+abs(meanBetas(21));
 LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
 MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
 
-%% Set parameters
+% Set parameters and construct a QCM object.
 theDimension = 2;
 generatePlots = true;
-
-%% Construct the model object
 temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
 
-%% set up contract values to for compute responce
-
+%% Set up contrast values matched to resoponse order
+%
 % Set up stim order info to creat LMS contrast by timepoint matrix
 contrastCoding = [1, .5, .25, .125, .0625];
 directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M;
 maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
 
-if theDimension == 2 & size(directionCoding,1) ~=2
-   directionCoding(3,:) = []; 
+% Lop off S cone direction if we are just doing L and M
+if theDimension == 2 & size(directionCoding,1) > 2
+   directionCoding(3:end,:) = []; 
 end
 
+% Now construct stimulus contrast description.
+%
+% Tag 0 contrast onto end as well.
 maxContDir  = bsxfun(@times,directionCoding,maxContrastPerDir);
 fullContDir = repelem(maxContDir,1,length(contrastCoding));
 fullContCode = repmat(contrastCoding,1,length(maxContrastPerDir));
-
 stimulusStruct.values   = [bsxfun(@times,fullContDir,fullContCode),[0;0]];
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
+%% Snag response values from IAMP fit.
 thePacket.response.values = meanBetas(1:21)';
 thePacket.response.timebase = 1:length(thePacket.response.values);
 if (generatePlots)
     temporalFitQCM.plot(thePacket.response,'Color',[1 0 0]);
 end
 
-%% Construct a packet
+%% Construct a packet for the QCM to fit.
 thePacket.stimulus = stimulusStruct;
 thePacket.kernel = [];
 thePacket.metaData = [];
@@ -316,13 +326,9 @@ thePacket.metaData = [];
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsFit);
 
-
-% %% Plot fit on top of data
-% if (generatePlots)
-%     temporalFitQCM.plot(fitResponseStruct,'Color',[0 1 0],'NewWindow',false);
-% end
-
-
+%% Plot
+%
+% Change addition of abs to subraction.
 if (generatePlots)
     figure
     legend('IAMP CRF','QCM CRF')
@@ -333,6 +339,7 @@ if (generatePlots)
     title('L-M: Max Contrast = 6%')
     ylabel('Mean Beta Weight')
     xlabel('Percent of Max Contrast')
+    ylim([-0.2 1]);
     
     subplot(2,2,2); hold on
     error2 = semBeta(6:10);
@@ -341,6 +348,7 @@ if (generatePlots)
     title('L+M: Max Contrast = 40%')
     ylabel('Mean Beta Weight')
     xlabel('Percent of Max Contrast')
+    ylim([-0.2 1]);
     
     subplot(2,2,3); hold on
     error3 = semBeta(11:15);
@@ -349,6 +357,7 @@ if (generatePlots)
     title('L Isolating: Max Contrast = 10%')
     ylabel('Mean Beta Weight')
     xlabel('Percent of Max Contrast')
+    ylim([-0.2 1]);
     
     subplot(2,2,4); hold on
     error4 = semBeta(16:20);
@@ -357,6 +366,7 @@ if (generatePlots)
     title('M Isolating: Max Contrast = 10%')
     ylabel('Mean Beta Weight')
     xlabel('Percent of Max Contrast')
+    ylim([-0.2 1]);
 end
 
 

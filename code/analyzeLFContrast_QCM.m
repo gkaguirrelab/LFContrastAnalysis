@@ -136,6 +136,7 @@ fullFileConfounds = fullfile(functionalPath,confoundFiles);
 %% Construct the model object 
 theDimension = 2;
 temporalFitQCM  = tfeQCM('verbosity','none','dimension',theDimension);
+
 %% Construct the model object 
 temporalFitIAMP = tfeIAMP('verbosity','none');
 % Define the TR
@@ -204,12 +205,12 @@ for jj = 1:numAcquisitions
         % TFE linear regression here
         [paramsFit, ~, modelResponseStruct] = temporalFitIAMP.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-        confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
+        %confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
         cleanRunData(vxl,:) = thePacket.response.values - modelResponseStruct.values;
     end
 
     % Store the mean across voxel confound values for this acquisition
-    confoundBetasByAcq(:,jj) = mean(confoundBetas,2);
+    %confoundBetasByAcq(:,jj) = mean(confoundBetas,2);
     
     % Set up stim order info to creat LMS contrast by timepoint matrix
     contrastCoding = [1, .5, .25, .125, .0625, 0];
@@ -286,7 +287,15 @@ meanParams.crfSemi     = mean(elipcrfSemi);
 meanParams.expFalloff  = mean(elipFalloff);
 meanParams.offset      = mean(elipoffset);
 
-%% set up contract values to for compute responce
+save tempQCMOutput
+
+% Quadratic ellipse lengths: 1.00, 4.90
+% Quadratic ellipse angle (degs): 43.0
+% CRF amplitude: 1.10, CRF semi-saturation: 0.27, CRF exponent: 1.91
+% Exponential filter time constant: 0.30
+% Offset constant: -0.29
+
+%% set up contract values to for compute response
 if theDimension == 2
     directionCoding(3,:) = [];
 end
