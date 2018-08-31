@@ -45,7 +45,7 @@ refFileName  = 'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bo
 retinoFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
 
 % warp file name (product of running fmriprep)
-warpFileName = 'sub-HEROgka1_ses-0411181853PM_T1w_target-MNI152NLin2009cAsym_warp.h5';
+warpFileName = 'sub-HEROGKA1_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 % Set up paths to nifti and .h5 files
 retinoPath     = fullfile(sessionDir,'neuropythy');
@@ -278,7 +278,7 @@ save tempIAMPOutput
 % Break out coefficients by stimulus color direction.
 % Note that it is all hard coded, which we will need to 
 % fix up at some point.
-LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21));
+LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21)); 
 LplusMbetas = meanBetas(6:10)+abs(meanBetas(21));
 LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
 MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
@@ -294,6 +294,11 @@ temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
 contrastCoding = [1, .5, .25, .125, .0625];
 directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M;
 maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
+
+LminusMcontrast = contrastCoding.*maxContrastPerDir(1);
+LplusMcontrast= contrastCoding.*maxContrastPerDir(2);
+LIsocontrast= contrastCoding.*maxContrastPerDir(3);
+MIsocontrast= contrastCoding.*maxContrastPerDir(4);
 
 % Lop off S cone direction if we are just doing L and M
 if theDimension == 2 & size(directionCoding,1) > 2
@@ -370,3 +375,8 @@ if (generatePlots)
 end
 
 
+IAMPBetas = {LminusMbetas,LplusMbetas,LIsoBetas,MIsoBetas};
+contrastLevels = {LminusMcontrast,LplusMcontrast,LIsocontrast,MIsocontrast};
+directionCoding = {[1,-1],[1,1],[1,0],[0,1]};
+thresh = 0.5;
+plotIsorespContour([],IAMPBetas,contrastLevels,directionCoding,thresh)
