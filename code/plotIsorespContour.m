@@ -1,4 +1,4 @@
-function [] = plotIsorespContour(QCMparams,IAMPBetas,contrastLevels,directionCoding,thresh)
+function [hdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,color)
 % Plots an isorepsonse contour for a given 2D ellipse fit along the data points
 %
 % Syntax:
@@ -8,7 +8,7 @@ function [] = plotIsorespContour(QCMparams,IAMPBetas,contrastLevels,directionCod
 %    Plots an isoresponse contour using the QCM fits and IAMP data points
 %
 % Inputs:
-%    QCMParams       - paramsFit outpus from the QCM fit response function
+%    paramsQCM       - paramsFit outpus from the QCM fit response function
 %    IAMPBetas       - beta values for each
 %    contrastLevels  - contrast values corresponding to each beta weight in each direction               
 %    directionCoding - coding for directions in the XY plane e.g. [1,1] = L+M
@@ -21,24 +21,48 @@ function [] = plotIsorespContour(QCMparams,IAMPBetas,contrastLevels,directionCod
 %    None.
 %
 
+%% Parameters
+nQCMPoints = 100;
+
 %% Inerpolate the IAMP CRF
 for ii = 1:length(IAMPBetas)
-    contrast = interp1(IAMPBetas{ii},contrastLevels{ii},thresh,'pchip');
-    dataPoints(ii,1:2) = contrast.*directionCoding{ii};
+    contrast(ii) = interp1(IAMPBetas{ii},contrastLevels{ii},thresh,'pchip');
+    dataPoints(ii,1:2) = contrast(ii).*directionCoding{ii};
+end
+
+%% Compute QCM ellipse to the plot
+%
+% Step 1. Invert Naka-Rushton to go from thresh back to 
+% corresponding equivalent contrast.
+eqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
+circlePoints = eqContrast*UnitCircleGenerate(nQCMPoints);
+[~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
+ellipsePoints = Ainv*circlePoints;
+checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
+if (any(abs(checkThresh-thresh) > 1e-10))
+    error('Did not invert QCM model correctly');
 end
 
 %% Plot data points 
-figure; hold on
+if (isempty(hdl))
+    hdl = figure; hold on
+else
+    figure(hdl); hold on
+end
 sz = 50;
-scatter(dataPoints(:,1),dataPoints(:,2),sz,'MarkerEdgeColor',[0 .5 .5],'MarkerFaceColor',[0 .7 .7],'LineWidth',1.5)
+scatter(dataPoints(:,1),dataPoints(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5)
 ylim([-1, 1])
 xlim([-1, 1])
 axh = gca; % use current axes
-color = 'k'; % black, or [0 0 0]
+axisColor = 'k'; % black, or [0 0 0]
 linestyle = ':'; % dotted
-line(get(axh,'XLim'), [0 0], 'Color', color, 'LineStyle', linestyle);
-line([0 0], get(axh,'YLim'), 'Color', color, 'LineStyle', linestyle);
+line(get(axh,'XLim'), [0 0], 'Color', axisColor, 'LineStyle', linestyle);
+line([0 0], get(axh,'YLim'), 'Color', axisColor, 'LineStyle', linestyle);
 xlabel('L Contrast')
 ylabel('M Contrast')
+
+% Add ellipse
+plot(ellipsePoints(1,:),ellipsePoints(2,:),color);
+
 
 end

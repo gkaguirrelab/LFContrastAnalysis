@@ -272,6 +272,7 @@ xPos = [100,50,25,12.5,6.25];
 
 %% Save IAMP fit to time series data
 save tempIAMPOutput
+load tempIAMPOutput
 
 %% Fit IAMP crfs with QCM
 %
@@ -327,9 +328,9 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-[paramsFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
+[paramsQCMFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
 fprintf('Model parameter from fits:\n');
-temporalFitQCM.paramPrint(paramsFit);
+temporalFitQCM.paramPrint(paramsQCMFit);
 
 %% Plot
 %
@@ -378,5 +379,11 @@ end
 IAMPBetas = {LminusMbetas,LplusMbetas,LIsoBetas,MIsoBetas};
 contrastLevels = {LminusMcontrast,LplusMcontrast,LIsocontrast,MIsocontrast};
 directionCoding = {[1,-1],[1,1],[1,0],[0,1]};
+thresh = 0.25;
+hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directionCoding,thresh,[],'r');
 thresh = 0.5;
-plotIsorespContour([],IAMPBetas,contrastLevels,directionCoding,thresh)
+hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,'g');
+thresh = 0.68;
+hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,'b');
+xlim([-0.5 0.5]);
+ylim([-0.5 0.5]);
