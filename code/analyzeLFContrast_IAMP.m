@@ -330,8 +330,30 @@ thePacket.metaData = [];
 %% Fit
 [paramsQCMFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
 fprintf('Model parameter from fits:\n');
-temporalFitQCM.paramPrint(paramsQCMFit);
+temporalFitQCM.paramPrint(paramsQCMFit)
 
+%% Generate prediction to stimuli based on QCM fit to arbitrary stim
+%
+% NOTE: MB: GO OVER THIS WITH DB to make sure this is the right way to do
+% this 
+%
+% Get A matrix
+[A,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
+
+% Get Equivilent contrast from stimuli   
+% NOTE: MB: This is where you will change the input to upsample the stimulus
+% sampling 
+stim = stimulusStruct.values';
+equivContrast = diag(stim*A'*A*stim');
+
+% Convert to response with naka ruston params
+nrParams = [paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent];
+qcmPrediction.values = ComputeNakaRushton(nrParams,equivContrast);
+qcmPrediction.timebase = 1:length(qcmPrediction.value);
+
+if (generatePlots)
+    temporalFitQCM.plot(qcmPrediction,'Color',[0 1 0],'NewWindow',false);
+end
 %% Plot
 %
 % Change addition of abs to subraction.
