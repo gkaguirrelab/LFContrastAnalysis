@@ -14,7 +14,8 @@ sessionDir = fullfile(getpref('LFContrastAnalysis','projectRootDir'),sessionFold
 showPlots = false;
 
 %% Relevant Nifti names for analysis
-
+% NOTE: MB: What is the best way for us to set these files for analysis.
+% especially when we have multiple session to combibe or multiple subjects
 % functional runs
 functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
     'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
@@ -52,8 +53,14 @@ retinoPath     = fullfile(sessionDir,'neuropythy');
 functionalPath = fullfile(sessionDir, 'fmriprep', subjID, session, 'func');
 warpFilePath   = fullfile(sessionDir, 'fmriprep', subjID, session, 'anat');
 
-%% Create restricted V1 mask
 
+%
+% NOTE: MB: This section needs to be turned into a stand alone function that
+% takes in a refrence image, a warp file and a movable image and saves out
+% the warped image outpur
+%
+
+%% Create restricted V1 mask
 % load ecc nifti file
 eccenPos       = find(~cellfun(@isempty,strfind(retinoFiles,'eccen')));
 [~,tempName,~] = fileparts(retinoFiles{eccenPos});
@@ -99,7 +106,12 @@ for ii = 1:length(files2warp)
 end
 
 %% Extract Signal from voxels
-% Load mask nifti
+%
+% NOTE:MB: Make function that takesin a functional run and a mask and
+% returns a mean time series or voxel time courses. Talk with david on
+% frisya meeting about packet making and saving
+%
+%Load mask nifti
 maskPos       = find(~cellfun(@isempty,strfind(files2warp,'mask')));
 [~,tempName,~] = fileparts(files2warp{maskPos});
 [~,tmpName,~] = fileparts(maskSaveName);
@@ -187,7 +199,9 @@ for jj = 1:numAcquisitions
     
     % timebase will be the same for every voxel
     thePacket.response.timebase = stimulusStruct.timebase;
-    
+    %
+    %NOTE:MB: Make a function that cleans up the time series
+    %
     % loop over voxels --> returns a "cleaned" time series
     for vxl = 1:size(PSC,1)
         % place time series from this voxel into the packet
@@ -252,17 +266,17 @@ for jj = 1:numAcquisitions
     thePacket.metaData = [];
     
     %% Perform the fit
-    [paramsFit,fVal,QCMResponses] = ...
+    [paramsFit,fVal,IAMPResponses] = ...
         temporalFit.fitResponse(thePacket,...
         'defaultParamsInfo', defaultParamsInfo, ...
         'searchMethod','linearRegression');
     
     temporalFit.plot(thePacket.response,'Color',[1 0 0]);
-    temporalFit.plot(QCMResponses,'Color',[0 1 0],'NewWindow',false);
+    temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
     
     betas(:,jj)= paramsFit.paramMainMatrix;
     packetPocket{jj} = thePacket;
-    modelResponses{jj} = QCMResponses;
+    modelResponses{jj} = IAMPResponses;
 end
 
 % Calculate mean and SEM of the betas
@@ -273,6 +287,9 @@ xPos = [100,50,25,12.5,6.25];
 %% Save IAMP fit to time series data
 save tempIAMPOutput
 load tempIAMPOutput
+%
+%NOTE:MAB: below here is the QCM fit and 
+%
 
 %% Fit IAMP crfs with QCM
 %
@@ -330,9 +347,14 @@ QCMResponses = computeResponse(temporalFitQCM,paramsQCMFit,QCMStim,[]);
 if (generatePlots)
     temporalFitQCM.plot(QCMResponses,'Color',[0 1 0],'NewWindow',false);
 end
+
+% NOTE: MB: Make a plot contrast response function. Should this be an 
+%       update to the qcmTFE.plot method of a spereate function in LF 
+%       Contrast analysis
+%
 %% Plot
 %
-% Change addition of abs to subraction.
+
 if (generatePlots)
     figure
     subplot(2,2,1); hold on 
