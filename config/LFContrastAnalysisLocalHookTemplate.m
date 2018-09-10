@@ -66,7 +66,7 @@ elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/home/',userID,'/Documents/flywheel',projectName));
-    setpref(projectName,'melaDataPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR','MRContrastResponseFunction','DataFiles');
+    setpref(projectName,'melaDataPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR','MRContrastResponseFunction','DataFiles'));
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
 elseif ispc
     % Code to run on Windows platform

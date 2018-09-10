@@ -32,45 +32,38 @@ warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.subjID, analysi
 trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate,analysisParams.sessionNumber);
 
 
-
-
 functionalRuns  = textFile2cell(funcTextFile);
 confoundFiles   = textFile2cell(confTexFile);
 trialOrderFiles = textFile2cell(trialOrderFile);
 analysisParams.numAcquisitions = length(functionalRuns);
 
-% brain mask of function run for the reference volume in ANTs step
-refFileName  = 'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
-% output files of Neuropythy (retinotopy template)
-retinoFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka1_native.template_areas.nii.gz','HERO_gka1_native.template_eccen.nii.gz',};
-% warp file name (product of running fmriprep)
-warpFileName = 'sub-HEROGKA1_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
-% Set up paths to nifti and .h5 files
+fullFileConfounds = fullfile(functionalPath,confoundFiles);
+functionalRuns = fullfile(functionalPath,functionalRuns);
+refFile = fullfile(functionalPath,analysisParams.refFileName);
+warpFile = fullfile(warpFilePath,analysisParams.warpFileName);
+
 
 %% Create restricted V1 mask
 % load ecc nifti file
-eccenPos       = find(~cellfun(@isempty,strfind(retinoFiles,'eccen')));
-[~,tempName,~] = fileparts(retinoFiles{eccenPos});
+eccenPos       = find(~cellfun(@isempty,strfind(analysisParams.retinoFiles,'eccen')));
+[~,tempName,~] = fileparts(analysisParams.retinoFiles{eccenPos});
 [~,outName,~]  = fileparts(tempName);
 eccenFileName  = fullfile(retinoPath,[outName '.nii.gz']);
 eccen          = MRIread(eccenFileName);
 
 % load areas nifti file
-areasPos       = find(~cellfun(@isempty,strfind(retinoFiles,'areas')));
-[~,tempName,~] = fileparts(retinoFiles{areasPos});
+areasPos       = find(~cellfun(@isempty,strfind(analysisParams.retinoFiles,'areas')));
+[~,tempName,~] = fileparts(analysisParams.retinoFiles{areasPos});
 [~,outName,~]  = fileparts(tempName);
 areasFileName  = fullfile(retinoPath,[outName,'.nii.gz']);
 areas          = MRIread(areasFileName);
 
 % make mask from the area and eccentricity maps
-
 [~,maskSaveName] = makeMaskFromRetino(eccen,areas,analysisParams.areaNum,analysisParams.eccenRange,retinoPath);
 files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
 
 %% Apply the warp to the mask and T1 files using ANTs
-refFile = fullfile(functionalPath,refFileName);
-warpFile = fullfile(warpFilePath,warpFileName);
 inFiles = fullfile(retinoPath,files2warp);
 applyANTsWarpToData(inFiles, warpFile, refFile);
 
@@ -89,27 +82,14 @@ maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
 mask = MRIread(maskOutFileName);
 maskVol = mask.vol;
 
-% make full file path to functional runs
-functionalRuns = fullfile(functionalPath,functionalRuns);
-
-
-%% Construct the model object
-temporalFit = tfeIAMP('verbosity','none');
-
-
 % extract the mean signal from voxels
 [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
 
-% Clip first two data points from the time series, as the signal is not yet
-% steady state. We need to do more to either prevent these volumes from
-% being saved, or to automatically detect this condition.
-voxelTimeSeries = voxelTimeSeries(:,1:end,:);
+% Clip initial frames if specified
+voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFrames+1:end,:);
 
-
-
-% make full file path to counfound tsv files
-fullFileConfounds = fullfile(functionalPath,confoundFiles);
-
+%% Construct the model object
+temporalFit = tfeIAMP('verbosity','none');
 
 %% Create a cell of stimulusStruct (one struct per run)
 for jj = 1:analysisParams.numAcquisitions
