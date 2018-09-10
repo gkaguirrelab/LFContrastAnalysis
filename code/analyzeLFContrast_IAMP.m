@@ -17,6 +17,10 @@ showPlots = false;
 % NOTE: MB: What is the best way for us to set these files for analysis.
 % especially when we have multiple session to combibe or multiple subjects
 % functional runs
+
+funcTextFile = fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),sessionFolderName,'fmriprep','functionalRuns.txt');
+functionalRuns = textFile2cell(funcTextFile)
+
 functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
     'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
     'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...

@@ -1,4 +1,4 @@
-function [] = applyANTsWarp()
+function [outFile] = applyANTsWarp(files2warp,refFileName,warpFileName)
 % Returns a matrix that contains the stimulus combinations based on the inputs. 
 % Syntax:
 %   stimOrder = generateStimOrder(contrastCoding,directionCoding,maxContrastPerDir)
@@ -26,30 +26,6 @@ function [] = applyANTsWarp()
 % Optional key/value pairs:
 %    none
 
-
-%% Create restricted V1 mask
-% load ecc nifti file
-eccenPos       = find(~cellfun(@isempty,strfind(retinoFiles,'eccen')));
-[~,tempName,~] = fileparts(retinoFiles{eccenPos});
-[~,outName,~]  = fileparts(tempName);
-eccenFileName  = fullfile(retinoPath,[outName '.nii.gz']);
-eccen          = MRIread(eccenFileName);
-
-% load areas nifti file
-areasPos       = find(~cellfun(@isempty,strfind(retinoFiles,'areas')));
-[~,tempName,~] = fileparts(retinoFiles{areasPos});
-[~,outName,~]  = fileparts(tempName);
-areasFileName  = fullfile(retinoPath,[outName,'.nii.gz']);
-areas          = MRIread(areasFileName);
-
-% make mask from the area and eccentricity maps
-areaNum     = 1;
-eccenRange  = [3 20];
-[~,maskSaveName] = makeMaskFromRetino(eccen,areas,areaNum,eccenRange,retinoPath);
-
-%% Apply the warp to the mask and T1 files using ANTs
-
-files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
 for ii = 1:length(files2warp)
     % input file
     inFile = fullfile(retinoPath,files2warp{ii});
@@ -58,16 +34,13 @@ for ii = 1:length(files2warp)
     [~,tempName,~] = fileparts(inFile);
     [~,outName,~] = fileparts(tempName);
     outFile = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
-    
-    % reference file
-    refFile = fullfile(functionalPath,refFileName);
-    
-    % warp file
-    warpFile = fullfile(warpFilePath,warpFileName);
+
     if ~exist(outFile)
         applyANTsWarpToData(inFile, outFile, warpFile, refFile);
     else
         [~,fileName,~] = fileparts(outFile);
         display(sprintf('%s already exist in the specified directory',fileName));
     end
+end
+
 end
