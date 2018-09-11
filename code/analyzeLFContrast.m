@@ -17,7 +17,6 @@ analysisParams.retinoFiles = {'HERO_gka1_native.template_angle.nii.gz','HERO_gka
 % warp file name (product of running fmriprep)
 analysisParams.warpFileName = 'sub-HEROGKA1_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
-
 % Clip fisrt 2 TRs from time series?
 % if no clipping then put 0;
 analysisParams.numClipFrames = 0;

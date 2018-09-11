@@ -31,18 +31,15 @@ functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.subjID, analysi
 warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.subjID, analysisParams.session, 'anat');
 trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate,analysisParams.sessionNumber);
 
-
 functionalRuns  = textFile2cell(funcTextFile);
 confoundFiles   = textFile2cell(confTexFile);
 trialOrderFiles = textFile2cell(trialOrderFile);
 analysisParams.numAcquisitions = length(functionalRuns);
 
-
 fullFileConfounds = fullfile(functionalPath,confoundFiles);
-functionalRuns = fullfile(functionalPath,functionalRuns);
-refFile = fullfile(functionalPath,analysisParams.refFileName);
-warpFile = fullfile(warpFilePath,analysisParams.warpFileName);
-
+functionalRuns    = fullfile(functionalPath,functionalRuns);
+refFile           = fullfile(functionalPath,analysisParams.refFileName);
+warpFile          = fullfile(warpFilePath,analysisParams.warpFileName);
 
 %% Create restricted V1 mask
 % load ecc nifti file
@@ -68,19 +65,13 @@ inFiles = fullfile(retinoPath,files2warp);
 applyANTsWarpToData(inFiles, warpFile, refFile);
 
 %% Extract Signal from voxels
-%
-% NOTE:MB: Make function that takesin a functional run and a mask and
-% returns a mean time series or voxel time courses. Talk with david on
-% frisya meeting about packet making and saving
-%
-%Load mask nifti
-maskPos       = find(~cellfun(@isempty,strfind(files2warp,'mask')));
-[~,tempName,~] = fileparts(files2warp{maskPos});
-[~,tmpName,~] = fileparts(maskSaveName);
-[~,outName,~] = fileparts(tmpName);
+maskPos         = find(~cellfun(@isempty,strfind(files2warp,'mask')));
+[~,tempName,~]  = fileparts(files2warp{maskPos});
+[~,tmpName,~]   = fileparts(maskSaveName);
+[~,outName,~]   = fileparts(tmpName);
 maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
-mask = MRIread(maskOutFileName);
-maskVol = mask.vol;
+mask            = MRIread(maskOutFileName);
+maskVol         = mask.vol;
 
 % extract the mean signal from voxels
 [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
@@ -103,7 +94,7 @@ for jj = 1:analysisParams.numAcquisitions
     warning('off','MATLAB:class:EnumerableClassNotFound')
     
     % Load and process the data param file
-    load(dataParamFile);
+    load(dataParamFile,'protocolParams');
     
     % restore warning state
     warning(warningState);
@@ -133,10 +124,6 @@ for jj = 1:analysisParams.numAcquisitions
     voxelMeanVec = mean(runData,2);
     PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
     
-    
-    %
-    %NOTE:MB: Make a function that cleans up the time series
-    %
     % loop over voxels --> returns a "cleaned" time series
     for vxl = 1:size(PSC,1)
         % place time series from this voxel into the packet
@@ -147,14 +134,12 @@ for jj = 1:analysisParams.numAcquisitions
             'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
         confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
         cleanRunData(vxl,:,jj) = thePacket.response.values - QCMResponses.values;
-    end
-    
+    end  
 end
 
 %% Save out the clean time series brick
 saveName = [analysisParams.subjID,'_',analysisParams.sessionDate,'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'.mat'];
 savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName,'cleanTimeCourse');
 saveFullFile = fullfile(savePath,saveName);
-
 save(saveFullFile,'cleanRunData','voxelIndex','cleanRunData');
 
