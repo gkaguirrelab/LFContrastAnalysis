@@ -1,4 +1,4 @@
-function [analysisParams] = getTimeCourse(analysisParams)
+function [cleanRunData, analysisParams, voxelIndex] = getTimeCourse(analysisParams)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -110,7 +110,7 @@ for jj = 1:analysisParams.numAcquisitions
     
     % make stimulus timebase
     totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
-    deltaT = TR*1000;
+    deltaT = analysisParams.TR*1000;
     thePacket.stimulus.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
     thePacket.response.timebase = thePacket.stimulus.timebase;
     
@@ -146,11 +146,15 @@ for jj = 1:analysisParams.numAcquisitions
         [paramsFit, ~, QCMResponses] = temporalFit.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
         confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
-        cleanRunData(vxl,:) = thePacket.response.values - QCMResponses.values;
+        cleanRunData(vxl,:,jj) = thePacket.response.values - QCMResponses.values;
     end
     
 end
 
 %% Save out the clean time series brick
+saveName = [analysisParams.subjID,'_',analysisParams.sessionDate,'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'.mat'];
+savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName,'cleanTimeCourse');
+saveFullFile = fullfile(savePath,saveName);
 
+save(saveFullFile,'cleanRunData','voxelIndex','cleanRunData');
 
