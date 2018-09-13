@@ -38,6 +38,8 @@ analysisParams.directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L
 analysisParams.maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
 analysisParams.theDimension = 2;
 
+ %plotting params
+ analysisParams.numSamples = 25;
 
 [cleanRunData, analysisParams] = getTimeCourse(analysisParams);
 

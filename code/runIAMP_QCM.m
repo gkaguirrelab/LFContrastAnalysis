@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -29,7 +29,7 @@ trialOrderFiles = textFile2cell(trialOrderFile);
 temporalFit = tfeIAMP('verbosity','none');
 
 %% Create a cell of stimulusStruct (one struct per run)
-for jj = 1:numAcquisitions
+for jj = 1:analysisParams.numAcquisitions
     
     % identify the data param file
     dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
@@ -103,7 +103,7 @@ end
 
 % Calculate mean of the betas
 meanIAMPBetas = mean(betas,2);
-
+semIAMPBetas = std(meanIAMPBetas,0,2)./sqrt(analysisParams.numAcquisitions);
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
 temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
