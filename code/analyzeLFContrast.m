@@ -1,4 +1,4 @@
- % Convenience variables
+% Convenience variables
 analysisParams.projectName       = 'LFContrastAnalysis';
 analysisParams.flywheelName      = 'LFContrast';
 analysisParams.subjID            = 'sub-HEROGKA1';
@@ -27,6 +27,20 @@ analysisParams.eccenRange  = [3 20];
 
 % Define the TR
 analysisParams.TR = 0.800;
+analysisParams.baselineCondNum = 6;
+analysisParams.timeStep = 1/100;
+analysisParams.generateIAMPPlots = true;
+
+
+%Paramters for the QCM fit to IAMP:
+analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
+analysisParams.directionCoding = [1,1,1,0;-1,1,0,1;0,0,0,0]; %this 1 = L-M 2 = L+M 3 = L 4 = M;
+analysisParams.maxContrastPerDir = [0.06,0.40,0.10,0.10]; % max contrast in the same order as above
+analysisParams.theDimension = 2;
+
 
 [cleanRunData, analysisParams] = getTimeCourse(analysisParams);
+
+
+[analysisParams,paramsQCMFit, meanIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData);
 
