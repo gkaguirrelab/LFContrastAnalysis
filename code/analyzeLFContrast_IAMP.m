@@ -274,6 +274,7 @@ for jj = 1:numAcquisitions
     temporalFit.plot(thePacket.response,'Color',[1 0 0]);
     temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
     
+    paramsFitIAMP{jj} = paramsFit;
     betas(:,jj)= paramsFit.paramMainMatrix;
     packetPocket{jj} = thePacket;
     modelResponses{jj} = IAMPResponses;
@@ -332,7 +333,7 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-[paramsQCMFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
+[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 
@@ -411,3 +412,25 @@ thresh = 0.75;
 hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directions,thresh,hdl,'b');
 xlim([-0.5 0.5]);
 ylim([-0.5 0.5]);
+
+%% Now try plotting each run again, but also with mean and QCM fit params
+for jj = 1:numAcquisitions   
+    % Regenerate IAMP predictions to time series
+    IAMPResponses = temporalFit.computeResponse(paramsFitIAMP{jj},packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
+    
+    % Plot them
+    temporalFit.plot(packetPocket{jj}.response,'Color',[1 0 0]);
+    temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
+    
+    % Doctor up the parameters to use mean IAMP values and plot again
+    paramsFitIAMPMean = paramsFitIAMP{jj};
+    paramsFitIAMPMean.paramMainMatrix(1:21) = meanBetas(1:21);
+    IAMPResponsesMean = temporalFit.computeResponse(paramsFitIAMPMean,packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
+    temporalFit.plot(IAMPResponsesMean,'Color',[0 0.5 1],'NewWindow',false);
+   
+    % Doctor up parameters to use the QCM fit to the mean IAMP
+    paramsFitIAMPQCM = paramsFitIAMP{jj};
+    paramsFitIAMPQCM.paramMainMatrix(1:21) = fitResponseStructQCM.values(1:21');
+    IAMPResponsesQCM = temporalFit.computeResponse(paramsFitIAMPQCM,packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
+    temporalFit.plot(IAMPResponsesQCM,'Color',[0 0 0],'NewWindow',false);
+end
