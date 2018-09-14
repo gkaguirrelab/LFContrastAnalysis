@@ -41,11 +41,12 @@ analysisParams.theDimension = 2;
  %plotting params
  analysisParams.numSamples = 25;
 
-
+% Get the cleaned time series
 [cleanRunData, analysisParams] = getTimeCourse(analysisParams);
 
-
+% Run the IAMP/QCM model
 [analysisParams,paramsQCMFit,meanIAMPBetas,semIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData);
 
+% Plot the CRF from the IAMP and QCM fits
 plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 
