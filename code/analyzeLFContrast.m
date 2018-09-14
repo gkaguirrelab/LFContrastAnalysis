@@ -29,7 +29,7 @@ analysisParams.eccenRange  = [3 20];
 analysisParams.TR = 0.800;
 analysisParams.baselineCondNum = 6;
 analysisParams.timeStep = 1/100;
-analysisParams.generateIAMPPlots = true;
+analysisParams.generateIAMPPlots = false;
 
 
 %Paramters for the QCM fit to IAMP:
@@ -41,8 +41,11 @@ analysisParams.theDimension = 2;
  %plotting params
  analysisParams.numSamples = 25;
 
+
 [cleanRunData, analysisParams] = getTimeCourse(analysisParams);
 
 
-[analysisParams,paramsQCMFit, meanIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData);
+[analysisParams,paramsQCMFit,meanIAMPBetas,semIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData);
+
+plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 

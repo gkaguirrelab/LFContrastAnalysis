@@ -1,4 +1,4 @@
-function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas)
+function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -23,37 +23,45 @@ function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas)
 %% Generate prediction to stimuli based on QCM fit to arbitrary stim
 
 contrastSpacing = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
-QCMStim.values = [generateStimCombinations(contrastSpacing,directionCoding,maxContrastPerDir,theDimension),[0;0]];
-QCMStim.timebase = linspace(1,max(thePacket.response.timebase),length(QCMStim.values));
-
+QCMStim.values = [generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension),[0;0]];
+QCMStim.timebase = linspace(1,max(length(meanIAMPBetas(1:end-1))),length(QCMStim.values));
+temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
 QCMResponses = computeResponse(temporalFitQCM,paramsQCMFit,QCMStim,[]);
 
 % Subplot size
 rws = ceil(sqrt(size(analysisParams.directionCoding,2)));
 cols = rws;
+indx = length(analysisParams.contrastCoding);
 figure
 for ii = 1:size(analysisParams.directionCoding,2)
-    if ii == 1
-        betas = meanIAMPBetas(1:indx)- meanIAMPBetas(end);
-        error = semIAMPBetas(1:indx);
-    else
-        betas = meanIAMPBetas(indx+1:ii*indx) - meanIAMPBetas(end);
-        error = semIAMPBetas(indx+1:ii*indx);
-    end
-    subplot(rws,cols,ii); hold on
-    errorbar(xPos,betas,error)
-    plot(contrastSpacing*100,QCMResponses.values(1:25)-QCMResponses.values(101))
     
+    aa = (length(QCMResponses.values)-1)/size(analysisParams.directionCoding,2);
+    if ii == 1
+        betas = meanIAMPBetas(1:indx)- meanIAMPBetas(end-1);
+        error = semIAMPBetas(1:indx);
+        qcmSmooth = QCMResponses.values(1:aa)-QCMResponses.values(end);
+    else
+        betas = meanIAMPBetas((ii-1)*indx+1:ii*indx) - meanIAMPBetas(end-1);
+        error = semIAMPBetas((ii-1)*indx+1:ii*indx);
+        qcmSmooth = QCMResponses.values((ii-1)*aa+1:ii*aa)-QCMResponses.values(end);
+    end
+    
+    subplot(rws,cols,ii); hold on
+    errorbar(analysisParams.contrastCoding*100,betas,error)
+    plot(contrastSpacing*100,qcmSmooth)
     
     if isequal(analysisParams.directionCoding(:,ii),[1;1;0])
-        [~,indx]=ismember(X,M,'rows')
-        title(sprintf('L+M: Max Contrast = 6%')
+        pos = find(ismember(analysisParams.directionCoding',[1,1,0],'rows'));
+        title(sprintf('L+M: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
     elseif isequal(analysisParams.directionCoding(:,ii),[1;-1;0])
-        title('L-M: Max Contrast = 6%')
+        pos = find(ismember(analysisParams.directionCoding',[1,-1,0],'rows'));
+        title(sprintf('L-M: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
     elseif isequal(analysisParams.directionCoding(:,ii),[1;0;0])
-        title('L-iso: Max Contrast = 6%')
+        pos = find(ismember(analysisParams.directionCoding',[1,0,0],'rows'));
+        title(sprintf('L Isolating: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
     elseif isequal(analysisParams.directionCoding(:,ii),[0;1;0])
-        title('M-iso: Max Contrast = 6%')
+        pos = find(ismember(analysisParams.directionCoding',[0,1,0],'rows'));
+        title(sprintf('M Isolating: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
     else
     end
     ylabel('Mean Beta Weight')

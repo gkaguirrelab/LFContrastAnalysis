@@ -61,7 +61,7 @@ for jj = 1:analysisParams.numAcquisitions
     responseStruct.timeStep = analysisParams.timeStep;
     
     % get attention event regressor
-    [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.response.timebase);
+    [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', stimulusStruct.timebase);
     
     % add attention events to regressor matrix
     stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
@@ -70,7 +70,7 @@ for jj = 1:analysisParams.numAcquisitions
     defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
     
     % Get kernel
-    kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase)
+    kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
     
     % make the stimulus portion of packet for fitting
     thePacket.stimulus.timebase = stimulusStruct.timebase;
@@ -78,7 +78,7 @@ for jj = 1:analysisParams.numAcquisitions
     
     % add the response field
     thePacket.response.timebase = stimulusStruct.timebase;
-    thePacket.response.values = median(cleanRunData,1);
+    thePacket.response.values = median(cleanRunData(:,:,jj),1);
     
     % add the kernel field
     thePacket.kernel = kernelStruct;
@@ -103,10 +103,10 @@ end
 
 % Calculate mean of the betas
 meanIAMPBetas = mean(betas,2);
-semIAMPBetas = std(meanIAMPBetas,0,2)./sqrt(analysisParams.numAcquisitions);
+semIAMPBetas = std(betas,0,2)./sqrt(analysisParams.numAcquisitions);
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
-temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
+temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
 
 %% Set up contrast values matched to resoponse order
 % Set up stim order info to creat LMS contrast by timepoint matrix
@@ -114,7 +114,8 @@ stimulusStruct.values   = [generateStimCombinations(analysisParams.contrastCodin
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
 %% Snag response values from IAMP fit.
-thePacket.response.values = meanIAMPBetas(1:21)';
+%end -1 is for the attention event modeling 
+thePacket.response.values = meanIAMPBetas(1:end-1)';
 thePacket.response.timebase = 1:length(thePacket.response.values);
 
 %% Construct a packet for the QCM to fit.
@@ -127,5 +128,4 @@ thePacket.metaData = [];
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 
-
-
+end
