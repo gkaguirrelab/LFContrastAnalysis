@@ -50,3 +50,5 @@ analysisParams.theDimension = 2;
 % Plot the CRF from the IAMP and QCM fits
 plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 
+
+

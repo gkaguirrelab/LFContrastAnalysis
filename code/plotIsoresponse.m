@@ -19,7 +19,14 @@ function [] = plotIsoresponse(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQC
 %    none
 
 % MAB 09/09/18
+%fix to match upsampling 
 
+
+    
+LminusMbetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
+LplusMbetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
+LIsoBetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
+MIsoBetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
 
 LminusMcontrast = contrastCoding.*maxContrastPerDir(1);
 LplusMcontrast= contrastCoding.*maxContrastPerDir(2);
