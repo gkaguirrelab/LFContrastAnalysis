@@ -30,7 +30,7 @@ for ii = 1:numCond
         sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast) - meanIAMPBetas(end-1);
     end
     
-    contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii)
+    contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii);
 end
 
 directions = analysisParams.directionCoding;
