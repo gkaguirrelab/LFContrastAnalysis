@@ -10,7 +10,7 @@ function [hdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,direction
 % Inputs:
 %    paramsQCM       - paramsFit outpus from the QCM fit response function
 %    IAMPBetas       - beta values for each
-%    contrastLevels  - contrast values corresponding to each beta weight in each direction               
+%    contrastLevels  - contrast values corresponding to each beta weight in each direction
 %    directionCoding - coding for directions in the XY plane e.g. [1,1] = L+M
 %
 % Outputs:
@@ -24,6 +24,13 @@ function [hdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,direction
 %% Parameters
 nQCMPoints = 100;
 
+if isempty(color)
+    color = [1,1,1];
+    while sum(color) > 2.4
+        color = rand(1,3);
+    end
+end
+
 %% Inerpolate the IAMP CRF
 for ii = 1:length(IAMPBetas)
     contrast(ii) = interp1(IAMPBetas{ii},contrastLevels{ii},thresh,'pchip');
@@ -32,7 +39,7 @@ end
 
 %% Compute QCM ellipse to the plot
 %
-% Step 1. Invert Naka-Rushton to go from thresh back to 
+% Step 1. Invert Naka-Rushton to go from thresh back to
 % corresponding equivalent contrast.
 eqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
 circlePoints = eqContrast*UnitCircleGenerate(nQCMPoints);
@@ -43,7 +50,7 @@ if (any(abs(checkThresh-thresh) > 1e-10))
     error('Did not invert QCM model correctly');
 end
 
-%% Plot data points 
+%% Plot data points
 if (isempty(hdl))
     hdl = figure; hold on
 else
@@ -62,7 +69,7 @@ xlabel('L Contrast')
 ylabel('M Contrast')
 
 % Add ellipse
-plot(ellipsePoints(1,:),ellipsePoints(2,:),color);
+plot(ellipsePoints(1,:),ellipsePoints(2,:),'color', color);
 
 
 end

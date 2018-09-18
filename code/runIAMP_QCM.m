@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas] = runIAMP_QCM(analysisParams,cleanRunData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM] = runIAMP_QCM(analysisParams,cleanRunData)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -97,8 +97,10 @@ for jj = 1:analysisParams.numAcquisitions
         temporalFit.plot(thePacket.response,'Color',[1 0 0]);
         temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
     end
-    
+    paramsFitIAMP{jj} = paramsFit;
+    packetPocket{jj} = thePacket;
     betas(:,jj)= paramsFit.paramMainMatrix;
+    
 end
 
 % Calculate mean of the betas
@@ -124,7 +126,7 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-[paramsQCMFit,fVal,fitResponseStruct] = temporalFitQCM.fitResponse(thePacket);
+[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 

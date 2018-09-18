@@ -1,4 +1,4 @@
-function [] = plotIsoresponse(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
+function [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -19,28 +19,30 @@ function [] = plotIsoresponse(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQC
 %    none
 
 % MAB 09/09/18
-%fix to match upsampling 
 
+numCond = size(analysisParams.directionCoding,2);
+numContrast = length(analysisParams.contrastCoding );
 
+for ii = 1:numCond
+    if ii == 1
+        sortedBetas{ii} = meanIAMPBetas(1:numContrast) - meanIAMPBetas(end-1);
+    else
+        sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast) - meanIAMPBetas(end-1);
+    end
     
-LminusMbetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
-LplusMbetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
-LIsoBetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
-MIsoBetas = semIAMPBetas(1:5)- semIAMPBetas(end-1); 
+    contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii)
+end
 
-LminusMcontrast = contrastCoding.*maxContrastPerDir(1);
-LplusMcontrast= contrastCoding.*maxContrastPerDir(2);
-LIsocontrast= contrastCoding.*maxContrastPerDir(3);
-MIsocontrast= contrastCoding.*maxContrastPerDir(4);
+directions = analysisParams.directionCoding;
+if analysisParams.theDimension == 2 & size(analysisParams.directionCoding,1) > 2
+    directions(3,:) = [];
+end
 
-IAMPBetas = {LminusMbetas,LplusMbetas,LIsoBetas,MIsoBetas};
-contrastLevels = {LminusMcontrast,LplusMcontrast,LIsocontrast,MIsocontrast};
-directions = {[1,-1],[1,1],[1,0],[0,1]};
-thresh = 0.25;
-hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directions,thresh,[],'r');
-thresh = 0.5;
-hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directions,thresh,hdl,'g');
-thresh = 0.75;
-hdl = plotIsorespContour(paramsQCMFit,IAMPBetas,contrastLevels,directions,thresh,hdl,'b');
-xlim([-0.5 0.5]);
-ylim([-0.5 0.5]);
+directions = mat2cell(directions,size(directions,1),ones(1,size(directions,2)));
+
+hdl = [];
+for jj = 1:length(thresholds)
+    hdl = plotIsorespContour(paramsQCMFit,sortedBetas,contrasts,directions,thresholds(jj),hdl,[]);
+end
+
+end
