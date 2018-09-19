@@ -3,10 +3,10 @@ analysisParams.projectName       = 'LFContrastAnalysis';
 analysisParams.flywheelName      = 'LFContrast';
 analysisParams.subjID            = 'sub-HEROGKA1';
 analysisParams.expSubjID         = 'HERO_gka1';
-analysisParams.session           = 'ses-ResearchAguirre';
-analysisParams.sessionFolderName = 'HERO_GKA1_2018-08-21';
-analysisParams.sessionDate       = '2018-08-21';
-analysisParams.sessionNumber     = 'session_1';
+analysisParams.session           = {'ses-ResearchAguirre','ses-ResearchAguirre'};
+analysisParams.sessionFolderName = {'HERO_GKA1_2018-08-21''HERO_GKA1_2018-08-21'};
+analysisParams.sessionDate       = {'2018-08-21','2018-07-28'};
+analysisParams.sessionNumber     = {'session_1','session_1'};
 analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
 analysisParams.showPlots         = true;
 
@@ -33,9 +33,9 @@ analysisParams.generateIAMPPlots = false;
 
 %Paramters for the QCM fit to IAMP:
 analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
-analysisParams.LMVectorAngles =[-22.5, 22.5, 67.5, 112.5];  
+analysisParams.LMVectorAngles = [-22.5, 22.5, 67.5, 112.5 -45 45 0 90];  
 analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM'); 
-analysisParams.maxContrastPerDir = [0.085,0.24,0.20,0.10];  % max contrast in the same order as above
+analysisParams.maxContrastPerDir = [0.085,0.24,0.20,0.10,0.06,0.40,0.10,0.10];  % max contrast in the same order as above
 analysisParams.theDimension = 2;
 
  %plotting params

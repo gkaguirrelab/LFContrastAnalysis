@@ -22,6 +22,7 @@ function [cleanRunData, analysisParams, voxelIndex] = getTimeCourse(analysisPara
 
 
 % set up files and paths
+for 
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.sessionFolderName);
 funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName,'fmriprep','functionalRuns.txt');
 confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName,'fmriprep','confounds.txt');
