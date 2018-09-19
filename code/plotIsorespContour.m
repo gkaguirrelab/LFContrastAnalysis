@@ -1,4 +1,4 @@
-function [hdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,color)
+function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,color)
 % Plots an isorepsonse contour for a given 2D ellipse fit along the data points
 %
 % Syntax:
@@ -57,7 +57,7 @@ else
     figure(hdl); hold on
 end
 sz = 50;
-scatter(dataPoints(:,1),dataPoints(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5)
+scatterHdl = scatter(dataPoints(:,1),dataPoints(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5)
 ylim([-1, 1])
 xlim([-1, 1])
 axh = gca; % use current axes

@@ -41,8 +41,12 @@ end
 directions = mat2cell(directions,size(directions,1),ones(1,size(directions,2)));
 
 hdl = [];
+hleglines = []
 for jj = 1:length(thresholds)
-    hdl = plotIsorespContour(paramsQCMFit,sortedBetas,contrasts,directions,thresholds(jj),hdl,[]);
+    [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,sortedBetas,contrasts,directions,thresholds(jj),hdl,[]);
+    hleglines = [hleglines scatterHdl];
+    legendNames{jj} = num2str(thresholds(jj));
 end
-
+legend(hleglines,legendNames)
+title('Isoresponse Contour')
 end

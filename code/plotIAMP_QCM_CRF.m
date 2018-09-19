@@ -63,6 +63,7 @@ for ii = 1:size(analysisParams.directionCoding,2)
         pos = find(ismember(analysisParams.directionCoding',[0,1,0],'rows'));
         title(sprintf('M Isolating: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
     else
+        title(sprintf('%s Degrees: Max Contrast = %s',num2str(analysisParams.LMVectorAngles(ii)),num2str(analysisParams.maxContrastPerDir(ii))))
     end
     ylabel('Mean Beta Weight')
     xlabel('Percent of Max Contrast')

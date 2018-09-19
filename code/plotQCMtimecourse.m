@@ -58,9 +58,9 @@ for jj = 1:analysisParams.numAcquisitions
     % Set axis labels
     ylabel('PSC')
     xlabel('Time (mS)')
-    
+    title(sprintf('Run %s', num2str(jj)))
     % Change line size
     set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 end
-
+legend('time course','IAMP fit',' Mean IAMP params', 'Mean QCM params')
 end
