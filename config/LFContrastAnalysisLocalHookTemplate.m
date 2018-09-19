@@ -38,17 +38,20 @@ end
 userID = strtrim(userID);
 switch userID
     case {'melanopsin' 'pupillab'}
-        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        melaDatabasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
     case {'dhb'}
-        materialsBasePath = ['/Users1' '/DropboxLab/MELA_materials'];
-        MELA_dataBasePath = ['/Users1' '/DropboxLab/MELA_data/'];     
+        melaMaterialsPath = ['/Users1/DropboxLab/MELA_materials'];
+        melaDatabasePath = ['/Users1/DropboxLab/MELA_data/'];
+        melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/'];
     case {'mbarnett'}
-        materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaMaterialsPath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        melaDatabasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
     otherwise
-        materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+        melaDatabasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/' projectName];
 end
 
 %% Specify where output goes
@@ -57,12 +60,14 @@ if ismac
     % Code to run on Mac plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
-    setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaDataPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR','MRContrastResponseFunction','DataFiles'));
+    setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/home/',userID,'/Documents/flywheel',projectName));
-    setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaDataPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR','MRContrastResponseFunction','DataFiles'));
+    setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')

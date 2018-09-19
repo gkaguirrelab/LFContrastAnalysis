@@ -17,6 +17,10 @@ showPlots = false;
 % NOTE: MB: What is the best way for us to set these files for analysis.
 % especially when we have multiple session to combibe or multiple subjects
 % functional runs
+
+funcTextFile = fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),sessionFolderName,'fmriprep','functionalRuns.txt');
+functionalRuns = textFile2cell(funcTextFile)
+
 functionalRuns = {'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
     'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
     'sub-HEROGKA1_ses-ResearchAguirre_task-tfMRILFContrastPA_run-2_bold_space-MNI152NLin2009cAsym_preproc.nii.gz', ...
@@ -297,10 +301,6 @@ load tempIAMPOutput
 % Break out coefficients by stimulus color direction.
 % Note that it is all hard coded, which we will need to 
 % fix up at some point.
-LminusMbetas = meanBetas(1:5)+ abs(meanBetas(21)); 
-LplusMbetas = meanBetas(6:10)+abs(meanBetas(21));
-LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
-MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
 
 % Set parameters and construct a QCM object.
 theDimension = 2;
@@ -355,6 +355,13 @@ end
 %
 %% Plot
 %
+
+%fix to match upsampling 
+LminusMbetas = meanBetas(1:5)- meanBetas(21); 
+LplusMbetas = meanBetas(6:10) - abs(meanBetas(21));
+LIsoBetas = meanBetas(11:15)+abs(meanBetas(21));
+MIsoBetas = meanBetas(16:20)+abs(meanBetas(21));
+
 
 if (generatePlots)
     figure
