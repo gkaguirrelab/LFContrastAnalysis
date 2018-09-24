@@ -20,7 +20,7 @@ function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQ
 
 % MAB 09/09/18
 
-%% Generate prediction to stimuli based on QCM fit to arbitrary stim
+% Generate prediction to stimuli based on QCM fit to arbitrary stim
 
 contrastSpacing = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
 QCMStim.values = [generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension),[0;0]];
@@ -37,11 +37,11 @@ for ii = 1:size(analysisParams.directionCoding,2)
     
     aa = (length(QCMResponses.values)-1)/size(analysisParams.directionCoding,2);
     if ii == 1
-        betas = meanIAMPBetas(1:indx)- meanIAMPBetas(end-1);
+        betas = meanIAMPBetas(1:indx)- meanIAMPBetas(end);
         error = semIAMPBetas(1:indx);
         qcmSmooth = QCMResponses.values(1:aa)-QCMResponses.values(end);
     else
-        betas = meanIAMPBetas((ii-1)*indx+1:ii*indx) - meanIAMPBetas(end-1);
+        betas = meanIAMPBetas((ii-1)*indx+1:ii*indx) - meanIAMPBetas(end);
         error = semIAMPBetas((ii-1)*indx+1:ii*indx);
         qcmSmooth = QCMResponses.values((ii-1)*aa+1:ii*aa)-QCMResponses.values(end);
     end

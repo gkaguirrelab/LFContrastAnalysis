@@ -45,7 +45,7 @@ for jj = 1:analysisParams.numAcquisitions
     
     % Doctor up the parameters to use mean IAMP values and plot again
     paramsFitIAMPMean = paramsFitIAMP{jj};
-    paramsFitIAMPMean.paramMainMatrix(1:21) = meanIAMPBetas(1:end-1); %end minus 1 for the attentional events
+    paramsFitIAMPMean.paramMainMatrix(1:end-1) = meanIAMPBetas(1:end-1); %end minus 1 for the attentional events
     IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
     plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
    

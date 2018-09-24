@@ -23,6 +23,7 @@ function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,
 IAMPBetas = [];
 IAMPsem  = [];
 baselineBetas = [];
+count = 1;
 for sessionNum = 1:length(analysisParams.sessionFolderName) 
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
@@ -102,9 +103,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
         end
         paramsFitIAMP{jj} = paramsFit;
-        packetPocket{jj} = thePacket;
+        packetPocket{count} = thePacket;
         betas(:,jj)= paramsFit.paramMainMatrix;
-        
+        count = count+1;
     end
     
     % Calculate mean of the betas
