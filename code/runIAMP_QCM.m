@@ -102,7 +102,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
             temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
         end
-        paramsFitIAMP{jj} = paramsFit;
+        paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
         betas(:,jj)= paramsFit.paramMainMatrix;
         count = count+1;
