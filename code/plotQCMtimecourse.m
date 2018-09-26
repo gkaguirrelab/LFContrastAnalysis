@@ -23,44 +23,51 @@ function [] = plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysi
 % IAMP object
 temporalFitIAMP = tfeIAMP('verbosity','none');
 
-% Get subplot sizing 
-rws = ceil(sqrt(analysisParams.numAcquisitions));
+% Get subplot sizing
+rws = ceil(sqrt(analysisParams.numAcquisitions*length(analysisParams.sessionFolderName)));
 cols = rws-1;
-if rws*cols < analysisParams.numAcquisitions
+if rws*cols < analysisParams.numAcquisitions*length(analysisParams.sessionFolderName)
     cols = rws;
 end
+
+% Set indexing for betas 
+betaLength = (length(meanIAMPBetas)-1)/length(analysisParams.sessionFolderName);
 
 % Open figure
 figure
 
 % Use QCM fit to IAMP to predict timecourse.
-for jj = 1:analysisParams.numAcquisitions   
-    % Regenerate IAMP predictions to time series
-    IAMPResponses = temporalFitIAMP.computeResponse(paramsFitIAMP{jj},packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
-    
-    % Plot them
-    subplot(rws,cols,jj); hold on
-    plot(packetPocket{jj}.response.timebase,packetPocket{jj}.response.values,'Color',[1 0 0]);
-    plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[0 1 0]);
-    
-    % Doctor up the parameters to use mean IAMP values and plot again
-    paramsFitIAMPMean = paramsFitIAMP{jj};
-    paramsFitIAMPMean.paramMainMatrix(1:end-1) = meanIAMPBetas(1:end-1); %end minus 1 for the attentional events
-    IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
-    plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
-   
-    % Doctor up parameters to use the QCM fit to the mean IAMP
-    paramsFitIAMPQCM = paramsFitIAMP{jj};
-    paramsFitIAMPQCM.paramMainMatrix(1:21) = fitResponseStructQCM.values';
-    IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{jj}.stimulus,packetPocket{jj}.kernel);
-    plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
-    
-    % Set axis labels
-    ylabel('PSC')
-    xlabel('Time (mS)')
-    title(sprintf('Run %s', num2str(jj)))
-    % Change line size
-    set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+counter = 1;
+for ii = 1:length(analysisParams.sessionFolderName)
+    for jj = 1:analysisParams.numAcquisitions
+        % Regenerate IAMP predictions to time series
+        IAMPResponses = temporalFitIAMP.computeResponse(paramsFitIAMP{counter},packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
+        
+        % Plot them
+        subplot(rws,cols,counter); hold on
+        plot(packetPocket{counter}.response.timebase,packetPocket{counter}.response.values,'Color',[1 0 0]);
+        plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[0 1 0]);
+        
+        % Doctor up the parameters to use mean IAMP values and plot again
+        paramsFitIAMPMean = paramsFitIAMP{counter};
+        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);meanIAMPBetas(end)]; 
+        IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
+        plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
+        
+        % Doctor up parameters to use the QCM fit to the mean IAMP
+        paramsFitIAMPQCM = paramsFitIAMP{counter};
+        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), fitResponseStructQCM.values(end)]';
+        IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
+        plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
+        
+        % Set axis labels
+        ylabel('PSC')
+        xlabel('Time (mS)')
+        title(sprintf('Session %s, Run %s', num2str(ii), num2str(jj)))
+        % Change line size
+        set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+        counter = counter +1; 
+    end
 end
 legend('time course','IAMP fit',' Mean IAMP params', 'Mean QCM params')
 end
