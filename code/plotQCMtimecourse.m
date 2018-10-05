@@ -31,7 +31,7 @@ if rws*cols < analysisParams.numAcquisitions*length(analysisParams.sessionFolder
 end
 
 % Set indexing for betas 
-betaLength = (length(meanIAMPBetas)-1)/length(analysisParams.sessionFolderName);
+betaLength = (length(meanIAMPBetas))/length(analysisParams.sessionFolderName);
 
 % Open figure
 figure
@@ -50,13 +50,13 @@ for ii = 1:length(analysisParams.sessionFolderName)
         
         % Doctor up the parameters to use mean IAMP values and plot again
         paramsFitIAMPMean = paramsFitIAMP{counter};
-        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);meanIAMPBetas(end)]; 
+        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);0]; 
         IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
         plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
         
         % Doctor up parameters to use the QCM fit to the mean IAMP
         paramsFitIAMPQCM = paramsFitIAMP{counter};
-        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), fitResponseStructQCM.values(end)]';
+        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), 0]';
         IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
         plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
         

@@ -25,9 +25,9 @@ numContrast = length(analysisParams.contrastCoding );
 
 for ii = 1:numCond
     if ii == 1
-        sortedBetas{ii} = meanIAMPBetas(1:numContrast) - meanIAMPBetas(end-1);
+        sortedBetas{ii} = meanIAMPBetas(1:numContrast);
     else
-        sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast) - meanIAMPBetas(end-1);
+        sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast);
     end
     
     contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii);

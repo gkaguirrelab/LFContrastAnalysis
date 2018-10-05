@@ -104,13 +104,14 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
-        betas(:,jj)= paramsFit.paramMainMatrix;
+        % subract off baseline
+        betas(:,jj)= paramsFit.paramMainMatrix(1:end-2) - paramsFit.paramMainMatrix(end-1);
+        baselineBetas(jj,sessionNum) = paramsFit.paramMainMatrix(end-1);
         count = count+1;
     end
     
     % Calculate mean of the betas
-    IAMPBetas = [IAMPBetas, mean(betas,2)];
-    baselineBetas = [baselineBetas, betas(end-1,:)]; 
+    IAMPBetas = [IAMPBetas, mean(betas,2)]; 
     IAMPsem = [IAMPsem, std(betas,0,2)./sqrt(analysisParams.numAcquisitions)];
     
 end
@@ -119,11 +120,9 @@ end
 meanIAMPBetas = []; 
 semIAMPBetas  = [];
 for pp = 1:size(IAMPBetas,2)
-    meanIAMPBetas = [meanIAMPBetas; IAMPBetas(1:end-2,pp)];
-    semIAMPBetas  = [semIAMPBetas; IAMPsem(1:end-2,pp)];
+    meanIAMPBetas = [meanIAMPBetas; IAMPBetas(:,pp)];
+    semIAMPBetas  = [semIAMPBetas; IAMPsem(:,pp)];
 end   
-meanIAMPBetas = [meanIAMPBetas; mean(baselineBetas)];
-semIAMPBetas = [semIAMPBetas ; std(baselineBetas,0,2)./sqrt(length(baselineBetas))];
 
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.

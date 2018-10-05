@@ -1,19 +1,26 @@
 function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisParams)
-% Takes in a text file name and retuns a cell of the lines of the text file
+% Takes in the analysis params struct and returns a voxel by timepoint by
+% aquisistion matrix for all the runs found fro the specicied session(s)
 %
 % Syntax:
-%   filesCell = textFile2cell(inFile)
+%   [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisParams)
 %
 % Description:
-%    This function takes in a file name for a trext file and returns a cell
-%    that is composed of the lines of the text file. Example of this would
-%    be a text file of file names the output is a cell of files names.
+%    This function takes in a struct that is specified in analyzeLFContrast.m
+%    and returns a voxel by timepoint by aquisition matrix for all the 
+%    aquisitions specified in the text files housed in mela_analysis that
+%    describe the session(s). f mutliple sessions, they will be
+%    concatenated in the 3rd dimension 
 %
 % Inputs:
-%    inFile            - File name of a text file. (string)
+%    analysisParams    - Stuct contianing relevenat info to the session that 
+%                        is defined in analyzeLFContrast.m. (string)
 %
 % Outputs:
-%    fileCell          - A cell of the lines of the input text file. (cell)
+%    fullCleanData       - The voxel by timepoint by aquisition matrix
+%    analysisParams      - the input analysis params updated with the
+%                          number of aquistidiond found per session 
+%    voxelIndex          - A cell of the lines of the input text file. (cell)
 %
 % Optional key/value pairs:
 %    none
@@ -24,6 +31,7 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisPar
 % set up files and paths
 
 fullCleanData = [];
+voxelIndex =[];
 for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.sessionFolderName{sessionNum});
@@ -87,8 +95,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         maskVol         = mask.vol;
         
         % extract the mean signal from voxels
-        [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
+        [voxelTimeSeries, voxelIdx] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
         
+        
+        voxelIndex = [voxelIndex,voxelIdx];
         % Clip initial frames if specified
         voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFrames+1:end,:);
         
