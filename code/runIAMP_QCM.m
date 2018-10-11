@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM] = runIAMP_QCM(analysisParams,fullCleanData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, baselineBetas] = runIAMP_QCM(analysisParams,fullCleanData)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:

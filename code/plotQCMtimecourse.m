@@ -1,4 +1,4 @@
-function [] = plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM);
+function [] = plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baselineBetas);
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -50,13 +50,13 @@ for ii = 1:length(analysisParams.sessionFolderName)
         
         % Doctor up the parameters to use mean IAMP values and plot again
         paramsFitIAMPMean = paramsFitIAMP{counter};
-        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);0]; 
+        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);0] + baselineBetas(jj,ii); 
         IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
         plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
         
         % Doctor up parameters to use the QCM fit to the mean IAMP
         paramsFitIAMPQCM = paramsFitIAMP{counter};
-        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), 0]';
+        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), 0]' + baselineBetas(jj,ii);
         IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
         plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
         

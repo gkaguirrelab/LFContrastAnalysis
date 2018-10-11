@@ -45,7 +45,7 @@ analysisParams.theDimension = 2;
 [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 
 % Run the IAMP/QCM model
-[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM] = runIAMP_QCM(analysisParams,fullCleanData);
+[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM, baselineBetas] = runIAMP_QCM(analysisParams,fullCleanData);
 
 % Plot the CRF from the IAMP and QCM fits
 plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
@@ -55,4 +55,4 @@ thresholds = [.25, .5, .75];
 hdl = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds);
 
 % Use QCM fit to IAMP to predict timecourse.
-plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM);
+plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baselineBetas);
