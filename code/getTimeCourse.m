@@ -31,16 +31,16 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisPar
 % set up files and paths
 
 fullCleanData = [];
-voxelIndex =[];
 for sessionNum = 1:length(analysisParams.sessionFolderName)
     
-    sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.sessionFolderName{sessionNum});
+    sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
     funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','functionalRuns.txt');
     confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
-    retinoPath     = fullfile(sessionDir,'neuropythy');
-    functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
-    warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.subjID, analysisParams.session{sessionNum}, 'anat');
+    anatomyPath    = fullfile(sessionDir,'anatomy');
+    retinoPath     = fullfile(anatomyPath,'neuropythy');
+    functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
+    warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
     functionalRuns  = textFile2cell(funcTextFile);
@@ -95,10 +95,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         maskVol         = mask.vol;
         
         % extract the mean signal from voxels
-        [voxelTimeSeries, voxelIdx] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
+        [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
         
-        
-        voxelIndex = [voxelIndex,voxelIdx];
         % Clip initial frames if specified
         voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFrames+1:end,:);
         
