@@ -28,11 +28,15 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisPar
 % MAB 09/09/18
 
 
-% set up files and paths
+% Set up files and paths
 
+% Initialize for output of various sessions.
 fullCleanData = [];
+
+% Loop over sessions
 for sessionNum = 1:length(analysisParams.sessionFolderName)
     
+    % Set up Paths
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
     funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','functionalRuns.txt');
     confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
@@ -43,26 +47,30 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
-    functionalRuns  = textFile2cell(funcTextFile);
-    confoundFiles   = textFile2cell(confTexFile);
-    trialOrderFiles = textFile2cell(trialOrderFile);
-    analysisParams.numAcquisitions = length(functionalRuns);
-    
+    % Set up files.
+    functionalRuns    = textFile2cell(funcTextFile);
+    confoundFiles     = textFile2cell(confTexFile);
+    trialOrderFiles   = textFile2cell(trialOrderFile);
     fullFileConfounds = fullfile(functionalPath,confoundFiles);
     functionalRuns    = fullfile(functionalPath,functionalRuns);
     refFile           = fullfile(functionalPath,analysisParams.refFileName);
     warpFile          = fullfile(warpFilePath,analysisParams.warpFileName);
     
-    % Save Variables
+    % Number of acquisitions
+    analysisParams.numAcquisitions = length(functionalRuns);
+    
+    % Save vars name
     saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'.mat'];
     savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,saveName);
     
+    % Load existing cleaned data
     if exist(saveFullFile)
         disp('cleaned time series file found')
         load(saveFullFile)
     else
         %% Create restricted V1 mask
+        
         % load ecc nifti file
         eccenPos       = find(~cellfun(@isempty,strfind(analysisParams.retinoFiles,'eccen')));
         [~,tempName,~] = fileparts(analysisParams.retinoFiles{eccenPos});
@@ -137,6 +145,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 confoundRegressors = confoundRegressors(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
             end
             
+            % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
             thePacket.stimulus.values = confoundRegressors';
@@ -165,6 +174,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         save(saveFullFile,'cleanRunData','voxelIndex','analysisParams');
         
     end
+    
+    % Concatenate clean data across sessions.
     fullCleanData = cat(3,fullCleanData,cleanRunData);
     
 end

@@ -59,10 +59,10 @@ hdl = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds);
 plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baselineBetas);
 
 
+%% STORED VARS FOR OTHER SUBJECTS:
 
-%%
-%STORED VARS FOR OTHER SUBJECTS: GKA
-%% Convenience variables
+%% GKA1
+%Convenience variables
 % analysisParams.projectName       = 'LFContrastAnalysis';
 % analysisParams.flywheelName      = 'LFContrast';
 % analysisParams.subjID            = 'sub-HEROGKA1';
@@ -81,7 +81,7 @@ plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitRes
 
 
 %% LZ23 
-%% Convenience variables
+%Convenience variables
 % analysisParams.projectName       = 'LFContrastAnalysis';
 % analysisParams.flywheelName      = 'LFContrast';
 % analysisParams.subjID            = 'sub-LZ23';
@@ -92,13 +92,13 @@ plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitRes
 % analysisParams.sessionNumber     = {'session_1','session_1'};
 % analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
 % analysisParams.showPlots         = true;
-%% Brain mask of function run for the reference volume in ANTs step
+%Brain mask of function run for the reference volume in ANTs step
 % analysisParams.refFileName  = 'sub-LZ23_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 % % output files of Neuropythy (retinotopy template)
 % analysisParams.retinoFiles = {'rt_sub000_native.template_angle.nii.gz','rt_sub000_native.template_areas.nii.gz','rt_sub000_native.template_eccen.nii.gz',};
 % % warp file name (product of running fmriprep)
 % analysisParams.warpFileName = 'sub-LZ23_T1w_target-MNI152NLin2009cAsym_warp.h5';
-%% Paramters for the QCM fit to IAMP:
+%Paramters for the QCM fit to IAMP:
 % analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
 % analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5]; 
 % analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM'); 

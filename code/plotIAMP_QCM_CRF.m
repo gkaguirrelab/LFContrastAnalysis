@@ -1,13 +1,12 @@
 function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
-% Takes in a text file name and retuns a cell of the lines of the text file
+% This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
-%   filesCell = textFile2cell(inFile)
+%   [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 %
 % Description:
-%    This function takes in a file name for a trext file and returns a cell
-%    that is composed of the lines of the text file. Example of this would
-%    be a text file of file names the output is a cell of files names.
+%    This function plots the IAMP and QCM fits from runIAMP_QCM.m as contrast response
+%    functions (one plot per modulation direction)
 %
 % Inputs:
 %    inFile            - File name of a text file. (string)
@@ -34,7 +33,7 @@ cols = rws;
 indx = length(analysisParams.contrastCoding);
 figure
 for ii = 1:size(analysisParams.directionCoding,2)
-    
+
     aa = (length(QCMResponses.values))/size(analysisParams.directionCoding,2);
     if ii == 1
         betas = meanIAMPBetas(1:indx);
@@ -45,11 +44,11 @@ for ii = 1:size(analysisParams.directionCoding,2)
         error = semIAMPBetas((ii-1)*indx+1:ii*indx);
         qcmSmooth = QCMResponses.values((ii-1)*aa+1:ii*aa);
     end
-    
+
     subplot(rws,cols,ii); hold on
     errorbar(analysisParams.contrastCoding*100,betas,error)
     plot(contrastSpacing*100,qcmSmooth)
-    
+
     if isequal(analysisParams.directionCoding(:,ii),[1;1;0])
         pos = find(ismember(analysisParams.directionCoding',[1,1,0],'rows'));
         title(sprintf('L+M: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
