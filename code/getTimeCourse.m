@@ -7,19 +7,19 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisPar
 %
 % Description:
 %    This function takes in a struct that is specified in analyzeLFContrast.m
-%    and returns a voxel by timepoint by aquisition matrix for all the 
+%    and returns a voxel by timepoint by aquisition matrix for all the
 %    aquisitions specified in the text files housed in mela_analysis that
 %    describe the session(s). f mutliple sessions, they will be
-%    concatenated in the 3rd dimension 
+%    concatenated in the 3rd dimension
 %
 % Inputs:
-%    analysisParams    - Stuct contianing relevenat info to the session that 
+%    analysisParams    - Stuct contianing relevenat info to the session that
 %                        is defined in analyzeLFContrast.m. (string)
 %
 % Outputs:
 %    fullCleanData       - The voxel by timepoint by aquisition matrix
 %    analysisParams      - the input analysis params updated with the
-%                          number of aquistidiond found per session 
+%                          number of aquistidiond found per session
 %    voxelIndex          - A cell of the lines of the input text file. (cell)
 %
 % Optional key/value pairs:
@@ -98,7 +98,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
         
         % Clip initial frames if specified
-        voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFrames+1:end,:);
+        voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
         
         %% Construct the model object
         temporalFit = tfeIAMP('verbosity','none');
@@ -133,6 +133,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
             confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
             
+            if size(confoundRegressors,1) > length(thePacket.stimulus.timebase)
+                confoundRegressors = confoundRegressors(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
+            end
+            
             thePacket.kernel = [];
             thePacket.metaData = [];
             thePacket.stimulus.values = confoundRegressors';
@@ -144,7 +148,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % convert to percent signal change relative to the mean
             voxelMeanVec = mean(runData,2);
             PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
-            
+
             % loop over voxels --> returns a "cleaned" time series
             for vxl = 1:size(PSC,1)
                 % place time series from this voxel into the packet
