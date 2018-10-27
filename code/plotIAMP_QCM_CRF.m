@@ -5,14 +5,17 @@ function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQ
 %   [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 %
 % Description:
-%    This function plots the IAMP and QCM fits from runIAMP_QCM.m as contrast response
-%    functions (one plot per modulation direction)
+%    This function plots the IAMP fits and IAMP-QCM predictions from runIAMP_QCM.m as contrast response
+%    functions (one plot per modulation direction).
 %
 % Inputs:
-%    inFile            - File name of a text file. (string)
+%    analysisParams            - Analysis parameter stuct set in analyzeLFContrast (Struct)
+%    meanIAMPBetas             - Mean beta weughts across runs per contrast level and direction (vector)
+%    semIAMPBetas              - Standard error of the beta weigths in meanIAMPBetas (vector)
+%    paramsQCMFit              - Parameter fits to the QCM model (struct)
 %
 % Outputs:
-%    fileCell          - A cell of the lines of the input text file. (cell)
+%    none
 %
 % Optional key/value pairs:
 %    none

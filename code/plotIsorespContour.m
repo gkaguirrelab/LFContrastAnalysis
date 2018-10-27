@@ -22,8 +22,10 @@ function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevel
 %
 
 %% Parameters
+% number of points for the ellipse
 nQCMPoints = 100;
 
+% Chose random colors if not defined
 if isempty(color)
     color = [1,1,1];
     while sum(color) > 2.4
