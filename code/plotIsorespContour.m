@@ -33,9 +33,16 @@ if isempty(color)
     end
 end
 
-%% Inerpolate the IAMP CRF
+%% Inerpolate the IAMP CRF to find the contrast value that corresponds with the threshold
 for ii = 1:length(IAMPBetas)
+    
+    % Reverse lookup the the contrast value needed for a threeshold using linear
+    % interpolation with pchip.
     contrast(ii) = interp1(IAMPBetas{ii},contrastLevels{ii},thresh,'pchip');
+    
+    % Get the L,M plane coordinates by mulitplying the contrast needed by the direction coding. 
+    % NOTE: MB: I think this should be the sin and cos comp. of the
+    % direction and not the coding. 
     dataPoints(ii,1:2) = contrast(ii).*directionCoding{ii};
 end
 

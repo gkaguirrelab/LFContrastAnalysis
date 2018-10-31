@@ -49,13 +49,18 @@ end
 % Turn the direction coding matrix in cell array 
 directions = mat2cell(directions,size(directions,1),ones(1,size(directions,2)));
 
+% Dummy vars for plotting 
 hdl = [];
-hleglines = []
+hleglines = [];
+
+% Loop over thesholds and plot the ellipse fits on the same plot
 for jj = 1:length(thresholds)
     [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,sortedBetas,contrasts,directions,thresholds(jj),hdl,[]);
     hleglines = [hleglines scatterHdl];
     legendNames{jj} = num2str(thresholds(jj));
 end
+
 legend(hleglines,legendNames)
 title('Isoresponse Contour')
+
 end
