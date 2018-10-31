@@ -20,9 +20,15 @@ function [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thres
 
 % MAB 09/09/18
 
+% Get the number of conditions (directions) 
 numCond = size(analysisParams.directionCoding,2);
+
+% Get the number of contrast levels
 numContrast = length(analysisParams.contrastCoding );
 
+
+% Extract the beta weights for each direction (one weight per contrast
+% level and condtion)
 for ii = 1:numCond
     if ii == 1
         sortedBetas{ii} = meanIAMPBetas(1:numContrast);
@@ -30,14 +36,17 @@ for ii = 1:numCond
         sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast);
     end
     
+    % Scale the contrast spacing by the maximum contrast per direction 
     contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii);
 end
 
+% Get the direction coding and take only the L and M coding  
 directions = analysisParams.directionCoding;
 if analysisParams.theDimension == 2 & size(analysisParams.directionCoding,1) > 2
     directions(3,:) = [];
 end
 
+% Turn the direction coding matrix in cell array 
 directions = mat2cell(directions,size(directions,1),ones(1,size(directions,2)));
 
 hdl = [];
