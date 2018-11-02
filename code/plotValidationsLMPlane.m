@@ -21,24 +21,40 @@ for ii = 1:length(directedDirection)
     preCorrectionsContrast  = median(actualContrasts(:,:,1:5), 3);
     contrast{ii}.preCorrections.deg_2_contrast_total = sqrt(preCorrectionsContrast(1,1).^2 + preCorrectionsContrast(2,1).^2);
     contrast{ii}.preCorrections.deg_15_contrast_total = sqrt(preCorrectionsContrast(4,1).^2 + preCorrectionsContrast(5,1).^2);
-    contrast{ii}.preCorrections.deltaL = []; 
-    contrast{ii}.preCorrections.deltaM = []; 
+    contrast{ii}.preCorrections.deg_2_deltaL  = abs(preCorrectionsContrast(1,1) - desiredContrasts(1,1)); 
+    contrast{ii}.preCorrections.deg_2_deltaM  = abs(preCorrectionsContrast(2,1) - desiredContrasts(2,1)); 
+    contrast{ii}.preCorrections.deg_15_deltaL = abs(preCorrectionsContrast(4,1) - desiredContrasts(4,1)); 
+    contrast{ii}.preCorrections.deg_15_deltaM = abs(preCorrectionsContrast(5,1) - desiredContrasts(5,1)); 
     
     % post correction contrast
     postCorrectionsContrast = median(actualContrasts(:,:,6:10), 3);
     contrast{ii}.postCorrections.deg_2_contrast_total = sqrt(postCorrectionsContrast(1,1).^2 + postCorrectionsContrast(2,1).^2);
     contrast{ii}.postCorrections.deg_15_contrast_total = sqrt(postCorrectionsContrast(4,1).^2 + postCorrectionsContrast(5,1).^2);
-   
+    contrast{ii}.postCorrections.deg_2_deltaL  = abs(postCorrectionsContrast(1,1) - desiredContrasts(1,1)); 
+    contrast{ii}.postCorrections.deg_2_deltaM  = abs(postCorrectionsContrast(2,1) - desiredContrasts(2,1)); 
+    contrast{ii}.postCorrections.deg_15_deltaL = abs(postCorrectionsContrast(4,1) - desiredContrasts(4,1)); 
+    contrast{ii}.postCorrections.deg_15_deltaM = abs(postCorrectionsContrast(5,1) - desiredContrasts(5,1)); 
+    
     % Post experiment contrast
     postExperimentContrast  = median(actualContrasts(:,:,11:15),3);
     contrast{ii}.postExperiment.deg_2_contrast_total = sqrt(postExperimentContrast(1,1).^2 + postExperimentContrast(2,1).^2);
     contrast{ii}.postExperiment.deg_15_contrast_total = sqrt(postExperimentContrast(4,1).^2 + postExperimentContrast(5,1).^2);
-
+    contrast{ii}.postExperiment.deg_2_deltaL  = abs(postExperimentContrast(1,1) - desiredContrasts(1,1)); 
+    contrast{ii}.postExperiment.deg_2_deltaM  = abs(postExperimentContrast(2,1) - desiredContrasts(2,1)); 
+    contrast{ii}.postExperiment.deg_15_deltaL = abs(postExperimentContrast(4,1) - desiredContrasts(4,1)); 
+    contrast{ii}.postExperiment.deg_15_deltaM = abs(postExperimentContrast(5,1) - desiredContrasts(5,1)); 
     
+    
+    % Mean of the post corrections and the post experiment medians 
     meanOfmedianExpContrast = mean(cat(3,postCorrectionsContrast,postExperimentContrast),3);
     contrast{ii}.meanOfmedianExpContrast.deg_2_contrast_total = sqrt(meanOfmedianExpContrast(1,1).^2 + meanOfmedianExpContrast(2,1).^2);
     contrast{ii}.meanOfmedianExpContrast.deg_15_contrast_total = sqrt(meanOfmedianExpContrast(4,1).^2 + meanOfmedianExpContrast(5,1).^2);
+    contrast{ii}.meanOfmedianExpContrast.deg_2_deltaL  = abs(meanOfmedianExpContrast(1,1) - desiredContrasts(1,1)); 
+    contrast{ii}.meanOfmedianExpContrast.deg_2_deltaM  = abs(meanOfmedianExpContrast(2,1) - desiredContrasts(2,1)); 
+    contrast{ii}.meanOfmedianExpContrast.deg_15_deltaL = abs(meanOfmedianExpContrast(4,1) - desiredContrasts(4,1)); 
+    contrast{ii}.meanOfmedianExpContrast.deg_15_deltaM = abs(meanOfmedianExpContrast(5,1) - desiredContrasts(5,1)); 
     
+   
     %% Plot the validation information
     figure;
     
@@ -49,36 +65,53 @@ for ii = 1:length(directedDirection)
     plot(scaleVal.*[-1,1],[0,0],'k--')
     plot([0,0],scaleVal.*[1,-1],'k--')
     % Plot the desired contrast
-    scatter(desiredContrasts(1,1),desiredContrasts(2,1),100,[0,0,0],'filled','^')
-    scatter(desiredContrasts(1,2),desiredContrasts(2,2),100,[0,0,0],'filled','^')
+    scatter(desiredContrasts(1,1),desiredContrasts(2,1),140,[0,0,0],'filled','^')
+    scatter(desiredContrasts(1,2),desiredContrasts(2,2),140,[0,0,0],'filled','^')
     plotv([desiredContrasts(1,1);desiredContrasts(2,1)],'k')
     plotv([desiredContrasts(1,2);desiredContrasts(2,2)],'k')
-
+    plot([desiredContrasts(1,1),desiredContrasts(1,1)],[desiredContrasts(2,1),0],'k--')
+    plot([desiredContrasts(1,1),0],[desiredContrasts(2,1),desiredContrasts(2,1)],'k--')
+    plot([desiredContrasts(1,2),desiredContrasts(1,2)],[desiredContrasts(2,2),0],'k--')
+    plot([desiredContrasts(1,2),0],[desiredContrasts(2,2),desiredContrasts(2,2)],'k--')
+    text(desiredContrasts(1,1),desiredContrasts(2,1),sprintf('%s', contrast{ii}.desired.deg_2_contrast_total))
+    
     % Plot the post corrections median actual contrast
-    scatter(postCorrectionsContrast(1,1),postCorrectionsContrast(2,1),100,[0,0,1],'filled','d')
-    scatter(postCorrectionsContrast(1,2),postCorrectionsContrast(2,2),100,[0,0,1],'filled','d')
+    scatter(postCorrectionsContrast(1,1),postCorrectionsContrast(2,1),140,[0,0,1],'filled','d')
+    scatter(postCorrectionsContrast(1,2),postCorrectionsContrast(2,2),140,[0,0,1],'filled','d')
     plotv([postCorrectionsContrast(1,1);postCorrectionsContrast(2,1)],'b')
     plotv([postCorrectionsContrast(1,2);postCorrectionsContrast(2,2)],'b')
+    plot([postCorrectionsContrast(1,1),postCorrectionsContrast(1,1)],[postCorrectionsContrast(2,1),0],'b--')
+    plot([postCorrectionsContrast(1,1),0],[postCorrectionsContrast(2,1),postCorrectionsContrast(2,1)],'b--')
+    plot([postCorrectionsContrast(1,2),postCorrectionsContrast(1,2)],[postCorrectionsContrast(2,2),0],'b--')
+    plot([postCorrectionsContrast(1,2),0],[postCorrectionsContrast(2,2),postCorrectionsContrast(2,2)],'b--')
     
     % Plot each post corrections actual contrast
     scatter(actualContrasts(1,1,6:10),actualContrasts(2,1,6:10),40,[0.2,0.7,1.0],'filled')
     scatter(actualContrasts(1,2,6:10),actualContrasts(2,2,6:10),40,[0.2,0.7,1.0],'filled')
     
     % Plot the post experiment median actual contrast
-    scatter(postExperimentContrast(1,1),postExperimentContrast(2,1),100,[0,1,0],'filled','d')
-    scatter(postExperimentContrast(1,2),postExperimentContrast(2,2),100,[0,1,0],'filled','d')
+    scatter(postExperimentContrast(1,1),postExperimentContrast(2,1),140,[0,1,0],'filled','d')
+    scatter(postExperimentContrast(1,2),postExperimentContrast(2,2),140,[0,1,0],'filled','d')
     plotv([postExperimentContrast(1,1);postExperimentContrast(2,1)],'g')
     plotv([postExperimentContrast(1,2);postExperimentContrast(2,2)],'g')
+    plot([postExperimentContrast(1,1),postExperimentContrast(1,1)],[postExperimentContrast(2,1),0],'g--')
+    plot([postExperimentContrast(1,1),0],[postExperimentContrast(2,1),postExperimentContrast(2,1)],'g--')
+    plot([postExperimentContrast(1,2),postExperimentContrast(1,2)],[postExperimentContrast(2,2),0],'g--')
+    plot([postExperimentContrast(1,2),0],[postExperimentContrast(2,2),postExperimentContrast(2,2)],'g--')
     
     % Plot each post experiment actual contrast
     scatter(actualContrasts(1,1,11:15),actualContrasts(2,1,11:15),40,[0,0.26,.15],'filled')
     scatter(actualContrasts(1,2,11:15),actualContrasts(2,2,11:15),40,[0,0.26,.15],'filled')
     
-    %
-    scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),100,[1,0,0],'filled','d')
-    scatter(meanOfmedianExpContrast(1,2),meanOfmedianExpContrast(2,2),100,[1,0,0],'filled','d')
+    % Plot mean of the medians
+    scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),140,[1,0,0],'filled','d')
+    scatter(meanOfmedianExpContrast(1,2),meanOfmedianExpContrast(2,2),140,[1,0,0],'filled','d')
     plotv([meanOfmedianExpContrast(1,1);meanOfmedianExpContrast(2,1)],'r')
     plotv([meanOfmedianExpContrast(1,2);meanOfmedianExpContrast(2,2)],'r')
+    plot([meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(1,1)],[meanOfmedianExpContrast(2,1),0],'r--')
+    plot([meanOfmedianExpContrast(1,1),0],[meanOfmedianExpContrast(2,1),meanOfmedianExpContrast(2,1)],'r--')
+    plot([meanOfmedianExpContrast(1,2),meanOfmedianExpContrast(1,2)],[meanOfmedianExpContrast(2,2),0],'r--')
+    plot([meanOfmedianExpContrast(1,2),0],[meanOfmedianExpContrast(2,2),meanOfmedianExpContrast(2,2)],'r--')
     
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
