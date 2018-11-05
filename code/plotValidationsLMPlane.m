@@ -69,10 +69,12 @@ for ii = 1:length(directedDirection)
     contrast{ii}.meanOfmedianExpContrast.deg_15_deltaM = abs(meanOfmedianExpContrast(5,1) - desiredContrasts(5,1));
     
     
-    %% Plot the validation information
+    %% Plot the validation information ------------------------------------
     figure;
+    suptitle()
     
-    %% Plots for central 2 deg
+    
+    %% Plots for central 2 deg --------------------------------------------
     subplot(1,2,1);hold on
     axis square
     scaleVal = max(actualContrasts(:));
@@ -111,23 +113,15 @@ for ii = 1:length(directedDirection)
         % Desired contrast
         plotv([desiredContrasts(1,1);desiredContrasts(2,1)],'k')
         plotv([desiredContrasts(1,2);desiredContrasts(2,2)],'k')
-        plotv([desiredContrasts(4,1);desiredContrasts(5,1)],'k')
-        plotv([desiredContrasts(4,2);desiredContrasts(5,2)],'k')
         % Post corrections
         plotv([postCorrectionsContrast(1,1);postCorrectionsContrast(2,1)],'b')
         plotv([postCorrectionsContrast(1,2);postCorrectionsContrast(2,2)],'b')
-        plotv([postCorrectionsContrast(4,1);postCorrectionsContrast(5,1)],'b')
-        plotv([postCorrectionsContrast(4,2);postCorrectionsContrast(5,2)],'b')
         % Post experiment
         plotv([postExperimentContrast(1,1);postExperimentContrast(2,1)],'g')
         plotv([postExperimentContrast(1,2);postExperimentContrast(2,2)],'g')
-        plotv([postExperimentContrast(4,1);postExperimentContrast(5,1)],'g')
-        plotv([postExperimentContrast(4,2);postExperimentContrast(5,2)],'g')
         % Mean of the medians
         plotv([meanOfmedianExpContrast(1,1);meanOfmedianExpContrast(2,1)],'r')
         plotv([meanOfmedianExpContrast(1,2);meanOfmedianExpContrast(2,2)],'r')
-        plotv([meanOfmedianExpContrast(4,1);meanOfmedianExpContrast(5,1)],'r')
-        plotv([meanOfmedianExpContrast(4,2);meanOfmedianExpContrast(5,2)],'r')
     end
     
     
@@ -167,11 +161,55 @@ for ii = 1:length(directedDirection)
     ylim(scaleVal.*[-1,1])
     
     
-    %% Plots for central 15 deg
+    %% Plots for central 15 deg -------------------------------------------
     subplot(1,2,2);hold on
     axis square
     plot(scaleVal.*[-1,1],[0,0],'k--')
     plot([0,0],scaleVal.*[1,-1],'k--')
+    
+    % If set to true, this will show the vector components as dashed lines
+    if options.showProjections
+        % Desired contrast
+        plot([desiredContrasts(4,1),desiredContrasts(4,1)],[desiredContrasts(5,1),0],'k--')
+        plot([desiredContrasts(4,1),0],[desiredContrasts(5,1),desiredContrasts(5,1)],'k--')
+        plot([desiredContrasts(4,2),desiredContrasts(4,2)],[desiredContrasts(5,2),0],'k--')
+        plot([desiredContrasts(4,2),0],[desiredContrasts(5,2),desiredContrasts(5,2)],'k--')
+        % Post corrections
+        plot([postCorrectionsContrast(4,1),postCorrectionsContrast(4,1)],[postCorrectionsContrast(5,1),0],'b--')
+        plot([postCorrectionsContrast(4,1),0],[postCorrectionsContrast(5,1),postCorrectionsContrast(5,1)],'b--')
+        plot([postCorrectionsContrast(4,2),postCorrectionsContrast(4,2)],[postCorrectionsContrast(5,2),0],'b--')
+        plot([postCorrectionsContrast(4,2),0],[postCorrectionsContrast(5,2),postCorrectionsContrast(5,2)],'b--')
+        % Post experiment
+        plot([postExperimentContrast(4,1),postExperimentContrast(4,1)],[postExperimentContrast(5,1),0],'g--')
+        plot([postExperimentContrast(4,1),0],[postExperimentContrast(5,1),postExperimentContrast(5,1)],'g--')
+        plot([postExperimentContrast(4,2),postExperimentContrast(4,2)],[postExperimentContrast(5,2),0],'g--')
+        plot([postExperimentContrast(4,2),0],[postExperimentContrast(5,2),postExperimentContrast(5,2)],'g--')
+        % Mean of the medians
+        plot([meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(4,1)],[meanOfmedianExpContrast(5,1),0],'r--')
+        plot([meanOfmedianExpContrast(4,1),0],[meanOfmedianExpContrast(5,1),meanOfmedianExpContrast(5,1)],'r--')
+        plot([meanOfmedianExpContrast(4,2),meanOfmedianExpContrast(4,2)],[meanOfmedianExpContrast(5,2),0],'r--')
+        plot([meanOfmedianExpContrast(4,2),0],[meanOfmedianExpContrast(5,2),meanOfmedianExpContrast(5,2)],'r--')
+    end
+    
+    
+    % If set to true this will show the vectors from the origin to points
+    % of interest. the length of this vector is the contrast.
+    if options.showVectors
+        % Desired contrast
+        plotv([desiredContrasts(4,1);desiredContrasts(5,1)],'k')
+        plotv([desiredContrasts(4,2);desiredContrasts(5,2)],'k')
+        % Post corrections
+        plotv([postCorrectionsContrast(4,1);postCorrectionsContrast(5,1)],'b')
+        plotv([postCorrectionsContrast(4,2);postCorrectionsContrast(5,2)],'b')
+        % Post experiment
+        plotv([postExperimentContrast(4,1);postExperimentContrast(5,1)],'g')
+        plotv([postExperimentContrast(4,2);postExperimentContrast(5,2)],'g')
+        % Mean of the medians
+        plotv([meanOfmedianExpContrast(4,1);meanOfmedianExpContrast(5,1)],'r')
+        plotv([meanOfmedianExpContrast(4,2);meanOfmedianExpContrast(5,2)],'r')
+    end
+    
+    
     % Plot the desired contrast
     scatter(desiredContrasts(4,1),desiredContrasts(5,1),100,[0,0,0],'filled','^')
     scatter(desiredContrasts(4,2),desiredContrasts(5,2),100,[0,0,0],'filled','^')
@@ -201,8 +239,6 @@ for ii = 1:length(directedDirection)
     
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
-    
-    suptitle('test')
     
     
 end
