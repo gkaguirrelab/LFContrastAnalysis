@@ -37,17 +37,10 @@ end
 [~, userID] = system('whoami');
 userID = strtrim(userID);
 switch userID
-    case {'melanopsin' 'pupillab'}
-        melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        melaDatabasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-        melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
     case {'dhb'}
         melaMaterialsPath = ['/Users1/DropboxLab/MELA_materials'];
         melaDatabasePath = ['/Users1/DropboxLab/MELA_data/'];
-        melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/'];
-    case {'mbarnett'}
-        melaMaterialsPath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        melaDatabasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/' projectName];
     otherwise
         melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         melaDatabasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
