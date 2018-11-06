@@ -86,7 +86,7 @@ for ii = 1:length(directedDirection)
     
     %% Plot the validation information ------------------------------------
     figure;
-    suptitle(sprintf('Validation Plots for %.1f and %.1f',anglesDesired_2Deg(1), anglesDesired_2Deg(2)))
+    %suptitle(sprintf('Validation Plots for %.1f and %.1f',anglesDesired_2Deg(1), anglesDesired_2Deg(2)))
     
     %% Plots for central 2 deg --------------------------------------------
     subplot(1,2,1);hold on
