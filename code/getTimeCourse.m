@@ -171,7 +171,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             end
         end
         %% Save out the clean time series brick
-        save(saveFullFile,'cleanRunData','voxelIndex','analysisParams');
+        save(saveFullFile,'cleanRunData','voxelIndex');
         
     end
     

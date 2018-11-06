@@ -65,7 +65,7 @@ for ii = 1:length(analysisParams.sessionFolderName)
         xlabel('Time (mS)')
         title(sprintf('Session %s, Run %s', num2str(ii), num2str(jj)))
         % Change line size
-        set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+        set(findall(gca, 'Type', 'Line'),'LineWidth',1);
         counter = counter +1; 
     end
 end
