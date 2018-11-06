@@ -7,6 +7,7 @@ p = inputParser;
 p.addParameter('showVectors',true,@islogical);
 p.addParameter('showPreCorrections',true,@islogical);
 p.addParameter('showProjections',true,@islogical);
+p.addParameter('showDeltas',true,@islogical);
 p.parse(varargin{:});
 options = p.Results;
 
@@ -25,7 +26,7 @@ for ii = 1:length(directedDirection)
     anglesDesired_15Deg = getAnglesFromContrastMeasurements(directedDirection{ii}.describe.validation(1).contrastDesired(4:5,1:2));
     
     
-    
+    % Get the validation measurements 
     for jj = 1:length(directedDirection{ii}.describe.validation)
         actualContrasts(:,:,jj) = directedDirection{ii}.describe.validation(jj).contrastActual;
     end
