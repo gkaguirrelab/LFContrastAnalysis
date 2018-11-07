@@ -7,10 +7,12 @@ p = inputParser;
 p.addParameter('showVectors',true,@islogical);
 p.addParameter('showPreCorrections',true,@islogical);
 p.addParameter('showProjections',true,@islogical);
-p.addParameter('showInfoInPlot',false,@islogical);
+p.addParameter('showInfoInPlot',true,@islogical);
 p.addParameter('infoDump',true,@islogical);
+p.addParameter('saveLocation','~/Desktop/',@isstr);
 p.parse(varargin{:});
 options = p.Results;
+saveLocation = options.saveLocation;
 
 % clear screen
 clc
@@ -92,7 +94,7 @@ for ii = 1:length(directedDirection)
     subplot(1,2,1);hold on
     title('2 Degrees')
     axis square
-    scaleVal = max(actualContrasts(:));
+    scaleVal = max(abs(actualContrasts(:)))+0.1*max(abs(actualContrasts(:)));
     plot(scaleVal.*[-1,1],[0,0],'k--')
     plot([0,0],scaleVal.*[1,-1],'k--')
     
@@ -138,11 +140,11 @@ for ii = 1:length(directedDirection)
     end
     
     % Plot the desired contrast
-    scatter(desiredContrasts(1,1),desiredContrasts(2,1),140,[0,0,0],'filled','^')
+    p1  = scatter(desiredContrasts(1,1),desiredContrasts(2,1),140,[0,0,0],'filled','^');
     scatter(desiredContrasts(1,2),desiredContrasts(2,2),140,[0,0,0],'filled','^')
     
     % Plot the post corrections median actual contrast
-    scatter(postCorrectionsContrast(1,1),postCorrectionsContrast(2,1),140,[0,0,1],'filled','d')
+    p2 = scatter(postCorrectionsContrast(1,1),postCorrectionsContrast(2,1),140,[0,0,1],'filled','d');
     scatter(postCorrectionsContrast(1,2),postCorrectionsContrast(2,2),140,[0,0,1],'filled','d')
     
     % Plot each post corrections actual contrast
@@ -150,7 +152,7 @@ for ii = 1:length(directedDirection)
     scatter(actualContrasts(1,2,6:10),actualContrasts(2,2,6:10),40,[0.2,0.7,1.0],'filled')
     
     % Plot the post experiment median actual contrast
-    scatter(postExperimentContrast(1,1),postExperimentContrast(2,1),140,[0,1,0],'filled','d')
+    p3 = scatter(postExperimentContrast(1,1),postExperimentContrast(2,1),140,[0,1,0],'filled','d');
     scatter(postExperimentContrast(1,2),postExperimentContrast(2,2),140,[0,1,0],'filled','d')
     
     % Plot each post experiment actual contrast
@@ -158,20 +160,24 @@ for ii = 1:length(directedDirection)
     scatter(actualContrasts(1,2,11:15),actualContrasts(2,2,11:15),40,[0,0.26,.15],'filled')
     
     % Plot mean of the medians
-    scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),140,[1,0,0],'filled','d')
+    p4 = scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),140,[1,0,0],'filled','d');
     scatter(meanOfmedianExpContrast(1,2),meanOfmedianExpContrast(2,2),140,[1,0,0],'filled','d')
     
     if options.showInfoInPlot
         % set coordinates for text to appear based on were data points are
         if quadrant_2deg(1) == 1 || 3
-            xPos = scaleVal.*[-.95];
-            yPos = scaleVal.*[.95];
+            xPos = scaleVal.*[-1.0];
+            yPos = scaleVal.*[-1.25];
         elseif quadrant_2deg(1) == 2 || 4
-            xPos = scaleVal.*[.1];
-            yPos = scaleVal.*[.95];
+            xPos = scaleVal.*[-1.0];
+            yPos = scaleVal.*[-1.25];
         end
         % Create text to display
-        textToShow = 'stuff you would want to show';
+        textToShow = {sprintf('*Stimulus Angle*'), ...
+                      sprintf('\tDesired Theta: pos %.2f, neg %.2f', anglesDesired_2Deg(1), anglesDesired_2Deg(2)),...
+                      sprintf('\tpostCor Theta: pos %.2f, neg %.2f', anglesPostCor_2Deg(1), anglesPostCor_2Deg(2)),...
+                      sprintf('\tpostExp Theta: pos %.2f, neg %.2f', anglesPostExp_2Deg(1), anglesPostExp_2Deg(2)),...
+                      sprintf('\tmean Theta   : pos %.2f, neg %.2f', anglesMean_2Deg(1), anglesMean_2Deg(2))};
         % Show Text
         text(xPos,yPos,textToShow)
     end
@@ -204,6 +210,7 @@ for ii = 1:length(directedDirection)
         fprintf('\n')
     end
     
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'})
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
     
@@ -282,4 +289,9 @@ for ii = 1:length(directedDirection)
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
     
+    
+    % save out plots 
+    outFile = fullfile(saveLocation,['validationPlot_' num2str(ii) '.pdf']);
+
+    saveas(gcf,outFile)
 end
