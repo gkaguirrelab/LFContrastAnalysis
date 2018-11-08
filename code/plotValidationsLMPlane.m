@@ -1,5 +1,11 @@
 function [contrast, actualContrasts] = plotValidationsLMPlane(directedDirection,varargin)
 
+% Examples:
+%{
+    % Load data by hand and then execute
+    [contrast, actualContrasts] = plotValidationsLMPlane(directedDirection);
+%}
+
 
 
 
