@@ -7,8 +7,9 @@ p = inputParser;
 p.addParameter('showVectors',true,@islogical);
 p.addParameter('showPreCorrections',true,@islogical);
 p.addParameter('showProjections',true,@islogical);
-p.addParameter('showInfoInPlot',true,@islogical);
+p.addParameter('showSConeInfoInPlot',true,@islogical);
 p.addParameter('infoDump',true,@islogical);
+p.addParameter('addCaption',true,@islogical);
 p.addParameter('saveLocation','~/Desktop/',@isstr);
 p.parse(varargin{:});
 options = p.Results;
@@ -61,6 +62,7 @@ for ii = 1:length(directedDirection)
     contrast{ii}.postCorrections.deg_15_deltaL = abs(postCorrectionsContrast(4,1) - desiredContrasts(4,1));
     contrast{ii}.postCorrections.deg_15_deltaM = abs(postCorrectionsContrast(5,1) - desiredContrasts(5,1));
     [anglesPostCor_2Deg] = getAnglesFromContrastMeasurements(postCorrectionsContrast(1:2,1:2));
+    [anglesPostCor_15Deg] = getAnglesFromContrastMeasurements(postCorrectionsContrast(4:5,1:2));
     
     % Post experiment contrast
     postExperimentContrast  = median(actualContrasts(:,:,11:15),3);
@@ -73,6 +75,7 @@ for ii = 1:length(directedDirection)
     contrast{ii}.postExperiment.deg_15_deltaL = abs(postExperimentContrast(4,1) - desiredContrasts(4,1));
     contrast{ii}.postExperiment.deg_15_deltaM = abs(postExperimentContrast(5,1) - desiredContrasts(5,1));
     [anglesPostExp_2Deg] = getAnglesFromContrastMeasurements(postExperimentContrast(1:2,1:2));
+    [anglesPostExp_15Deg] = getAnglesFromContrastMeasurements(postExperimentContrast(4:5,1:2));
     
     % Mean of the post corrections and the post experiment medians
     meanOfmedianExpContrast = mean(cat(3,postCorrectionsContrast,postExperimentContrast),3);
@@ -85,13 +88,14 @@ for ii = 1:length(directedDirection)
     contrast{ii}.meanOfmedianExpContrast.deg_15_deltaL = abs(meanOfmedianExpContrast(4,1) - desiredContrasts(4,1));
     contrast{ii}.meanOfmedianExpContrast.deg_15_deltaM = abs(meanOfmedianExpContrast(5,1) - desiredContrasts(5,1));
     [anglesMean_2Deg] = getAnglesFromContrastMeasurements(meanOfmedianExpContrast(1:2,1:2));
+    [anglesMean_15Deg] = getAnglesFromContrastMeasurements(meanOfmedianExpContrast(4:5,1:2));
     
     %% Plot the validation information ------------------------------------
-    figure;
+    fig = figure;
     %suptitle(sprintf('Validation Plots for %.1f and %.1f',anglesDesired_2Deg(1), anglesDesired_2Deg(2)))
     
     %% Plots for central 2 deg --------------------------------------------
-    subplot(1,2,1);hold on
+    subplot(1,2,1); hold on
     title('2 Degrees')
     axis square
     scaleVal = max(abs(actualContrasts(:)))+0.1*max(abs(actualContrasts(:)));
@@ -163,54 +167,107 @@ for ii = 1:length(directedDirection)
     p4 = scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),140,[1,0,0],'filled','d');
     scatter(meanOfmedianExpContrast(1,2),meanOfmedianExpContrast(2,2),140,[1,0,0],'filled','d')
     
-    if options.showInfoInPlot
+    
+    if options.showSConeInfoInPlot
         % set coordinates for text to appear based on were data points are
-        if quadrant_2deg(1) == 1 || 3
-            xPos = scaleVal.*[-1.0];
-            yPos = scaleVal.*[-1.25];
-        elseif quadrant_2deg(1) == 2 || 4
-            xPos = scaleVal.*[-1.0];
-            yPos = scaleVal.*[-1.25];
+        if quadrant_2deg(1) == 1 || quadrant_2deg(1) ==  3
+            xPos = scaleVal.*[-0.9];
+            yPos = scaleVal.*[0.5];
+        elseif quadrant_2deg(1) == 2 || quadrant_2deg(1) ==  4
+            xPos = scaleVal.*[0.05];
+            yPos = scaleVal.*[0.5];
         end
         % Create text to display
-        textToShow = {sprintf('*Stimulus Angle*'), ...
-                      sprintf('\tDesired Theta: pos %.2f, neg %.2f', anglesDesired_2Deg(1), anglesDesired_2Deg(2)),...
-                      sprintf('\tpostCor Theta: pos %.2f, neg %.2f', anglesPostCor_2Deg(1), anglesPostCor_2Deg(2)),...
-                      sprintf('\tpostExp Theta: pos %.2f, neg %.2f', anglesPostExp_2Deg(1), anglesPostExp_2Deg(2)),...
-                      sprintf('\tmean Theta   : pos %.2f, neg %.2f', anglesMean_2Deg(1), anglesMean_2Deg(2))};
+        textToShow = {sprintf('S Cone Contrast: [Pos, Neg]'), ...
+            sprintf('  * postCor = [ %.3f, %.3f]',postCorrectionsContrast(3,1),postCorrectionsContrast(3,2)), ...
+            sprintf('  * postExp = [ %.3f, %.3f]',postExperimentContrast(3,1),postExperimentContrast(3,2)), ...
+            sprintf('  * mean    = [ %.3f, %.3f]',meanOfmedianExpContrast(3,1),meanOfmedianExpContrast(3,2))};
         % Show Text
         text(xPos,yPos,textToShow)
     end
     
+    if options.addCaption
+        % set coordinates for text to appear based on were data points are
+        
+        xPos = scaleVal.*[-1.0];
+        yPos = scaleVal.*[-1.75];
+        
+        % Create text to display
+        textToShow = {sprintf('*Stimulus Angle*'), ...
+            sprintf('Desired Theta: pos %.2f, neg %.2f', anglesDesired_2Deg(1), anglesDesired_2Deg(2)),...
+            sprintf('postCor Theta: pos %.2f, neg %.2f', anglesPostCor_2Deg(1), anglesPostCor_2Deg(2)),...
+            sprintf('postExp Theta: pos %.2f, neg %.2f', anglesPostExp_2Deg(1), anglesPostExp_2Deg(2)),...
+            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_2Deg(1), anglesMean_2Deg(2)),...
+            sprintf('\n'),...
+            sprintf('*L Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(1,1), desiredContrasts(1,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(1,1),postCorrectionsContrast(1,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(1,1),postExperimentContrast(1,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(1,2)) };
+        % Show Text
+        text(xPos,yPos,textToShow)
+        
+        xPos = scaleVal.*[0.05];
+        yPos = scaleVal.*[-1.75];
+        
+        % Create text to display
+        textToShow = {  sprintf('*Stimulus Contrast*'), ...
+            sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos2Deg_contrast_total,contrast{ii}.desired.neg2Deg_contrast_total), ...
+            sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos2Deg_contrast_total,contrast{ii}.postCorrections.neg2Deg_contrast_total), ...
+            sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos2Deg_contrast_total,contrast{ii}.postExperiment.neg2Deg_contrast_total), ...
+            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos2Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg2Deg_contrast_total),...
+            sprintf('\n'),...
+            sprintf('*M Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(2,1), desiredContrasts(2,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(2,1),postCorrectionsContrast(2,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(2,1),postExperimentContrast(2,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(2,1),meanOfmedianExpContrast(2,2)) };
+        % Show Text
+        text(xPos,yPos,textToShow)
+    end
     % Dump info to screen
     if options.infoDump
         
         fprintf('Stim %.0f Validations Info: \n',ii)
         
         % Angles info
-        fprintf('*Stimulus Angle*\n')
+        fprintf('*Stimulus Angle -- 2 Degrees*\n')
         fprintf('\tDesired Theta: pos %.2f, neg %.2f\n', anglesDesired_2Deg(1), anglesDesired_2Deg(2))
         fprintf('\tpostCor Theta: pos %.2f, neg %.2f\n', anglesPostCor_2Deg(1), anglesPostCor_2Deg(2))
         fprintf('\tpostExp Theta: pos %.2f, neg %.2f\n', anglesPostExp_2Deg(1), anglesPostExp_2Deg(2))
         fprintf('\tmean Theta   : pos %.2f, neg %.2f\n', anglesMean_2Deg(1), anglesMean_2Deg(2))
         
         % Contrast info
-        fprintf('*Stimulus Contrast*\n')
+        fprintf('*Stimulus Contrast -- 2 Degrees*\n')
         fprintf('\tDesired = pos %.2f, neg %.2f\n',contrast{ii}.desired.pos2Deg_contrast_total,contrast{ii}.desired.neg2Deg_contrast_total)
         fprintf('\tpostCor = pos %.2f, neg %.2f\n',contrast{ii}.postCorrections.pos2Deg_contrast_total,contrast{ii}.postCorrections.neg2Deg_contrast_total)
         fprintf('\tpostExp = pos %.2f, neg %.2f\n',contrast{ii}.postExperiment.pos2Deg_contrast_total,contrast{ii}.postExperiment.neg2Deg_contrast_total)
         fprintf('\tmean    = pos %.2f, neg %.2f\n', contrast{ii}.meanOfmedianExpContrast.pos2Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg2Deg_contrast_total);
         
         % L Cone contrast
+        fprintf('*L Cone Contrast -- 2 Degrees*\n')
+        fprintf('\tDesired = pos %.2f, neg %.2f\n',desiredContrasts(1,1), desiredContrasts(1,2))
+        fprintf('\tpostCor = pos %.2f, neg %.2f\n',postCorrectionsContrast(1,1),postCorrectionsContrast(1,2))
+        fprintf('\tpostExp = pos %.2f, neg %.2f\n',postExperimentContrast(1,1),postExperimentContrast(1,2))
+        fprintf('\tmean    = pos %.2f, neg %.2f\n',meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(1,2))
         
         % M Cone contrast
+        fprintf('*M Cone Contrast -- 2 Degrees*\n')
+        fprintf('\tDesired = pos %.2f, neg %.2f\n',desiredContrasts(2,1), desiredContrasts(2,2))
+        fprintf('\tpostCor = pos %.2f, neg %.2f\n',postCorrectionsContrast(2,1),postCorrectionsContrast(2,2))
+        fprintf('\tpostExp = pos %.2f, neg %.2f\n',postExperimentContrast(2,1),postExperimentContrast(2,2))
+        fprintf('\tmean    = pos %.2f, neg %.2f\n',meanOfmedianExpContrast(2,1),meanOfmedianExpContrast(2,2))
         
         % S Cone contrast
-        
+        fprintf('*S Cone Contrast -- 2 Degrees*\n')
+        fprintf('\tDesired = pos %.2f, neg %.2f\n',desiredContrasts(3,1), desiredContrasts(3,2))
+        fprintf('\tpostCor = pos %.2f, neg %.2f\n',postCorrectionsContrast(3,1),postCorrectionsContrast(3,2))
+        fprintf('\tpostExp = pos %.2f, neg %.2f\n',postExperimentContrast(3,1),postExperimentContrast(3,2))
+        fprintf('\tmean    = pos %.2f, neg %.2f\n',meanOfmedianExpContrast(3,1),meanOfmedianExpContrast(3,2))
         fprintf('\n')
     end
     
-    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'})
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
     
@@ -263,11 +320,11 @@ for ii = 1:length(directedDirection)
     end
     
     % Plot the desired contrast
-    scatter(desiredContrasts(4,1),desiredContrasts(5,1),100,[0,0,0],'filled','^')
+    p1 = scatter(desiredContrasts(4,1),desiredContrasts(5,1),100,[0,0,0],'filled','^');
     scatter(desiredContrasts(4,2),desiredContrasts(5,2),100,[0,0,0],'filled','^')
     
     % Plot the post corrections median actual contrast
-    scatter(postCorrectionsContrast(4,1),postCorrectionsContrast(5,1),100,[0,0,1],'filled','d')
+    p2 = scatter(postCorrectionsContrast(4,1),postCorrectionsContrast(5,1),100,[0,0,1],'filled','d');
     scatter(postCorrectionsContrast(4,2),postCorrectionsContrast(5,2),100,[0,0,1],'filled','d')
     
     % Plot each post corrections actual contrast
@@ -275,7 +332,7 @@ for ii = 1:length(directedDirection)
     scatter(actualContrasts(4,2,6:10),actualContrasts(5,2,6:10),40,[0.2,0.7,1.0],'filled')
     
     % Plot the post experiment median actual contrast
-    scatter(postExperimentContrast(4,1),postExperimentContrast(5,1),100,[0,1,0],'filled','d')
+    p3 = scatter(postExperimentContrast(4,1),postExperimentContrast(5,1),100,[0,1,0],'filled','d');
     scatter(postExperimentContrast(4,2),postExperimentContrast(5,2),100,[0,1,0],'filled','d')
     
     % Plot each post experiment actual contrast
@@ -283,15 +340,65 @@ for ii = 1:length(directedDirection)
     scatter(actualContrasts(4,2,11:15),actualContrasts(5,2,11:15),40,[0,0.26,.15],'filled')
     
     % Plot mean of the medians
-    scatter(meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(5,1),100,[1,0,0],'filled','d')
+    p4 = scatter(meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(5,1),100,[1,0,0],'filled','d');
     scatter(meanOfmedianExpContrast(4,2),meanOfmedianExpContrast(5,2),100,[1,0,0],'filled','d')
+    
+    if options.showSConeInfoInPlot
+        % set coordinates for text to appear based on were data points are
+        if quadrant_2deg(1) == 1 || quadrant_2deg(1) ==  3
+            xPos = scaleVal.*[-0.9];
+            yPos = scaleVal.*[0.5];
+        elseif quadrant_2deg(1) == 2 || quadrant_2deg(1) ==  4
+            xPos = scaleVal.*[0.05];
+            yPos = scaleVal.*[0.5];
+        end
+        % Create text to display
+        textToShow = {sprintf('S Cone Contrast: [Pos, Neg]'), ...
+            sprintf('  * postCor = [ %.3f, %.3f]',postCorrectionsContrast(6,1),postCorrectionsContrast(6,2)), ...
+            sprintf('  * postExp = [ %.3f, %.3f]',postExperimentContrast(6,1),postExperimentContrast(6,2)), ...
+            sprintf('  * mean    = [ %.3f, %.3f]',meanOfmedianExpContrast(6,1),meanOfmedianExpContrast(6,2))};
+        % Show Text
+        text(xPos,yPos,textToShow)
+    end
+    
+    if options.addCaption
+        % set coordinates for text to appear based on were data points are
+        
+        xPos = scaleVal.*[-1.0];
+        yPos = scaleVal.*[-1.6];
+        
+        % Create text to display
+        textToShow = {sprintf('*Stimulus Angle*'), ...
+            sprintf('Desired Theta: pos %.2f, neg %.2f', anglesDesired_15Deg(1), anglesDesired_15Deg(2)),...
+            sprintf('postCor Theta: pos %.2f, neg %.2f', anglesPostCor_15Deg(1), anglesPostCor_15Deg(2)),...
+            sprintf('postExp Theta: pos %.2f, neg %.2f', anglesPostExp_15Deg(1), anglesPostExp_15Deg(2)),...
+            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_15Deg(1), anglesMean_15Deg(2))};
+        % Show Text
+        text(xPos,yPos,textToShow)
+        
+        % set coordinates for text to appear based on were data points are
+        
+        xPos = scaleVal.*[0.05];
+        yPos = scaleVal.*[-1.6];
+        
+        % Create text to display
+        textToShow = {  sprintf('*Stimulus Contrast*'), ...
+            sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos15Deg_contrast_total,contrast{ii}.desired.neg15Deg_contrast_total), ...
+            sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos15Deg_contrast_total,contrast{ii}.postCorrections.neg15Deg_contrast_total), ...
+            sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos15Deg_contrast_total,contrast{ii}.postExperiment.neg15Deg_contrast_total), ...
+            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total)};
+        % Show Text
+        text(xPos,yPos,textToShow)
+    end
     
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
     
+    % save out plots
     
-    % save out plots 
     outFile = fullfile(saveLocation,['validationPlot_' num2str(ii) '.pdf']);
-
-    saveas(gcf,outFile)
+    set(gcf, 'Position', [0 0 1200 900])
+    set(gcf, 'PaperSize', [16 12]);
+    print(fig,outFile,'-dpdf','-r0')
 end
