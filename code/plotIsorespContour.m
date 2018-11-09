@@ -1,4 +1,4 @@
-function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,IAMPBetas,contrastLevels,directionCoding,thresh,hdl,color)
+function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,nrParams,directionCoding,thresh,hdl,color)
 % Plots an isorepsonse contour for a given 2D ellipse fit along the data points
 %
 % Syntax:
@@ -33,17 +33,21 @@ if isempty(color)
     end
 end
 
-%% Inerpolate the IAMP CRF to find the contrast value that corresponds with the threshold
-for ii = 1:length(IAMPBetas)
+%% Inerpolate the IAMP CRF using the  naka rushton fits to find the contrast value that corresponds with the threshold
+for ii = 1:size(nrParams,1)
     
-    % Reverse lookup the the contrast value needed for a threeshold using linear
-    % interpolation with pchip.
-    contrast(ii) = interp1(IAMPBetas{ii},contrastLevels{ii},thresh,'pchip');
+    % Invert Naka-Rushton function to get the contrast value that
+    %  Rmax  = params(1)
+    %  sigma = params(2)
+    %  n     = params(3)
+    contrasts(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
     
-    % Get the L,M plane coordinates by mulitplying the contrast needed by the direction coding. 
+    
+    
+    % Get the L,M plane coordinates by mulitplying the contrast needed by the direction coding.
     % NOTE: MB: I think this should be the sin and cos comp. of the
-    % direction and not the coding. 
-    dataPoints(ii,1:2) = contrast(ii).*directionCoding{ii};
+    % direction and not the coding.
+    dataPoints(ii,1:2) = contrasts(ii).*directionCoding{ii};
 end
 
 %% Compute QCM ellipse to the plot

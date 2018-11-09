@@ -50,11 +50,11 @@ analysisParams.generateIAMPPlots = false;
 [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM, baselineBetas] = runIAMP_QCM(analysisParams,fullCleanData);
 
 % Plot the CRF from the IAMP and QCM fits
-plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
+nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 
 % Plot isoresponce contour
-thresholds = [.1, .2, .4];
-hdl = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds);
+thresholds = [.1, .2, .3];
+[hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams)
 
 % Use QCM fit to IAMP to predict timecourse.
 plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baselineBetas);

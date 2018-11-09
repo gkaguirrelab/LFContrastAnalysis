@@ -1,4 +1,4 @@
-function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
+function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
@@ -15,7 +15,14 @@ function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQ
 %    paramsQCMFit              - Parameter fits to the QCM model (struct)
 %
 % Outputs:
-%    none
+%    params                    - Parameters of the Naka-Rushton fit. Each
+%                                row of the matrix returned are the paramters
+%                                fit to the IAMP CRF for a single run.
+%                                The columns are:
+%                                   Rmax  = params(1)
+%                                   sigma = params(2)
+%                                   n     = params(3)
+%                                response = Rmax*[contrast^n]/[contrast^n + sigma^n]
 %
 % Optional key/value pairs:
 %    none
@@ -24,11 +31,6 @@ function [] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQ
 
 % Generate prediction to stimuli based on QCM fit to arbitrary stim
 
-contrastSpacing = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
-QCMStim.values = [generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension)];
-QCMStim.timebase = linspace(1,max(length(meanIAMPBetas(1:end-1))),length(QCMStim.values));
-temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
-QCMResponses = computeResponse(temporalFitQCM,paramsQCMFit,QCMStim,[]);
 
 % Subplot size
 rws = ceil(sqrt(size(analysisParams.directionCoding,2)));
@@ -36,7 +38,16 @@ cols = rws;
 indx = length(analysisParams.contrastCoding);
 figure
 for ii = 1:size(analysisParams.directionCoding,2)
-
+    
+    % Get the contrast spacing for each plot.
+    maxConVal = analysisParams.maxContrastPerDir(ii);
+    contrastSpacing = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
+    QCMStim.values = [generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension)];
+    QCMStim.timebase = linspace(1,max(length(meanIAMPBetas(1:end-1))),length(QCMStim.values));
+    temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
+    QCMResponses = computeResponse(temporalFitQCM,paramsQCMFit,QCMStim,[]);
+    maxContrastSpacing = contrastSpacing.*maxConVal;
+    
     aa = (length(QCMResponses.values))/size(analysisParams.directionCoding,2);
     if ii == 1
         betas = meanIAMPBetas(1:indx);
@@ -47,11 +58,18 @@ for ii = 1:size(analysisParams.directionCoding,2)
         error = semIAMPBetas((ii-1)*indx+1:ii*indx);
         qcmSmooth = QCMResponses.values((ii-1)*aa+1:ii*aa);
     end
-
+    
+    %% Plot the stuff
     subplot(rws,cols,ii); hold on
-    errorbar(analysisParams.contrastCoding*100,betas,error)
-    plot(contrastSpacing*100,qcmSmooth)
-
+    p1 = errorbar(maxConVal.*analysisParams.contrastCoding,betas,error,'k');
+    p2 = plot(maxContrastSpacing,qcmSmooth,'r');
+    
+    % Plot Naka-Rushton Function
+    [params(ii,:),f] = FitNakaRushton(maxConVal.*analysisParams.contrastCoding',betas);
+    nrResponses = nakaRushton(maxContrastSpacing,params(ii,2), params(ii,3),params(ii,1), 0);
+    p3 = plot(maxContrastSpacing,nrResponses,'b');
+    
+    
     if isequal(analysisParams.directionCoding(:,ii),[1;1;0])
         pos = find(ismember(analysisParams.directionCoding',[1,1,0],'rows'));
         title(sprintf('L+M: Max Contrast = %s',num2str(analysisParams.maxContrastPerDir(pos))))
@@ -68,8 +86,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
         title(sprintf('%s Degrees: Max Contrast = %s',num2str(analysisParams.LMVectorAngles(ii)),num2str(analysisParams.maxContrastPerDir(ii))))
     end
     ylabel('Mean Beta Weight')
-    xlabel('Percent of Max Contrast')
+    xlabel('Contrast')
     ylim([-0.2 1]);
+    legend([p1, p2 p3], 'IAMP Model', 'QCM Fit', 'Naka-Rushton Fit', 'Location', 'northwest')
 end
 
 end
