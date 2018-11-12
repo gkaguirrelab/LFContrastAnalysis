@@ -61,9 +61,7 @@ for ii = 1:size(analysisParams.directionCoding,2)
     %% Plot the stuff
     subplot(rws,cols,ii); hold on
     p1 = errorbar(maxConVal.*analysisParams.contrastCoding,betas,error,'k');
-    errorbar(analysisParams.contrastCoding,betas,error,'k--');
     p2 = plot(maxContrastSpacing,qcmSmooth,'r');
-    plot(contrastSpacing,qcmSmooth,'r--');
     
     % Plot Naka-Rushton Function
     [params(ii,:),f] = FitNakaRushton(maxConVal.*analysisParams.contrastCoding',betas);
