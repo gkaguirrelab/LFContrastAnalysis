@@ -1,4 +1,4 @@
-function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,nrParams,directionCoding,thresh,hdl,color)
+function [hdl,scatterHdl] = plotIsorespContour(paramsQCM,nrParams,IAMPBetas,analysisParams, directionCoding,thresh,hdl,color)
 % Plots an isorepsonse contour for a given 2D ellipse fit along the data points
 %
 % Syntax:
@@ -40,14 +40,21 @@ for ii = 1:size(nrParams,1)
     %  Rmax  = params(1)
     %  sigma = params(2)
     %  n     = params(3)
-    contrasts(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
-    
-    
-    
+    maxConVal = analysisParams.maxContrastPerDir(ii);
+    maxContrastSpacing = maxConVal.*analysisParams.contrastCoding;
+    if thresh <= nrParams(1)
+        contrastsNR(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
+        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh);
+    else
+        contrastsNR(ii) = NaN;
+        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh);
+    end
+      
     % Get the L,M plane coordinates by mulitplying the contrast needed by the direction coding.
     % NOTE: MB: I think this should be the sin and cos comp. of the
     % direction and not the coding.
-    dataPoints(ii,1:2) = contrasts(ii).*directionCoding{ii};
+    dataPointsNR(ii,1:2) = contrastsNR(ii).*directionCoding{ii};
+    dataPointsLI(ii,1:2) = contrastsLI(ii).*directionCoding{ii};
 end
 
 %% Compute QCM ellipse to the plot
@@ -70,7 +77,8 @@ else
     figure(hdl); hold on
 end
 sz = 50;
-scatterHdl = scatter(dataPoints(:,1),dataPoints(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5)
+scatterHdl = scatter(dataPointsNR(:,1),dataPointsNR(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5);
+scatter(dataPointsLI(:,1),dataPointsLI(:,2),sz,color,'x')
 ylim([-1, 1])
 xlim([-1, 1])
 axh = gca; % use current axes

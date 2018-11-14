@@ -55,7 +55,7 @@ hleglines = [];
 
 % Loop over thesholds and plot the ellipse fits on the same plot
 for jj = 1:length(thresholds)
-    [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,nrParams,directions,thresholds(jj),hdl,[]);
+    [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,nrParams,sortedBetas,analysisParams, directions,thresholds(jj),hdl,[]);
     hleglines = [hleglines scatterHdl];
     legendNames{jj} = num2str(thresholds(jj));
 end
