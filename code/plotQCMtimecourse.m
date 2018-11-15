@@ -45,14 +45,14 @@ for ii = 1:length(analysisParams.sessionFolderName)
         
         % Plot them
         subplot(rws,cols,counter); hold on
-        plot(packetPocket{counter}.response.timebase,packetPocket{counter}.response.values,'Color',[1 0 0]);
-        plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[0 1 0]);
+        plot(packetPocket{counter}.response.timebase,packetPocket{counter}.response.values,'Color',[.5 0 0]);
+        plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[.1 .8 0]);
         
         % Doctor up the parameters to use mean IAMP values and plot again
         paramsFitIAMPMean = paramsFitIAMP{counter};
         paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength);0] + baselineBetas(jj,ii); 
         IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
-        plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.5 1]);
+        plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
         
         % Doctor up parameters to use the QCM fit to the mean IAMP
         paramsFitIAMPQCM = paramsFitIAMP{counter};

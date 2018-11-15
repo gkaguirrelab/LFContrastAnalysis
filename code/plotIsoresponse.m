@@ -1,4 +1,4 @@
-function [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds)
+function [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -20,7 +20,7 @@ function [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thres
 
 % MAB 09/09/18
 
-% Get the number of conditions (directions) 
+% Get the number of conditions (directions)
 numCond = size(analysisParams.directionCoding,2);
 
 % Get the number of contrast levels
@@ -36,30 +36,40 @@ for ii = 1:numCond
         sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast);
     end
     
-    % Scale the contrast spacing by the maximum contrast per direction 
+    % Scale the contrast spacing by the maximum contrast per direction
     contrasts{ii} = analysisParams.contrastCoding*analysisParams.maxContrastPerDir(ii);
 end
 
-% Get the direction coding and take only the L and M coding  
+% Get the direction coding and take only the L and M coding
 directions = analysisParams.directionCoding;
 if analysisParams.theDimension == 2 & size(analysisParams.directionCoding,1) > 2
     directions(3,:) = [];
 end
 
-% Turn the direction coding matrix in cell array 
+% Turn the direction coding matrix in cell array
 directions = mat2cell(directions,size(directions,1),ones(1,size(directions,2)));
 
-% Dummy vars for plotting 
+% Dummy vars for plotting
 hdl = [];
 hleglines = [];
 
 % Loop over thesholds and plot the ellipse fits on the same plot
 for jj = 1:length(thresholds)
-    [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,sortedBetas,contrasts,directions,thresholds(jj),hdl,[]);
+    color = colors(jj,:);
+    [hdl,scatterHdl] = plotIsorespContour(paramsQCMFit,nrParams,sortedBetas,analysisParams, directions,thresholds(jj),hdl,color);
     hleglines = [hleglines scatterHdl];
     legendNames{jj} = num2str(thresholds(jj));
 end
 
+xlim([-.3 .3])
+ylim([-.3 .3])
+axh = gca; % use current axes
+axisColor = 'k'; % black, or [0 0 0]
+linestyle = ':'; % dotted
+line(get(axh,'XLim'), [0 0], 'Color', axisColor, 'LineStyle', linestyle);
+line([0 0], get(axh,'YLim'), 'Color', axisColor, 'LineStyle', linestyle);
+xlabel('L Contrast')
+ylabel('M Contrast')
 legend(hleglines,legendNames)
 title('Isoresponse Contour')
 
