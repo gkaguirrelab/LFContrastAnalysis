@@ -79,15 +79,7 @@ end
 sz = 50;
 scatterHdl = scatter(dataPointsNR(:,1),dataPointsNR(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5);
 scatter(dataPointsLI(:,1),dataPointsLI(:,2),sz,color,'x')
-ylim([-1, 1])
-xlim([-1, 1])
-axh = gca; % use current axes
-axisColor = 'k'; % black, or [0 0 0]
-linestyle = ':'; % dotted
-line(get(axh,'XLim'), [0 0], 'Color', axisColor, 'LineStyle', linestyle);
-line([0 0], get(axh,'YLim'), 'Color', axisColor, 'LineStyle', linestyle);
-xlabel('L Contrast')
-ylabel('M Contrast')
+
 
 % Add ellipse
 plot(ellipsePoints(1,:),ellipsePoints(2,:),'color', color);

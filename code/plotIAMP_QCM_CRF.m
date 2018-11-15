@@ -86,7 +86,8 @@ for ii = 1:size(analysisParams.directionCoding,2)
     end
     ylabel('Mean Beta Weight')
     xlabel('Contrast')
-    ylim([-0.2 1]);
+    ylim([-0.25 1.35]);
+
     legend([p1, p2 p3], 'IAMP Model', 'QCM Fit', 'Naka-Rushton Fit', 'Location', 'northwest')
 end
 
