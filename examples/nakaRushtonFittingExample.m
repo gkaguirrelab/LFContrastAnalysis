@@ -4,8 +4,8 @@
 
 % Naka Ruston Params
 Rmax = 1;
-sigma = .5;
-n = 2;
+sigma = 5;
+n = 1;
 offset = 0;
 
 % contrast values
@@ -15,7 +15,7 @@ C  = [.2, .4,.6,.8,1];
 R  = nakaRushton(C,sigma,n,Rmax, offset);
 
 % Add noise 
-noiseLevel = .5;
+noiseLevel = 0;
 R_noise = R + rand(size(R)).*noiseLevel.*Rmax;
 
 %% Fit the data 
