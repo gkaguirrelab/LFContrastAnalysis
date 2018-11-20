@@ -44,10 +44,10 @@ for ii = 1:size(nrParams,1)
     maxContrastSpacing = maxConVal.*analysisParams.contrastCoding;
     if thresh <= nrParams(1)
         contrastsNR(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
-        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh);
+        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh,'pchip');
     else
         contrastsNR(ii) = NaN;
-        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh);
+        contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh,'pchip');
     end
       
     % Get the L,M plane coordinates by mulitplying the contrast needed by the direction coding.
