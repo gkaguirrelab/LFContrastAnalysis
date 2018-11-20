@@ -70,6 +70,14 @@ if (any(abs(checkThresh-thresh) > 1e-10))
     error('Did not invert QCM model correctly');
 end
 
+%% Compute points for each direction based on our invert function
+for ii = 1:length(directionCoding)
+    theDirection = directionCoding{ii}';
+    [theInvertContrast(ii),theInvertTemp] = tfeQCMInvert(paramsQCM,theDirection,thresh);
+    theInvertStim(:,ii) = theInvertTemp';
+end
+
+
 %% Plot data points
 if (isempty(hdl))
     hdl = figure; hold on
@@ -78,11 +86,12 @@ else
 end
 sz = 50;
 scatterHdl = scatter(dataPointsNR(:,1),dataPointsNR(:,2),sz,'MarkerEdgeColor',color,'MarkerFaceColor',color,'LineWidth',1.5);
-scatter(dataPointsLI(:,1),dataPointsLI(:,2),sz,color,'x')
+%scatter(dataPointsLI(:,1),dataPointsLI(:,2),sz,color,'x')
 
 
 % Add ellipse
 plot(ellipsePoints(1,:),ellipsePoints(2,:),'color', color);
+plot(theInvertStim(1,:),theInvertStim(2,:),'x','MarkerSize',14,'color',color);
 
 
 end
