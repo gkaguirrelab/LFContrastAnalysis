@@ -1,3 +1,18 @@
+% Test the QCM fitting and related matters
+%
+% Description:
+%   This script synthesizes data for the QCM model and then fits it,
+%   to ensure that we can get back what we put in.  Etc.
+% 
+%   Note that this is developed for the two-dimensional (ellipse) version.
+% 
+%   NOTE: When we get to ellipses, we need to remember to put a constraint into the
+%   fitting that keeps the length of the third axis smaller than the second.
+%
+
+% History:
+%   11/20/18  dhb, mab  Tuned this up; things are making sense.
+
 %--------------------------------------------------------------------------
 %% Initialize
 %--------------------------------------------------------------------------
@@ -7,11 +22,16 @@ clear; close all
 %% Set up params
 %--------------------------------------------------------------------------
 % Naka Ruston Params
+NOOFFSET = true;
 theDimension = 2;
 Rmax   = .9;
 sigma  = .7;
 n      = 2.1;
-offset = -0.1;
+if (NOOFFSET)
+    offset = 0;
+else
+    offset = -0.1;
+end
 
 % Ellipse Params
 minorAxis = .3;
@@ -108,7 +128,12 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 % Fit the packet
-[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket);
+if (NOOFFSET)
+    defaultParamsInfo.noOffset = true;
+else
+    defaultParamsInfo.noOffset = false;
+end
+[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 
@@ -134,7 +159,7 @@ radiusQcm =  diag(sqrt(stim'*Q_qcm*stim));
 % parameterization of the QCM model, because of a +/- 90 degree ambiguit
 % about which is the major and which is the minor axis of the ellipse.
 Rqcm  = nakaRushton(radiusQcm,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent,paramsQCMFit.crfAmp, paramsQCMFit.offset);
-if (max(abs(R-Rqcm)) > 1e-5)
+if (max(abs(R-Rqcm)/max(abs(R))) > 1e-3)
     error('Hand computation of QCM model does not match tfeQCM forward model');
 end
 

@@ -57,16 +57,28 @@ for ii = 1:size(nrParams,1)
     dataPointsLI(ii,1:2) = contrastsLI(ii).*directionCoding{ii};
 end
 
+
+% % Invert Naka rushton to find desired output of quadratic computation.
+% theDimension = length(direction);
+% desiredEqContrast = InvertNakaRushton([params.crfAmp,params.crfSemi,params.crfExponent],offsetResponse);
+% 
+% % Find what comes out of quadratic for the passed direction.
+% [~,Ainv,Q] = EllipsoidMatricesGenerate([1 params.Qvec],'dimension',theDimension);
+% directionEqContrast = diag(sqrt(direction*Q*direction'));
+% contrast = desiredEqContrast/directionEqContrast;
+% stimulus = contrast*direction;
+
 %% Compute QCM ellipse to the plot
 %
 % Step 1. Invert Naka-Rushton to go from thresh back to
 % corresponding equivalent contrast.
-eqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
-circlePoints = eqContrast*UnitCircleGenerate(nQCMPoints);
+desiredEqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh-paramsQCM.offset);
+circlePoints = desiredEqContrast*UnitCircleGenerate(nQCMPoints);
+%circlePoints = desiredEqContrast*[0.70711 0.70711]';
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
-if (any(abs(checkThresh-thresh) > 1e-10))
+checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)))+paramsQCM.offset;
+if (any(abs(checkThresh-thresh) > 1e-6))
     error('Did not invert QCM model correctly');
 end
 

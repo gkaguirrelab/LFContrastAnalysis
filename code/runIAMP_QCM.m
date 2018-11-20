@@ -155,7 +155,8 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket);
+defaultParamsInfo.noOffset = true;
+[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 
