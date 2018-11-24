@@ -202,8 +202,8 @@ if (~RANDOM_STIMULI)
     maxResponse = max(directionResponses);
     
     % Invert model for chosen direction
-    [contrastFromSim,stimulusFromSim] = tfeQCMInvert(params1,theDirection,maxResponse/maxResponseFactor);
-    [contrastFromFit,stimulusFromFit] = tfeQCMInvert(paramsQCMFit,theDirection,maxResponse/maxResponseFactor);
+    [contrastFromSim,stimulusFromSim] = tfeQCMInvertDirection(params1,theDirection,maxResponse/maxResponseFactor);
+    [contrastFromFit,stimulusFromFit] = tfeQCMInvertDirection(paramsQCMFit,theDirection,maxResponse/maxResponseFactor);
 
     % Plot simulated CRF and inverted points
     figure; hold on
@@ -215,10 +215,10 @@ if (~RANDOM_STIMULI)
     % Plot an isoresponse contour of the simualted and fit model
     nTheta = 100;
     directions = UnitCircleGenerate(nTheta);
-    [contrasts1,stimuli1] = tfeQCMInvert(params1,directions,params1.crfAmp/3);
+    [contrasts1,stimuli1] = tfeQCMInvertDirection(params1,directions,params1.crfAmp/3);
     figure; hold on
     plot(stimuli1(1,:),stimuli1(2,:),'r','LineWidth',3);
-    [contrastsFit,stimuliFit] = tfeQCMInvert(paramsQCMFit,directions,params1.crfAmp/3);
+    [contrastsFit,stimuliFit] = tfeQCMInvertDirection(paramsQCMFit,directions,params1.crfAmp/3);
     plot(stimuliFit(1,:),stimuliFit(2,:),'b','LineWidth',2);
 end
 
