@@ -19,7 +19,8 @@ clear; close all
 
 %% Set up params
 %
-% Naka Ruston Params
+% Naka-Rushton Params
+FIT_NAKARUSHTON = true;
 NOOFFSET = false;
 theDimension = 2;
 Rmax   = 0.9;
@@ -42,20 +43,33 @@ ellParams = [1 minorAxis rotdeg];
 RANDOM_STIMULI = false;
 if (RANDOM_STIMULI)
     numStim = 300;
-    stim = (2*rand(2,numStim) -1);
+    stimuli = (2*rand(2,numStim) -1);
     
 % Stimuli that vary along specified directions
 else
+    % This matches how we tend to think about our stimuli.  For fitting the
+    % Naka_Rushton, it's good to build things up this way, because then the
+    % directions that come out of the stimuli match up exactly with the
+    % unique directions that we started with.
+    %
+    % Speicfy stimulus contrasts to use in each direction.
     maxContrast = 0.6;
-    contrastCoding = [0.0625, 0.125, 0.25, 0.5, 1];
-    nContrastsPerDirection = length(contrastCoding);
-    theDirections = [ [1 0]',  [1 1]',  [0 1]', [1 -1]' ];
-    for ii = 1:size(theDirections,2)
-        theDirections(:,ii) = theDirections(:,ii)/norm(theDirections(:,ii));
+    contrastsInEachDirection = maxContrast*[0.0625, 0.125, 0.25, 0.5, 1];
+    nContrastsPerDirection = length(contrastsInEachDirection);
+    
+    % Specify the directions, which must each have unit length.
+    uniqueDirections = [ [1 0]',  [1 1]',  [0 1]', [1 -1]' ];
+    for ii = 1:size(uniqueDirections,2)
+        uniqueDirections(:,ii) = uniqueDirections(:,ii)/norm(uniqueDirections(:,ii));
     end
-    directionCoding = maxContrast*theDirections; 
-    stim = kron(directionCoding',contrastCoding')';
-    numStim = size(stim,2);
+    nUniqueDirections = size(uniqueDirections,2);
+    
+    % Construct the contrasts crossed with directions set of stimuli
+    stimuli = kron(uniqueDirections',contrastsInEachDirection')';
+    numStim = size(stimuli,2);
+    
+    % Get directions/contrasts format from stimuli, for later use
+    [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(stimuli);
 end
 
 %% Generate response
@@ -79,16 +93,16 @@ A = S*V';
 Q = A'*A;
 
 % Get the radius
-radius = diag(sqrt(stim'*Q*stim));
+radius = diag(sqrt(stimuli'*Q*stimuli))';
 
 % Get the neural response values
-R  = nakaRushton(radius,sigma,n,Rmax,offset);
+R = nakaRushton(radius,sigma,n,Rmax,offset);
 
 %% Let's check that the QCM forward model gives the same responses.
 %
 % Construct the model object 
 tfeResponseCheck = tfeQCM('verbosity','none','dimension',theDimension);
-stimulusStruct.values = stim;
+stimulusStruct.values = stimuli;
 stimulusStruct.timebase = 1:numStim;
 nTimeSamples = size(stimulusStruct.timebase,2);
 
@@ -101,7 +115,7 @@ params1.crfExponent = n;
 params1.noiseSd = 0.01;
 params1.offset = offset;
 modelResponseStruct = tfeResponseCheck.computeResponse(params1,stimulusStruct,[],'AddNoise',false);
-if (max(abs(R'-modelResponseStruct.values)) > 1e-15)
+if (max(abs(R-modelResponseStruct.values)) > 1e-15)
     error('Hand computation of QCM model does not match tfeQCM forward model');
 end
 
@@ -112,11 +126,11 @@ end
 temporalFitQCM = tfeQCM('verbosity','none','dimension',theDimension);
 
 % Set up the packet with the stimulus
-stimulusStruct.values   = stim;
+stimulusStruct.values   = stimuli;
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
 % Set up the packet with the response
-thePacket.response.values = R';
+thePacket.response.values = R;
 thePacket.response.timebase = 1:length(thePacket.response.values);
 
 % Construct a packet for the QCM to fit.
@@ -148,7 +162,7 @@ A_qcm = S_qcm*V_qcm';
 Q_qcm = A_qcm'*A_qcm;
 
 % Get the raduis
-radiusQcm =  diag(sqrt(stim'*Q_qcm*stim));
+radiusQcm =  diag(sqrt(stimuli'*Q_qcm*stimuli))';
 
 % Get the predicted response values.  These should match reasonably well
 % the responses we simulated above.  But note that there are some
@@ -162,8 +176,8 @@ end
 
 %%  Plot simulated and predicted responses
 figure; hold on
-p1 = scatter3(stim(1,:),stim(2,:),radius,'b','*');
-p2 = scatter3(stim(1,:),stim(2,:),radiusQcm,'r');
+p1 = scatter3(stimuli(1,:),stimuli(2,:),radius,'b','*');
+p2 = scatter3(stimuli(1,:),stimuli(2,:),radiusQcm,'r');
 xlabel('L Contrast')
 ylabel('M Contrast')
 zlabel('Radius')
@@ -171,8 +185,8 @@ title('The radius as found by s''*Q*s = r');
 legend([p1 p2], 'original', 'QCM recovered')
 
 figure; hold on 
-p3 = scatter3(stim(1,:),stim(2,:),R,'b','*');
-p4 = scatter3(stim(1,:),stim(2,:),Rqcm,'r');
+p3 = scatter3(stimuli(1,:),stimuli(2,:),R,'b','*');
+p4 = scatter3(stimuli(1,:),stimuli(2,:),Rqcm,'r');
 legend([p3 p4], 'original', 'QCM recovered')
 xlabel('L Contrast')
 ylabel('M Contrast')
@@ -197,7 +211,7 @@ if (~RANDOM_STIMULI)
     whichDirection = 2;
     
     % Pull out this direction and simulated responses
-    theDirection = theDirections(:,whichDirection);
+    theDirection = uniqueDirections(:,whichDirection);
     directionResponses = R(nContrastsPerDirection*(whichDirection-1)+1:nContrastsPerDirection*whichDirection);
     maxResponse = max(directionResponses);
     
@@ -207,18 +221,52 @@ if (~RANDOM_STIMULI)
 
     % Plot simulated CRF and inverted points
     figure; hold on
-    plot(maxContrast*contrastCoding,directionResponses,'ro','MarkerFaceColor','r','MarkerSize',12);
+    plot(maxContrast*contrastsInEachDirection,directionResponses,'ro','MarkerFaceColor','r','MarkerSize',12);
     plot(contrastFromSim,maxResponse/maxResponseFactor,'bo','MarkerFaceColor','b','MarkerSize',8);
     plot(contrastFromFit,maxResponse/maxResponseFactor,'gx','MarkerSize',14); 
     xlabel('Contrast'); ylabel('Response');
     
     % Plot an isoresponse contour of the simualted and fit model
     nTheta = 100;
-    directions = UnitCircleGenerate(nTheta);
-    [contrasts1,stimuli1] = tfeQCMInvertDirection(params1,directions,params1.crfAmp/3);
+    circleDirections = UnitCircleGenerate(nTheta);
+    [contrasts1,stimuli1] = tfeQCMInvertDirection(params1,circleDirections,params1.crfAmp/3);
     figure; hold on
     plot(stimuli1(1,:),stimuli1(2,:),'r','LineWidth',3);
-    [contrastsFit,stimuliFit] = tfeQCMInvertDirection(paramsQCMFit,directions,params1.crfAmp/3);
+    [contrastsFit,stimuliFit] = tfeQCMInvertDirection(paramsQCMFit,circleDirections,params1.crfAmp/3);
     plot(stimuliFit(1,:),stimuliFit(2,:),'b','LineWidth',2);
+end
+
+%% Fit Naka-Rushton function to individual directions
+if (~RANDOM_STIMULI & FIT_NAKARUSHTON)
+    [indDirectionNRParams,indDirectionPredictions,indDirectionResponses,indDirectionDirections,indDirectionContrasts,indDirectionIndices,nIndDirections] = ...
+        tfeQCMFitNakaRushtonDirectionsContrasts(R,stimDirections,stimContrasts);
+    
+    % Check that directions, contrasts and responses came out the way they
+    % went in. If this isn't right, then the fit parameters we get back are
+    % going to be nonsense.  The biggest worry is that unique() will decide
+    % two directions are different because of some numerical tolerance
+    % issue.
+    inputCounter = 1;
+    if (nIndDirections ~= nUniqueDirections)
+        error('Did not recover correct number of unique directions from stimulus description');
+    end
+    for ii = 1:nIndDirections
+        for jj = 1:length(indDirectionIndices{ii})
+            if (max(abs(stimDirections(:,inputCounter)-indDirectionDirections{ii})) > 1e-7)
+                error('Did not properly recover stimulus directions from stimulus description');
+            end
+            if (R(inputCounter) ~= indDirectionResponses{ii}(jj))
+                error('Did not properly recover responses for independent directions');
+            end
+            if (max(abs(contrastsInEachDirection(jj) - indDirectionContrasts{ii}(jj))) > 1e-7)
+                error('Did not properly recover contrasts in each direction for independent directions');
+            end
+            if (max(abs(indDirectionContrasts{ii}(jj)-stimContrasts(jj))) > 1e-7)
+                error('Did not properly recover stimulus contrasts from stimulus description');
+            end
+            inputCounter = inputCounter+1;
+        end
+    end
+    
 end
 
