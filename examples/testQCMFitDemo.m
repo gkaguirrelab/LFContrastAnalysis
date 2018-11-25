@@ -115,7 +115,7 @@ params1.crfAmp = Rmax;
 params1.crfSemi = sigma;
 params1.crfExponent = n;
 params1.noiseSd = 0.01;
-params1.offset = offset;
+params1.crfOffset = offset;
 modelResponseStruct = tfeResponseCheck.computeResponse(params1,stimulusStruct,[],'AddNoise',false);
 if (max(abs(R-modelResponseStruct.values)) > 1e-15)
     error('Hand computation of QCM model does not match tfeQCM forward model');
@@ -171,7 +171,7 @@ radiusQcm =  diag(sqrt(stimuli'*Q_qcm*stimuli))';
 % ambiguities in the parameterization of the QCM model, because of a +/- 90
 % degree ambiguit about which is the major and which is the minor axis of
 % the ellipse.
-Rqcm  = nakaRushton(radiusQcm,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent,paramsQCMFit.crfAmp, paramsQCMFit.offset);
+Rqcm  = nakaRushton(radiusQcm,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent,paramsQCMFit.crfAmp, paramsQCMFit.crfOffset);
 if (max(abs(R-Rqcm)/max(abs(R))) > 1e-2)
     error('Hand computation of QCM model does not match tfeQCM forward model');
 end
@@ -198,11 +198,11 @@ legend([p1 p2], 'original', 'QCM recovered')
 
 %%  Check that Naka-Rushton funciton inverts
 thresholdResponse = paramsQCMFit.crfAmp/3;
-eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.offset);
+eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.crfOffset);
 circlePoints = eqContrast*UnitCircleGenerate(numStim);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.offset;
+checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.crfOffset;
 if (any(abs(checkThresh-thresholdResponse) > 1e-10))
     error('Did not invert QCM model correctly');
 end

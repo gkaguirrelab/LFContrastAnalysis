@@ -261,7 +261,7 @@ for jj = 1:numAcquisitions
 %     startParams.crfExponent =  1.0;
 %     startParams.crfSemi =  0.27;
 %     startParams.expFalloff =  0.3;
-%     startParams.offset =  -0.33;
+%     startParams.crfOffset =  -0.33;
     startParams = [];
     
     %% Perform the fit
@@ -286,7 +286,7 @@ for pp = 1:length(packetParamsFit)
     elipcrfExp(pp)  = packetParamsFit{pp}.crfExponent;
     elipcrfSemi(pp) = packetParamsFit{pp}.crfSemi;
     elipFalloff(pp) = packetParamsFit{pp}.expFalloff;
-    elipoffset(pp)  = packetParamsFit{pp}.offset;
+    elipoffset(pp)  = packetParamsFit{pp}.crfOffset;
 end   
 
 meanParams.Qvec        = [mean(elipLength), mean(elipAngle)];
@@ -294,7 +294,7 @@ meanParams.crfAmp      = mean(elipcrfAmp);
 meanParams.crfExponent = mean(elipcrfExp);
 meanParams.crfSemi     = mean(elipcrfSemi);
 meanParams.expFalloff  = mean(elipFalloff);
-meanParams.offset      = mean(elipoffset);
+meanParams.crfOffset      = mean(elipoffset);
 save tempQCMOutput
 
 % Quadratic ellipse lengths: 1.00, 4.90
