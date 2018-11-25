@@ -13,6 +13,8 @@
 % History:
 %   11/20/18  dhb, mab  Tuned this up; things are making sense.
 %   1//24/18  dhb       A bit more tuning.  Fix row/col convention.
+%   11/25/18  dhb       Demonstrate code that fits NR functions, and allows
+%                       locking of parameters across directions.
 
 %% Initialize
 clear; close all
@@ -24,7 +26,7 @@ FIT_NAKARUSHTON = true;
 NOOFFSET = false;
 theDimension = 2;
 Rmax   = 0.9;
-sigma  = 0.7;
+sigma  = 0.1;
 n      = 2.1;
 if (NOOFFSET)
     offset = 0;
@@ -195,13 +197,13 @@ title('The response as found by passing the radius throught the naka rushton');
 legend([p1 p2], 'original', 'QCM recovered')
 
 %%  Check that Naka-Rushton funciton inverts
-thresh = 0.3;
-eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresh);
+thresholdResponse = paramsQCMFit.crfAmp/3;
+eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.offset);
 circlePoints = eqContrast*UnitCircleGenerate(numStim);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
-if (any(abs(checkThresh-thresh) > 1e-10))
+checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.offset;
+if (any(abs(checkThresh-thresholdResponse) > 1e-10))
     error('Did not invert QCM model correctly');
 end
 
@@ -221,7 +223,7 @@ if (~RANDOM_STIMULI)
 
     % Plot simulated CRF and inverted points
     figure; hold on
-    plot(maxContrast*contrastsInEachDirection,directionResponses,'ro','MarkerFaceColor','r','MarkerSize',12);
+    plot(contrastsInEachDirection,directionResponses,'ro','MarkerFaceColor','r','MarkerSize',12);
     plot(contrastFromSim,maxResponse/maxResponseFactor,'bo','MarkerFaceColor','b','MarkerSize',8);
     plot(contrastFromFit,maxResponse/maxResponseFactor,'gx','MarkerSize',14); 
     xlabel('Contrast'); ylabel('Response');
@@ -266,6 +268,35 @@ if (~RANDOM_STIMULI & FIT_NAKARUSHTON)
             end
             inputCounter = inputCounter+1;
         end
+    end
+    
+    % Fit with things common across directions
+    [indDirectionNRParamsCommon] = ...
+        tfeQCMFitNakaRushtonDirectionsContrasts(R,stimDirections,stimContrasts,...
+        'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',true,'commonOffset',true);
+    
+    % Make plot of the individual contrast-response functions and fits
+    figure; clf;
+    for ii = 1:nIndDirections
+        subplot(nIndDirections,1,ii); hold on;
+        
+        % Dump parameters from independent fits
+        fprintf('Parameters for independent direction %d, independent fit\n',ii);
+        indDirectionNRParams(ii)
+        fprintf('\n');
+        
+        % Plot simulated data
+        plot(indDirectionContrasts{ii},indDirectionResponses{ii},'ro','MarkerFaceColor','r','MarkerSize',12);
+        
+        % Compute and plot predicted functions
+        plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
+        plotPredictions = ComputeNakaRushton([indDirectionNRParams(ii).crfAmp,indDirectionNRParams(ii).crfSemi,indDirectionNRParams(ii).crfExponent],plotContrasts) + indDirectionNRParams(ii).crfOffset;
+        plot(plotContrasts,plotPredictions,'b','LineWidth',4);
+        
+        % Compute and plot predicted functions, common amplitude
+        plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
+        plotPredictionsCommon = ComputeNakaRushton([indDirectionNRParamsCommon(ii).crfAmp,indDirectionNRParamsCommon(ii).crfSemi,indDirectionNRParamsCommon(ii).crfExponent],plotContrasts) + indDirectionNRParamsCommon(ii).crfOffset;
+        plot(plotContrasts,plotPredictionsCommon,'g','LineWidth',2);
     end
     
 end
