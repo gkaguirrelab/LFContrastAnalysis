@@ -1,22 +1,22 @@
-% LZ23 
+% KAS25
 % Convenience variables
 analysisParams.projectName       = 'LFContrastAnalysis';
 analysisParams.flywheelName      = 'LFContrast';
-analysisParams.subjID            = 'sub-LZ23';
-analysisParams.expSubjID         = 'LZ23';
+analysisParams.subjID            = 'sub-KAS25';
+analysisParams.expSubjID         = 'KAS25';
 analysisParams.session           = {'ses-ResearchAguirre','ses-ResearchAguirre'};
-analysisParams.sessionFolderName = {'LZ23_2018-10-13','LZ23_2018-10-14'};
-analysisParams.sessionDate       = {'2018-10-13','2018-10-14'};
+analysisParams.sessionFolderName = {'KAS25_2018-10-13','KAS25_2018-10-20'};
+analysisParams.sessionDate       = {'2018-10-13','2018-10-20'};
 analysisParams.sessionNumber     = {'session_1','session_1'};
 analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
 analysisParams.showPlots         = true;
 
 % Brain mask of function run for the reference volume in ANTs step
-analysisParams.refFileName  = 'sub-LZ23_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
+analysisParams.refFileName  = 'sub-KAS25_ses-ResearchAguirre_task-tfMRILFContrastAP_run-1_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz';
 % output files of Neuropythy (retinotopy template)
 analysisParams.retinoFiles = {'rt_sub000_native.template_angle.nii.gz','rt_sub000_native.template_areas.nii.gz','rt_sub000_native.template_eccen.nii.gz',};
 % warp file name (product of running fmriprep)
-analysisParams.warpFileName = 'sub-LZ23_T1w_target-MNI152NLin2009cAsym_warp.h5';
+analysisParams.warpFileName = 'sub-KAS25_T1w_target-MNI152NLin2009cAsym_warp.h5';
 
 % Paramters for the QCM fit to IAMP:
 analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
@@ -32,7 +32,7 @@ analysisParams.numClipFramesEnd   = 2;
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
-analysisParams.eccenRange  = [3 20];
+analysisParams.eccenRange  = [10 20];
 
 % Define the TR
 analysisParams.TR = 0.800;
@@ -53,11 +53,12 @@ analysisParams.generateIAMPPlots = false;
 nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 
 % Plot isoresponce contour
-thresholds = [.075, .15, .3];
-colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5];
+thresholds = [0.10, 0.15, 0.2, 0.25, 0.3];
+colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5; 0.2,0.5,0.7; 0.8,0.3,0.5];
 [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
 
 % Use QCM fit to IAMP to predict timecourse.
+
 plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baselineBetas);
 
 
