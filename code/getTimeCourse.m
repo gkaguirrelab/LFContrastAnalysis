@@ -167,7 +167,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 [paramsFit, ~, QCMResponses] = temporalFit.fitResponse(thePacket,...
                     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
                 confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
-                cleanRunData(vxl,:,jj) = thePacket.response.values - QCMResponses.values;
+                % Linear detrending of the timecourse 
+                cleanRunData(vxl,:,jj) = detrend(thePacket.response.values - QCMResponses.values);
             end
         end
         %% Save out the clean time series brick
