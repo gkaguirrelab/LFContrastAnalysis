@@ -115,8 +115,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
-        % subract off baseline
-        betas(:,jj)= paramsFit.paramMainMatrix(1:end-2) - paramsFit.paramMainMatrix(end-1);
+        % Remove the meta weight for the attentional event
+        betas(:,jj)= paramsFit.paramMainMatrix(1:end-1);
         baselineBetas(jj,sessionNum) = paramsFit.paramMainMatrix(end-1);
         count = count+1;
     end
