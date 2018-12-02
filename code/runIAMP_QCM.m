@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, baselineBetas] = runIAMP_QCM(analysisParams,fullCleanData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM] = runIAMP_QCM(analysisParams,fullCleanData)
 % Takes in the clean time series data and the analysis params and runs the IMAP-QCM model.
 %
 % Syntax:
@@ -116,24 +116,32 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
         % Remove the meta weight for the attentional event
-        betas(:,jj)= paramsFit.paramMainMatrix(1:end-1);
-        baselineBetas(jj,sessionNum) = paramsFit.paramMainMatrix(end-1);
+        betas(:,jj,sessionNum)= paramsFit.paramMainMatrix(1:end-1);
         count = count+1;
     end
 
     % Calculate mean of the betas
-    IAMPBetas = [IAMPBetas, mean(betas,2)];
-    IAMPsem = [IAMPsem, std(betas,0,2)./sqrt(analysisParams.numAcquisitions)];
-
+    IAMPBetas = [IAMPBetas, mean(betas(1:end-1,:,sessionNum),2)];
+    IAMPsem = [IAMPsem, std(betas(1:end-1,:,sessionNum),0,2)./sqrt(analysisParams.numAcquisitions)];
 end
+baselineBetas = betas(end,:,:);
+meanBaseline = mean(baselineBetas(:));
+semBaseline = std(baselineBetas(:))./sqrt(numel(betas(end,:,:)));
 
 % combine the betas across sessions
 meanIAMPBetas = [];
 semIAMPBetas  = [];
+baselineCond  = [];
 for pp = 1:size(IAMPBetas,2)
     meanIAMPBetas = [meanIAMPBetas; IAMPBetas(:,pp)];
     semIAMPBetas  = [semIAMPBetas; IAMPsem(:,pp)];
 end
+meanIAMPBetas = [meanIAMPBetas;meanBaseline];
+semIAMPBetas  = [semIAMPBetas;semBaseline];
+
+% ADD CROSS VALIDATION HERE
+[rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_QCM(betas);
+
 
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
@@ -145,7 +153,6 @@ stimulusStruct.values   = [generateStimCombinations(analysisParams.contrastCodin
 stimulusStruct.timebase = 1:length(stimulusStruct.values);
 
 %% Snag response values from IAMP fit.
-%end -1 is for the attention event modeling
 thePacket.response.values = meanIAMPBetas';
 thePacket.response.timebase = 1:length(thePacket.response.values);
 
@@ -155,7 +162,8 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-defaultParamsInfo.noOffset = true;
+% allow QCM to fit the offset 
+defaultParamsInfo.noOffset = false;
 [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)

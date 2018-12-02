@@ -30,7 +30,8 @@ function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,p
 % MAB 09/09/18
 
 % Generate prediction to stimuli based on QCM fit to arbitrary stim
-contrastSpacing  = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
+contrastSpacing  = linspace(max(analysisParams.contrastCoding),0,analysisParams.numSamples);
+%contrastSpacing  = linspace(max(analysisParams.contrastCoding),min(analysisParams.contrastCoding),analysisParams.numSamples);
 QCMStim.values   = generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension);
 QCMStim.timebase = linspace(1,max(length(meanIAMPBetas(1:end-1))),length(QCMStim.values));
 temporalFitQCM   = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
@@ -58,14 +59,18 @@ for ii = 1:size(analysisParams.directionCoding,2)
         qcmSmooth = QCMResponses.values((ii-1)*aa+1:ii*aa);
     end
     
+    xAxis = [maxConVal.*analysisParams.contrastCoding, 0];
+    betas = [betas;paramsQCMFit.offset];
+    error = [error;semIAMPBetas(end)];
+    
     %% Plot the stuff
     subplot(rws,cols,ii); hold on
-    p1 = errorbar(maxConVal.*analysisParams.contrastCoding,betas,error,'k');
+    p1 = errorbar(xAxis,betas,error,'k');
     p2 = plot(maxContrastSpacing,qcmSmooth,'r');
     
     % Plot Naka-Rushton Function
-    [params(ii,:),f] = FitNakaRushton(maxConVal.*analysisParams.contrastCoding',betas);
-    nrResponses = nakaRushton(maxContrastSpacing,params(ii,2), params(ii,3),params(ii,1), 0);
+    [params(ii,:),f] = FitNakaRushton(xAxis',betas-paramsQCMFit.offset);
+    nrResponses = nakaRushton(maxContrastSpacing,params(ii,2), params(ii,3),params(ii,1), paramsQCMFit.offset);
     p3 = plot(maxContrastSpacing,nrResponses,'b');
     
     
@@ -86,7 +91,7 @@ for ii = 1:size(analysisParams.directionCoding,2)
     end
     ylabel('Mean Beta Weight')
     xlabel('Contrast')
-    ylim([-0.25 1.35]);
+    ylim([-0.8 1.1]);
 
     legend([p1, p2 p3], 'IAMP Model', 'QCM Fit', 'Naka-Rushton Fit', 'Location', 'northwest')
 end
