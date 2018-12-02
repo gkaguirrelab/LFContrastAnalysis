@@ -94,8 +94,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
 
         % add the response field
         thePacket.response.timebase = stimulusStruct.timebase;
-        thePacket.response.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
-
+        timeCourseValues(:,jj,sessionNum) = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1)';
+        thePacket.response.values =timeCourseValues(:,jj,sessionNum)';
         % add the kernel field
         thePacket.kernel = kernelStruct;
 
@@ -140,8 +140,7 @@ meanIAMPBetas = [meanIAMPBetas;meanBaseline];
 semIAMPBetas  = [semIAMPBetas;semBaseline];
 
 % ADD CROSS VALIDATION HERE
-[rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_QCM(betas);
-
+[rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues)
 
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
