@@ -61,8 +61,8 @@ for jj = 1:length(thresholds)
     legendNames{jj} = num2str(thresholds(jj));
 end
 
-xlim([-.3 .3])
-ylim([-.3 .3])
+xlim([-.5 .5])
+ylim([-.5 .5])
 axh = gca; % use current axes
 axisColor = 'k'; % black, or [0 0 0]
 linestyle = ':'; % dotted
@@ -72,5 +72,6 @@ xlabel('L Contrast')
 ylabel('M Contrast')
 legend(hleglines,legendNames)
 title('Isoresponse Contour')
+axis square
 
 end
