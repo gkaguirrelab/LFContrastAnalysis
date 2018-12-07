@@ -60,7 +60,7 @@ for ii = 1:size(analysisParams.directionCoding,2)
     end
     
     xAxis = [maxConVal.*analysisParams.contrastCoding, 0];
-    betas = [betas;paramsQCMFit.offset];
+    betas = [betas;paramsQCMFit.crfOffset];
     error = [error;semIAMPBetas(end)];
     
     %% Plot the stuff
@@ -69,8 +69,8 @@ for ii = 1:size(analysisParams.directionCoding,2)
     p2 = plot(maxContrastSpacing,qcmSmooth,'r');
     
     % Plot Naka-Rushton Function
-    [params(ii,:),f] = FitNakaRushton(xAxis',betas-paramsQCMFit.offset);
-    nrResponses = nakaRushton(maxContrastSpacing,params(ii,2), params(ii,3),params(ii,1), paramsQCMFit.offset);
+    [params(ii,:),f] = FitNakaRushton(xAxis',betas-paramsQCMFit.crfOffset);
+    nrResponses = nakaRushton(maxContrastSpacing,params(ii,2), params(ii,3),params(ii,1), paramsQCMFit.crfOffset);
     p3 = plot(maxContrastSpacing,nrResponses,'b');
     
     
