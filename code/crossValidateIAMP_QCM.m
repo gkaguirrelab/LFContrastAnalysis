@@ -1,4 +1,4 @@
-function [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues)
+function [rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues,paramsFitIAMP, packetPocket, varargin)
 % Calculates the cross validated RMSE and SEM for both the QCM and IAMP
 %
 % Syntax:
@@ -17,7 +17,11 @@ function [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_Q
 %    rmseSemQCM
 %
 % Optional key/value pairs:
-%    none
+%    showPlots
+
+p = inputParser;
+p.addParameter('showPlots',true, @islogical);
+p.parse(varargin{:});
 
 % Pick runs to leave out
 leaveOut =[];
@@ -26,10 +30,12 @@ for ii = 1:size(betas,3)
 end
 
 
+% IAMP object
+temporalFitIAMP = tfeIAMP('verbosity','none');
 
 for jj = 1:size(betas,2)
     
-    % Leave out run  
+    % Leave out run
     for kk = 1:size(leaveOut,1)
         sheet = betas(:,:,kk);
         sheet(:,leaveOut(kk,jj)) =[];
@@ -41,6 +47,7 @@ for jj = 1:size(betas,2)
     
     baselineCV = betasCV(end,:,:);
     betasCV = betasCV(1:end-1,:,:);
+    betaLength = size(betasCV,1);
     
     tmpBetas = [];
     for kk = 1:size(betasCV,3)
@@ -72,8 +79,56 @@ for jj = 1:size(betas,2)
     defaultParamsInfo.noOffset = false;
     [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
     
-    
-    
+    fullTCHeldOut = [];
+    fullIAMPpreds = [];
+    fullQCMpreds  = [];
+    for pp = 1:size(betasCV,3)
+        
+        heldOutRunNum = leaveOut(pp,jj) + size(betas,2)*(pp-1);
+        % Doctor up the parameters to use mean IAMP values and plot again
+        paramsFitIAMPMean = paramsFitIAMP{heldOutRunNum};
+        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanBetasCV(1+((pp-1)*betaLength):pp*betaLength);  mean(baselineCV(:))];
+        IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{heldOutRunNum}.stimulus,packetPocket{heldOutRunNum}.kernel);
+        
+        % Doctor up parameters to use the QCM fit to the mean IAMP
+        paramsFitIAMPQCM = paramsFitIAMP{heldOutRunNum};
+        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((pp-1)*betaLength):pp*betaLength),  mean(baselineCV(:))]' ;
+        IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{heldOutRunNum}.stimulus,packetPocket{heldOutRunNum}.kernel);
+        
+        
+        if(analysisParams.generateCrossValPlots)
+            originalTC = IAMPResponsesQCM;
+            originalTC.values = heldOutTimeCourse(:,pp);
+            temporalFitIAMP.plot(IAMPResponsesQCM,'Color',[1 0 0]);
+            temporalFitIAMP.plot(IAMPResponsesMean,'Color',[0 1 0],'NewWindow',false);
+            temporalFitIAMP.plot(originalTC,'Color',[0 0 0],'NewWindow',false);
+        end
+        
+        % Calculate RMSE
+        fullTCHeldOut = [fullTCHeldOut; heldOutTimeCourse(:,pp)] ;
+        fullIAMPpreds = [fullIAMPpreds; IAMPResponsesMean.values'];
+        fullQCMpreds  = [fullQCMpreds; IAMPResponsesQCM.values'];
+        
+        if pp ==2
+            rmseIAMP(jj) = sqrt(mean((fullTCHeldOut - fullIAMPpreds).^2));
+            rmseQCM(jj)  = sqrt(mean((fullTCHeldOut - fullQCMpreds).^2));
+        end
+    end
     clear betasCV baselineCV
 end
 
+rmseMeanIAMP = mean(rmseIAMP);
+rmseMeanQCM  = mean(rmseQCM);
+rmseSemIAMP  = std(rmseIAMP)./sqrt(length(rmseIAMP));
+rmseSemQCM   = std(rmseQCM)./sqrt(length(rmseQCM));
+
+
+if p.Results.showPlots
+    figure; hold on
+    c = categorical({'IAMP','QCM'});
+    bar(c,[rmseMeanIAMP, rmseMeanQCM]);
+    errorbar(1:2,[rmseMeanIAMP, rmseMeanQCM],[rmseSemIAMP,rmseSemQCM] ,'k.')
+    ylim([0 1]);
+    set(gca,'FontSize',12)
+    axis square
+end

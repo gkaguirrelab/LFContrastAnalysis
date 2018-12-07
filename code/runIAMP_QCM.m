@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM] = runIAMP_QCM(analysisParams,fullCleanData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, crossval] = runIAMP_QCM(analysisParams,fullCleanData)
 % Takes in the clean time series data and the analysis params and runs the IMAP-QCM model.
 %
 % Syntax:
@@ -140,8 +140,8 @@ meanIAMPBetas = [meanIAMPBetas;meanBaseline];
 semIAMPBetas  = [semIAMPBetas;semBaseline];
 
 % ADD CROSS VALIDATION HERE
-[rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues)
-
+[rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues, paramsFitIAMP, packetPocket, 'showPlots', true);
+crossval = [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM];
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
 temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
