@@ -15,6 +15,7 @@ analysisParams.TR = 0.800;
 analysisParams.baselineCondNum = 6;
 analysisParams.timeStep = 1/100;
 analysisParams.generateIAMPPlots = false;
+analysisParams.generateCrossValPlots = false;
 
 % Plotting params
  analysisParams.numSamples = 25;
@@ -29,8 +30,8 @@ analysisParams.generateIAMPPlots = false;
 nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 
 % Plot isoresponce contour
-thresholds = [0.10, 0.15, 0.2, 0.25, 0.3];
-colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5; 0.2,0.5,0.7; 0.8,0.3,0.5];
+thresholds = [0.10, 0.2, 0.3];
+colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
 [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
 
 % Use QCM fit to IAMP to predict timecourse.
