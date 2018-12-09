@@ -43,7 +43,7 @@ for ii = 1:size(nrParams,1)
     maxConVal = analysisParams.maxContrastPerDir(ii);
     maxContrastSpacing = maxConVal.*analysisParams.contrastCoding;
     if thresh <= nrParams(ii,1)
-        contrastsNR(ii) = InverttfeQCMComputeNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
+        contrastsNR(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
         contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh,'pchip');
     else
         contrastsNR(ii) = NaN;
@@ -60,7 +60,7 @@ end
 
 % % Invert Naka rushton to find desired output of quadratic computation.
 % theDimension = length(direction);
-% desiredEqContrast = InverttfeQCMComputeNakaRushton([params.crfAmp,params.crfSemi,params.crfExponent],offsetResponse);
+% desiredEqContrast = InvertNakaRushton([params.crfAmp,params.crfSemi,params.crfExponent],offsetResponse);
 % 
 % % Find what comes out of quadratic for the passed direction.
 % [~,Ainv,Q] = EllipsoidMatricesGenerate([1 params.Qvec],'dimension',theDimension);
@@ -72,7 +72,7 @@ end
 %
 % Step 1. Invert Naka-Rushton to go from thresh back to
 % corresponding equivalent contrast.
-desiredEqContrast = InverttfeQCMComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
+desiredEqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
 circlePoints = desiredEqContrast*UnitCircleGenerate(nQCMPoints);
 %circlePoints = desiredEqContrast*[0.70711 0.70711]';
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);

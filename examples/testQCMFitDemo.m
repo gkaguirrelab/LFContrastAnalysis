@@ -198,7 +198,7 @@ legend([p1 p2], 'original', 'QCM recovered')
 
 %%  Check that Naka-Rushton funciton inverts
 thresholdResponse = paramsQCMFit.crfAmp/3;
-eqContrast = InverttfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.crfOffset);
+eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.crfOffset);
 circlePoints = eqContrast*UnitCircleGenerate(numStim);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;

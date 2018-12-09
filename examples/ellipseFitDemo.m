@@ -76,7 +76,7 @@ temporalFitQCM.paramPrint(paramsQCMFit)
 
 
 
-eqContrast = InverttfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresh);
+eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresh);
 circlePoints = eqContrast*UnitCircleGenerate(nQCMPoints);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
