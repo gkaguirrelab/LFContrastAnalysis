@@ -32,6 +32,5 @@ function response = nakaRushton(contrastSupport,K,n,Rmax,offset)
 
 % Naka-Rushton Function
 response = ComputeNakaRushton([Rmax,K,n],contrastSupport) + offset;
-%response = Rmax .* ( contrastSupport.^n ./ (contrastSupport.^n + K.^n)) + offset;
 
 end
