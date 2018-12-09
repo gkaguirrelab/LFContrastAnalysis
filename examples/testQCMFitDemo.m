@@ -202,7 +202,7 @@ eqContrast = InverttfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.cr
 circlePoints = eqContrast*UnitCircleGenerate(numStim);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputetfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.crfOffset;
+checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.crfOffset;
 if (any(abs(checkThresh-thresholdResponse) > 1e-10))
     error('Did not invert QCM model correctly');
 end
@@ -290,12 +290,12 @@ if (~RANDOM_STIMULI & FIT_NAKARUSHTON)
         
         % Compute and plot predicted functions
         plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
-        plotPredictions = ComputetfeQCMComputeNakaRushton([indDirectionNRParams(ii).crfAmp,indDirectionNRParams(ii).crfSemi,indDirectionNRParams(ii).crfExponent],plotContrasts) + indDirectionNRParams(ii).crfOffset;
+        plotPredictions = ComputeNakaRushton([indDirectionNRParams(ii).crfAmp,indDirectionNRParams(ii).crfSemi,indDirectionNRParams(ii).crfExponent],plotContrasts) + indDirectionNRParams(ii).crfOffset;
         plot(plotContrasts,plotPredictions,'b','LineWidth',4);
         
         % Compute and plot predicted functions, common amplitude
         plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
-        plotPredictionsCommon = ComputetfeQCMComputeNakaRushton([indDirectionNRParamsCommon(ii).crfAmp,indDirectionNRParamsCommon(ii).crfSemi,indDirectionNRParamsCommon(ii).crfExponent],plotContrasts) + indDirectionNRParamsCommon(ii).crfOffset;
+        plotPredictionsCommon = ComputeNakaRushton([indDirectionNRParamsCommon(ii).crfAmp,indDirectionNRParamsCommon(ii).crfSemi,indDirectionNRParamsCommon(ii).crfExponent],plotContrasts) + indDirectionNRParamsCommon(ii).crfOffset;
         plot(plotContrasts,plotPredictionsCommon,'g','LineWidth',2);
     end
     

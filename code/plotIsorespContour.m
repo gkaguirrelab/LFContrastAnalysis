@@ -77,7 +77,7 @@ circlePoints = desiredEqContrast*UnitCircleGenerate(nQCMPoints);
 %circlePoints = desiredEqContrast*[0.70711 0.70711]';
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputetfeQCMComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
+checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
 if (any(abs(checkThresh-thresh) > 1e-6))
     error('Did not invert QCM model correctly');
 end
