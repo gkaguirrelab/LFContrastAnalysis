@@ -98,7 +98,7 @@ Q = A'*A;
 radius = diag(sqrt(stimuli'*Q*stimuli))';
 
 % Get the neural response values
-R = nakaRushton(radius,sigma,n,Rmax,offset);
+R = tfeQCMComputeNakaRushton(radius,sigma,n,Rmax,offset);
 
 %% Let's check that the QCM forward model gives the same responses.
 %
@@ -171,7 +171,7 @@ radiusQcm =  diag(sqrt(stimuli'*Q_qcm*stimuli))';
 % ambiguities in the parameterization of the QCM model, because of a +/- 90
 % degree ambiguit about which is the major and which is the minor axis of
 % the ellipse.
-Rqcm  = nakaRushton(radiusQcm,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent,paramsQCMFit.crfAmp, paramsQCMFit.crfOffset);
+Rqcm  = tfeQCMComputeNakaRushton(radiusQcm,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent,paramsQCMFit.crfAmp, paramsQCMFit.crfOffset);
 if (max(abs(R-Rqcm)/max(abs(R))) > 1e-2)
     error('Hand computation of QCM model does not match tfeQCM forward model');
 end
@@ -198,11 +198,11 @@ legend([p1 p2], 'original', 'QCM recovered')
 
 %%  Check that Naka-Rushton funciton inverts
 thresholdResponse = paramsQCMFit.crfAmp/3;
-eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.crfOffset);
+eqContrast = InverttfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresholdResponse-paramsQCMFit.crfOffset);
 circlePoints = eqContrast*UnitCircleGenerate(numStim);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCMFit.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.crfOffset;
+checkThresh = ComputetfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints))) + paramsQCMFit.crfOffset;
 if (any(abs(checkThresh-thresholdResponse) > 1e-10))
     error('Did not invert QCM model correctly');
 end
@@ -290,12 +290,12 @@ if (~RANDOM_STIMULI & FIT_NAKARUSHTON)
         
         % Compute and plot predicted functions
         plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
-        plotPredictions = ComputeNakaRushton([indDirectionNRParams(ii).crfAmp,indDirectionNRParams(ii).crfSemi,indDirectionNRParams(ii).crfExponent],plotContrasts) + indDirectionNRParams(ii).crfOffset;
+        plotPredictions = ComputetfeQCMComputeNakaRushton([indDirectionNRParams(ii).crfAmp,indDirectionNRParams(ii).crfSemi,indDirectionNRParams(ii).crfExponent],plotContrasts) + indDirectionNRParams(ii).crfOffset;
         plot(plotContrasts,plotPredictions,'b','LineWidth',4);
         
         % Compute and plot predicted functions, common amplitude
         plotContrasts = linspace(0,max(indDirectionContrasts{ii}),100);
-        plotPredictionsCommon = ComputeNakaRushton([indDirectionNRParamsCommon(ii).crfAmp,indDirectionNRParamsCommon(ii).crfSemi,indDirectionNRParamsCommon(ii).crfExponent],plotContrasts) + indDirectionNRParamsCommon(ii).crfOffset;
+        plotPredictionsCommon = ComputetfeQCMComputeNakaRushton([indDirectionNRParamsCommon(ii).crfAmp,indDirectionNRParamsCommon(ii).crfSemi,indDirectionNRParamsCommon(ii).crfExponent],plotContrasts) + indDirectionNRParamsCommon(ii).crfOffset;
         plot(plotContrasts,plotPredictionsCommon,'g','LineWidth',2);
     end
     

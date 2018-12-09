@@ -30,7 +30,7 @@ for ii = 1:numDirections
     offset = 0;
     
     % response values
-    R  = nakaRushton(contrastLevels,sigma,n,Rmax, offset);
+    R  = tfeQCMComputeNakaRushton(contrastLevels,sigma,n,Rmax, offset);
     betas(ii,:) = R + rand(size(R)).*noiseLevel.*Rmax;
 end
 tmp = betas';
@@ -76,11 +76,11 @@ temporalFitQCM.paramPrint(paramsQCMFit)
 
 
 
-eqContrast = InvertNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresh);
+eqContrast = InverttfeQCMComputeNakaRushton([paramsQCMFit.crfAmp,paramsQCMFit.crfSemi,paramsQCMFit.crfExponent],thresh);
 circlePoints = eqContrast*UnitCircleGenerate(nQCMPoints);
 [~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
+checkThresh = ComputetfeQCMComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
 if (any(abs(checkThresh-thresh) > 1e-10))
     error('Did not invert QCM model correctly');
 end

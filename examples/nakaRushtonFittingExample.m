@@ -12,7 +12,7 @@ offset = 0;
 C  = [.2, .4,.6,.8,1];
 
 % response values
-R  = nakaRushton(C,sigma,n,Rmax, offset);
+R  = tfeQCMComputeNakaRushton(C,sigma,n,Rmax, offset);
 
 % Add noise 
 noiseLevel = 0;
@@ -24,14 +24,14 @@ R_noise = R + rand(size(R)).*noiseLevel.*Rmax;
 %   n = params(3)
 %   response = Rmax*[contrast^n]/[contrast^n + sigma^n]
 params0 = [];
-[params,f] = FitNakaRushton(C,R_noise,params0)
+[params,f] = FittfeQCMComputeNakaRushton(C,R_noise,params0)
 
 % Get the naka predictions for the inital contrast values.
-nrResponses = nakaRushton(C,params(2), params(3),params(1), offset);
+nrResponses = tfeQCMComputeNakaRushton(C,params(2), params(3),params(1), offset);
 
 % upsample the function
 contrastSpacing = linspace(max(C),min(C),30);
-nrResponses_upsampled = nakaRushton(contrastSpacing,params(2), params(3),params(1), offset);
+nrResponses_upsampled = tfeQCMComputeNakaRushton(contrastSpacing,params(2), params(3),params(1), offset);
 
 %% Plot the results
 figure; hold on
