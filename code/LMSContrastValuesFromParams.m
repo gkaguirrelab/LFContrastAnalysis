@@ -1,8 +1,8 @@
 function LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrastPerDir,totalTime,deltaT)
-%%LMSContrastValuesFromParams  Loop over trials, show stimuli and get responses.
+% LMSContrastValuesFromParams  Loop over trials, show stimuli and get responses.
 %
-% Usage:
-%    LMSContrastValuesFromParams(expParams,baselineCondNum,totalTime,deltaT)
+% Syntax:
+%    LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrastPerDir,totalTime,deltaT)
 %
 % Description:
 %    This function takes in a description of the stimulus order for a
@@ -50,7 +50,7 @@ LMSContrastMat = zeros(3,totalTime/deltaT);
 for kk = 1:size(expParams,1)
     LMSbaseDir = repmat(directionCoding(:,expParams(kk,4)), [1,(expParams(kk,2)-expParams(kk,1)+1)]);
     LMSmaxContrast = LMSbaseDir.* maxContrastPerDir(expParams(kk,4));
-    LMScontrastBlock = LMSmaxContrast.* contrastCoding(expParams(kk,3));
+    LMScontrastBlock = LMSmaxContrast .* contrastCoding(expParams(kk,3));
     LMSContrastMat(:,expParams(kk,1):expParams(kk,2)) = LMScontrastBlock;    
 end
 
