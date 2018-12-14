@@ -39,35 +39,35 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
-
-
+    
+    
     %% Construct the model object
     temporalFit = tfeIAMP('verbosity','none');
-
+    
     %% Create a cell of stimulusStruct (one struct per run)
     for jj = 1:analysisParams.numAcquisitions
-
+        
         % identify the data param file
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
-
+        
         % We are about to load the data param file. First silence the warning
         % for EnumberableClass. Save the warning state.
         warningState = warning();
         warning('off','MATLAB:class:EnumerableClassNotFound')
-
+        
         % Load and process the data param file
         load(dataParamFile);
         expParams = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
-
+        
         % restore warning state
         warning(warningState);
-
+        
         % make timebase
         totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
         deltaT = analysisParams.TR*1000;
         stimulusStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
         responseStruct.timebase = stimulusStruct.timebase;
-
+        
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
         stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
@@ -78,43 +78,52 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         LMSContrastMat(3,:) = [];
         [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat);
         
-        
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
         %istead of set here]
         responseStruct.timeStep = analysisParams.timeStep;
-
+        
         % get attention event regressor
         [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', stimulusStruct.timebase);
-
+        
         % add attention events to regressor matrix
         stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
-
+        
         % Set the number of instances.
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
-
+        
         % Get kernel
         kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
-
+        
         % make the stimulus portion of packet for fitting
         thePacket.stimulus.timebase = stimulusStruct.timebase;
         thePacket.stimulus.values   = stimulusStruct.values;
-
+        
         % add the response field
+        responses = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1)';
         thePacket.response.timebase = stimulusStruct.timebase;
-        timeCourseValues(:,jj,sessionNum) = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1)';
+        timeCourseValues(:,jj,sessionNum) = responses;
         thePacket.response.values =timeCourseValues(:,jj,sessionNum)';
         % add the kernel field
         thePacket.kernel = kernelStruct;
-
+        
         % add a metaData field
         thePacket.metaData = [];
-
+        
         %% Perform the fit
         [paramsFit,fVal,IAMPResponses] = ...
             temporalFit.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
-
+        
+        % Fit Naka-Ruston to the timecourse with things common across directions
+        NOOFFSET = false;
+        commonAmp = false;
+        commonSemi = false;
+        commonExp = false;
+        commonOffset = true;
+        indDirectionNRParamsCommon{jj} = tfeQCMFitNakaRushtonDirectionsContrasts(responses',stimDirections,stimContrasts,...
+            'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
+        
         % Plot data and IAMP fit
         if(analysisParams.generateIAMPPlots)
             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
@@ -126,7 +135,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         betas(:,jj,sessionNum)= paramsFit.paramMainMatrix(1:end-1);
         count = count+1;
     end
-
+    
     % Calculate mean of the betas
     IAMPBetas = [IAMPBetas, mean(betas(1:end-1,:,sessionNum),2)];
     IAMPsem = [IAMPsem, std(betas(1:end-1,:,sessionNum),0,2)./sqrt(analysisParams.numAcquisitions)];
@@ -168,7 +177,7 @@ thePacket.kernel = [];
 thePacket.metaData = [];
 
 %% Fit
-% allow QCM to fit the offset 
+% allow QCM to fit the offset
 defaultParamsInfo.noOffset = false;
 [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
