@@ -68,10 +68,17 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         stimulusStruct.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
         responseStruct.timebase = stimulusStruct.timebase;
 
-        % make stimulus values
+        % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
         stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
-
+        
+        % make stimulus values for QCM
+        contrastCoding = [analysisParams.contrastCoding, 0];
+        LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,analysisParams.directionCoding,analysisParams.maxContrastPerDir,totalTime,deltaT);
+        LMSContrastMat(3,:) = [];
+        [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat);
+        
+        
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
         %istead of set here]
         responseStruct.timeStep = analysisParams.timeStep;
