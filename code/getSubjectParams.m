@@ -27,6 +27,7 @@ switch subjID
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
+        analysisParams.numDirPerSession = 4;
         analysisParams.theDimension = 2;
         
         
@@ -55,6 +56,7 @@ switch subjID
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
+        analysisParams.numDirPerSession = 4;
         analysisParams.theDimension = 2;
         
     case 'AP26'
@@ -82,5 +84,6 @@ switch subjID
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
+        analysisParams.numDirPerSession = 4;
         analysisParams.theDimension = 2;
 end

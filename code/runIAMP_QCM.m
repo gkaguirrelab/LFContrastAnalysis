@@ -40,6 +40,25 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
     
+    % Get the Directions of each session. This requires analysisParams.directionCoding to be organized
+    % such that the directions are grouped per session and these groups are in the same  order as the
+    % sessions order
+    
+    % get then number of direction over all sessiosn
+    analysisParams.numDirections = size(unique(analysisParams.directionCoding','rows')',2);
+    
+    % check how the sessions were ordered.
+    if analysisParams.numDirPerSession == analysisParams.numDirections
+        directionCoding  = analysisParams.directionCoding;
+        maxContrast = analysisParams.maxContrastPerDir;
+    elseif analysisParams.numDirPerSession < size(unique(analysisParams.directionCoding','rows')',2)
+        sPos = 1+ analysisParams.numDirPerSession*(sessionNum-1);
+        ePos = (1+ analysisParams.numDirPerSession*(sessionNum-1)) + (analysisParams.numDirPerSession-1);
+        directionCoding = analysisParams.directionCoding(:,sPos:ePos);
+        maxContrast = analysisParams.maxContrastPerDir(sPos:ePos);
+    else
+        error('number of directions per session is greater than the number of total direction')
+    end
     
     %% Construct the model object
     temporalFit = tfeIAMP('verbosity','none');
@@ -74,9 +93,16 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
-        LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,analysisParams.directionCoding,analysisParams.maxContrastPerDir,totalTime,deltaT);
+        LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrast,totalTime,deltaT);
         LMSContrastMat(3,:) = [];
+        check{jj}    = LMSContrastMat;
         [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat);
+        
+        % Get the unique directions and remove the [0;0] column
+        indDirectionDirections = unique(stimDirections','rows')';
+        idx = find(sum(ismember(indDirectionDirections, [0;0]),1)==2);
+        indDirectionDirections(:,idx) = []; 
+        
         
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
         %istead of set here]
@@ -121,8 +147,28 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         commonSemi = false;
         commonExp = false;
         commonOffset = true;
-        indDirectionNRParamsCommon{jj} = tfeQCMFitNakaRushtonDirectionsContrasts(responses',stimDirections,stimContrasts,...
+        
+        indDirectionNRParamsCommon = tfeQCMFitNakaRushtonDirectionsContrasts(responses',stimDirections,stimContrasts,...
             'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
+
+        stimulusStructNR.values = [stimDirections ; stimContrasts];
+        stimulusStructNR.timebase = 1:size(stimulusStruct.values,2);
+        NRDirectionObj = tfeNakaRushtonDirection(indDirectionDirections, ...
+            'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
+        objResponses = NRDirectionObj.computeResponse(indDirectionNRParamsCommon,stimulusStruct,[]);
+        if (max(abs(QCMResponsesByHand-objResponses.values)/max(QCMResponsesByHand)) > 1e-6)
+            error('tfeNakaRushtonDirection object computeResponse method does not give right answer');
+        end
+        [fitNRDirectionParams,~,objFitResponses] = NRDirectionObj.fitResponse(theDirectionPacket);
+        if (max(abs(QCMResponsesByHand-objFitResponses.values)/max(QCMResponsesByHand)) > 0.02)
+            error('tfeNakaRushtonDirection object fitResponse method does not give right answer');
+        end
+        
+        
+        
+        
+        
+        
         
         % Plot data and IAMP fit
         if(analysisParams.generateIAMPPlots)
@@ -156,8 +202,8 @@ meanIAMPBetas = [meanIAMPBetas;meanBaseline];
 semIAMPBetas  = [semIAMPBetas;semBaseline];
 
 % ADD CROSS VALIDATION HERE
-[rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues, paramsFitIAMP, packetPocket, 'showPlots', true);
-crossval = [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM];
+% [rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues, paramsFitIAMP, packetPocket, 'showPlots', true);
+% crossval = [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM];
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
 temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
