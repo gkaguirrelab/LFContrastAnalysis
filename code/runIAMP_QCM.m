@@ -101,7 +101,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         % Get the unique directions and remove the [0;0] column
         indDirectionDirections = unique(stimDirections','rows')';
         idx = find(sum(ismember(indDirectionDirections, [0;0]),1)==2);
-        indDirectionDirections(:,idx) = []; 
+        indDirectionDirections(:,idx) = [];
         
         
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
@@ -148,28 +148,24 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         commonExp = false;
         commonOffset = true;
         
-        indDirectionNRParamsCommon = tfeQCMFitNakaRushtonDirectionsContrasts(responses',stimDirections,stimContrasts,...
-            'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
-
-        stimulusStructNR.values = [stimDirections ; stimContrasts];
-        stimulusStructNR.timebase = 1:size(stimulusStruct.values,2);
+        % Create the NR Pactket 
+        theNRPacket.stimulus.values   = [stimDirections ; stimContrasts];
+        theNRPacket.stimulus.timebase = 1:size(thePacket.stimulus.values,2);
+        theNRPacket.response.values   = responses';
+        theNRPacket.response.timebase = 1:size(thePacket.response.values,2);
+        theNRPacket.kernel            = kernelStruct;
+        theNRPacket.metaData          = [];
+        defaultParamsInfo.noOffset    = true;
+        
+        % Init the tfeNakaRushtonDirection object 
         NRDirectionObj = tfeNakaRushtonDirection(indDirectionDirections, ...
             'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
-        objResponses = NRDirectionObj.computeResponse(indDirectionNRParamsCommon,stimulusStruct,[]);
-        if (max(abs(QCMResponsesByHand-objResponses.values)/max(QCMResponsesByHand)) > 1e-6)
-            error('tfeNakaRushtonDirection object computeResponse method does not give right answer');
-        end
-        [fitNRDirectionParams,~,objFitResponses] = NRDirectionObj.fitResponse(theDirectionPacket);
-        if (max(abs(QCMResponsesByHand-objFitResponses.values)/max(QCMResponsesByHand)) > 0.02)
-            error('tfeNakaRushtonDirection object fitResponse method does not give right answer');
-        end
         
-        
-        
-        
-        
-        
-        
+        % Fit the packet
+        [fitNRDirectionParams{sessionNum,jj},~,objFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
+        fprintf('\nQCM parameters from fit:\n');
+        QCMObj.paramPrint(fitQCMParams)
+     
         % Plot data and IAMP fit
         if(analysisParams.generateIAMPPlots)
             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
