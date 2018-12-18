@@ -94,14 +94,17 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
         LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrast,totalTime,deltaT);
+        directionPrecision = 4;
+        indDirectionDirections = round(directionCoding(1:2,:),directionPrecision);
         LMSContrastMat(3,:) = [];
         check{jj}    = LMSContrastMat;
-        [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat);
+        [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat, ...
+            'zeroContrastDirection',indDirectionDirections(:,1),'precision',directionPrecision);
         
         % Get the unique directions and remove the [0;0] column
-        indDirectionDirections = unique(stimDirections','rows')';
-        idx = find(sum(ismember(indDirectionDirections, [0;0]),1)==2);
-        indDirectionDirections(:,idx) = [];
+        checkDirections = tfeQCMParseDirections(stimDirections);
+        % [WRITE A CHECK HERE THAT EACH COLUMN OF indDirectionDirections is
+        % in in checkDirections, and vice versa.
         
         
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
@@ -115,6 +118,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
         
         % Set the number of instances.
+        clear defaultParamsInfo
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
         
         % Get kernel
@@ -143,19 +147,18 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % Fit Naka-Ruston to the timecourse with things common across directions
         NOOFFSET = false;
-        commonAmp = false;
+        commonAmp = true;
         commonSemi = false;
-        commonExp = false;
+        commonExp = true;
         commonOffset = true;
         
         % Create the NR Pactket 
         theNRPacket.stimulus.values   = [stimDirections ; stimContrasts];
-        theNRPacket.stimulus.timebase = 1:size(thePacket.stimulus.values,2);
+        theNRPacket.stimulus.timebase = stimulusStruct.timebase;
         theNRPacket.response.values   = responses';
-        theNRPacket.response.timebase = 1:size(thePacket.response.values,2);
+        theNRPacket.response.timebase = stimulusStruct.timebase;
         theNRPacket.kernel            = kernelStruct;
         theNRPacket.metaData          = [];
-        defaultParamsInfo.noOffset    = true;
         
         % Init the tfeNakaRushtonDirection object 
         NRDirectionObj = tfeNakaRushtonDirection(indDirectionDirections, ...
@@ -163,8 +166,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % Fit the packet
         [fitNRDirectionParams{sessionNum,jj},~,objFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
-        fprintf('\nQCM parameters from fit:\n');
-        QCMObj.paramPrint(fitQCMParams)
+        fprintf('\nNake-Rushton parameters from fit:\n');
+        NRDirectionObj.paramPrint(fitNRDirectionParams{sessionNum,jj});
      
         % Plot data and IAMP fit
         if(analysisParams.generateIAMPPlots)
@@ -220,6 +223,7 @@ thePacket.metaData = [];
 
 %% Fit
 % allow QCM to fit the offset
+clear defaultParamsInfo
 defaultParamsInfo.noOffset = false;
 [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
