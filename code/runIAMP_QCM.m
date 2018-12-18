@@ -149,7 +149,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         NOOFFSET = false;
         commonAmp = true;
         commonSemi = false;
-        commonExp = true;
+        commonExp = false;
         commonOffset = true;
         
         % Create the NR Pactket 
@@ -165,7 +165,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
         
         % Fit the packet
-        [fitNRDirectionParams{sessionNum,jj},~,objFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
+        [fitNRDirectionParams{sessionNum,jj},~,NRDirectionFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
         fprintf('\nNake-Rushton parameters from fit:\n');
         NRDirectionObj.paramPrint(fitNRDirectionParams{sessionNum,jj});
      
@@ -173,6 +173,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         if(analysisParams.generateIAMPPlots)
             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
             temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
+            NRDirectionObj.plot(NRDirectionFitResponses,'Color',[0 0 1],'NewWindow',false);
         end
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
