@@ -147,7 +147,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % Fit Naka-Ruston to the timecourse with things common across directions
         NOOFFSET = false;
-        commonAmp = true;
+        commonAmp = false;
         commonSemi = false;
         commonExp = false;
         commonOffset = true;
@@ -166,7 +166,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % Fit the packet
         [fitNRDirectionParams{sessionNum,jj},~,NRDirectionFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
-        fprintf('\nNake-Rushton parameters from fit:\n');
+        fprintf('\nNaka-Rushton parameters from fit:\n');
         NRDirectionObj.paramPrint(fitNRDirectionParams{sessionNum,jj});
      
         % Plot data and IAMP fit
