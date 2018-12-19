@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, crossval] = runIAMP_QCM(analysisParams,fullCleanData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, meanNRParams, crossval] = runIAMP_QCM(analysisParams,fullCleanData)
 % Takes in the clean time series data and the analysis params and runs the IMAP-QCM model.
 %
 % Syntax:
@@ -152,7 +152,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         commonExp = false;
         commonOffset = true;
         
-        % Create the NR Pactket 
+        % Create the NR Pactket
         theNRPacket.stimulus.values   = [stimDirections ; stimContrasts];
         theNRPacket.stimulus.timebase = stimulusStruct.timebase;
         theNRPacket.response.values   = responses';
@@ -160,7 +160,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         theNRPacket.kernel            = kernelStruct;
         theNRPacket.metaData          = [];
         
-        % Init the tfeNakaRushtonDirection object 
+        % Init the tfeNakaRushtonDirection object
         NRDirectionObj = tfeNakaRushtonDirection(indDirectionDirections, ...
             'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
         
@@ -168,7 +168,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         [fitNRDirectionParams{sessionNum,jj},~,NRDirectionFitResponses] = NRDirectionObj.fitResponse(theNRPacket);
         fprintf('\nNaka-Rushton parameters from fit:\n');
         NRDirectionObj.paramPrint(fitNRDirectionParams{sessionNum,jj});
-     
+        
         % Plot data and IAMP fit
         if(analysisParams.generateIAMPPlots)
             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
@@ -186,6 +186,33 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     IAMPBetas = [IAMPBetas, mean(betas(1:end-1,:,sessionNum),2)];
     IAMPsem = [IAMPsem, std(betas(1:end-1,:,sessionNum),0,2)./sqrt(analysisParams.numAcquisitions)];
 end
+
+% Get the mean Naka-Ruston paramters for each driections (as fit with the
+% TFE NR)
+for kk = 1:size(fitNRDirectionParams,1)
+    for pp = 1:size(fitNRDirectionParams,2)
+        
+        tmpParams = fitNRDirectionParams{kk,pp};
+        
+        for gg = 1:size(tmpParams,2);
+            crfAmp(pp,gg)      = tmpParams(gg).crfAmp;
+            crfExponent(pp,gg) = tmpParams(gg).crfExponent;
+            crfOffset(pp,gg)   = tmpParams(gg).crfOffset;
+            crfSemi(pp,gg)     = tmpParams(gg).crfSemi;
+            expFalloff(pp,gg)  = tmpParams(gg).expFalloff;
+            noiseSd(pp,gg)     = tmpParams(gg).noiseSd;
+        end
+    end
+    
+    meanNRParams.crfAmp(kk,:) = mean(crfAmp);
+    meanNRParams.crfExponent(kk,:) = mean(crfExponent);
+    meanNRParams.crfOffset(kk,:) = mean(crfOffset);
+    meanNRParams.crfSemi(kk,:) = mean(crfSemi);
+    meanNRParams.expFalloff(kk,:) = mean(expFalloff);
+    meanNRParams.noiseSd(kk,:) = mean(noiseSd);
+    
+end
+
 baselineBetas = betas(end,:,:);
 meanBaseline = mean(baselineBetas(:));
 semBaseline = std(baselineBetas(:))./sqrt(numel(betas(end,:,:)));
