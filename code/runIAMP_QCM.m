@@ -97,7 +97,6 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         directionPrecision = 4;
         indDirectionDirections = round(directionCoding(1:2,:),directionPrecision);
         LMSContrastMat(3,:) = [];
-        check{jj}    = LMSContrastMat;
         [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat, ...
             'zeroContrastDirection',indDirectionDirections(:,1),'precision',directionPrecision);
         
@@ -249,12 +248,40 @@ thePacket.stimulus = stimulusStruct;
 thePacket.kernel = [];
 thePacket.metaData = [];
 
-%% Fit
+%% Fit the tfeQCM to the IAMP beta weights 
 % allow QCM to fit the offset
 clear defaultParamsInfo
 defaultParamsInfo.noOffset = false;
 [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('Model parameter from fits:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
+
+%% Fit the tfeQCMDirections to the IAMP beta weights
+% create the packet
+stim = kron(analysisParams.directionCoding(1:analysisParams.theDimension,:).*analysisParams.maxContrastPerDir,analysisParams.contrastCoding);
+[qcmDirStimDirections,qcmDirStimContrasts] = tfeQCMStimuliToDirectionsContrasts(stim,'precision',4);
+qcmDirStimDirections = [qcmDirStimDirections,[0;0]];
+qcmDirStimContrasts  = [qcmDirStimContrasts, 0];
+qcmDirPacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
+qcmDirPacket.stimulus.timebase = 1:size(qcmDirPacket.stimulus.values,2);
+qcmDirPacket.response.values   = meanIAMPBetas';
+qcmDirPacket.response.timebase = 1:length(meanIAMPBetas);
+qcmDirPacket.kernel            = [];
+qcmDirPacket.metaData          = [];
+
+% Create the tfeQCMDirection object
+clear defaultParamsInfo
+defaultParamsInfo.noOffset = false;
+QCMDirectionObj = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
+
+% Fit the packet
+[fitQCMDirectionParams,fVal,fitQCMDirectionResponseStruct] = QCMDirectionObj.fitResponse(qcmDirPacket,'defaultParamsInfo',defaultParamsInfo);
+fprintf('\nQCM parameters from direction fit:\n');
+QCMDirectionObj.paramPrint(fitQCMDirectionParams)
+
+%% Fit the NRDirections to the the IAMP beta weights
+
+%% Fit the NRDirections with the constrtaints added to the IAMP beta weights
+
 
 end

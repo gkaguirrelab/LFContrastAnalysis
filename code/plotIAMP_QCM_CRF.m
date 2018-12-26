@@ -1,4 +1,4 @@
-function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
+function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit, meanNRParams)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
