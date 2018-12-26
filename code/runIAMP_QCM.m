@@ -248,12 +248,12 @@ thePacket.stimulus = stimulusStruct;
 thePacket.kernel = [];
 thePacket.metaData = [];
 
-%% Fit the tfeQCM to the IAMP beta weights 
+%% Fit the tfeQCM to the IAMP beta weights
 % allow QCM to fit the offset
 clear defaultParamsInfo
 defaultParamsInfo.noOffset = false;
 [paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
-fprintf('Model parameter from fits:\n');
+fprintf('\nModel parameter from fits from tfeQCM to IAMP betas:\n');
 temporalFitQCM.paramPrint(paramsQCMFit)
 
 %% Fit the tfeQCMDirections to the IAMP beta weights
@@ -276,10 +276,27 @@ QCMDirectionObj = tfeQCMDirection('verbosity','none','dimension',analysisParams.
 
 % Fit the packet
 [fitQCMDirectionParams,fVal,fitQCMDirectionResponseStruct] = QCMDirectionObj.fitResponse(qcmDirPacket,'defaultParamsInfo',defaultParamsInfo);
-fprintf('\nQCM parameters from direction fit:\n');
+fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
 QCMDirectionObj.paramPrint(fitQCMDirectionParams)
 
 %% Fit the NRDirections to the the IAMP beta weights
+
+% Create the packet 
+nrDirPacket = qcmDirPacket;
+
+% Create the tfeNakaRushtonDirection object
+NOOFFSET = false;
+commonAmp = false;
+commonSemi = false;
+commonExp = false;
+commonOffset = true;
+NRDirectionObj = tfeNakaRushtonDirection(analysisParams.directionCoding(1:analysisParams.theDimension,:), ...
+    'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
+
+% Fit the packet
+[fitNRDirectionParams,~,objFitResponses] = NRDirectionObj.fitResponse(nrDirPacket);
+fprintf('\nNRDirection parameters from fit to IAMP betas:\n');
+QCMDirectionObj.paramPrint(fitNRDirectionParams)
 
 %% Fit the NRDirections with the constrtaints added to the IAMP beta weights
 
