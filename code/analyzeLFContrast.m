@@ -1,5 +1,5 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('LZ23');
 
 % Clip fisrt 2 TRs from time series?
 % if no clipping then put 0;
@@ -35,5 +35,4 @@ colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
 [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
 
 % Use QCM fit to IAMP to predict timecourse.
-
 plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,paramsQCMFit.crfOffset);
