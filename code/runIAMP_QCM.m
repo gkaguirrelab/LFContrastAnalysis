@@ -70,7 +70,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
         
         % We are about to load the data param file. First silence the warning
-        % for EnumberableClass. Save the warning state.
+        % for EnumerableClassNotFound. Save the warning state.
         warningState = warning();
         warning('off','MATLAB:class:EnumerableClassNotFound')
         
@@ -104,8 +104,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         checkDirections = tfeQCMParseDirections(stimDirections);
         % [WRITE A CHECK HERE THAT EACH COLUMN OF indDirectionDirections is
         % in in checkDirections, and vice versa.
-        
-        
+          
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
         %istead of set here]
         responseStruct.timeStep = analysisParams.timeStep;
@@ -138,11 +137,17 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         % add a metaData field
         thePacket.metaData = [];
         
-        %% Perform the fit
+        % Perform the fit
         [paramsFit,fVal,IAMPResponses] = ...
             temporalFit.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
+        
+        % Look at IAMP fit contrast response functions
+%         stimulusStruct.values   = [generateStimCombinations(analysisParams.contrastCoding,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension),[0;0]];
+%         stimulusStruct.timebase = 1:length(stimulusStruct.values);
+%         figure; clf; hold on;
+%         plot(paramsFit.paramMainMatrix(1:end-1));
         
         % Fit Naka-Ruston to the timecourse with things common across directions
         NOOFFSET = false;
@@ -153,10 +158,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % Create the NR Pactket
         theNRPacket.stimulus.values   = [stimDirections ; stimContrasts];
-        theNRPacket.stimulus.timebase = stimulusStruct.timebase;
-        theNRPacket.response.values   = responses';
-        theNRPacket.response.timebase = stimulusStruct.timebase;
-        theNRPacket.kernel            = kernelStruct;
+        theNRPacket.stimulus.timebase = thePacket.stimulus.timebase;
+        theNRPacket.response          = thePacket.response;
+        theNRPacket.kernel            = thePacket.kernel;
         theNRPacket.metaData          = [];
         
         % Init the tfeNakaRushtonDirection object
@@ -176,6 +180,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
+        
         % Remove the meta weight for the attentional event
         betas(:,jj,sessionNum)= paramsFit.paramMainMatrix(1:end-1);
         count = count+1;
@@ -186,7 +191,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     IAMPsem = [IAMPsem, std(betas(1:end-1,:,sessionNum),0,2)./sqrt(analysisParams.numAcquisitions)];
 end
 
-% Get the mean Naka-Ruston paramters for each driections (as fit with the
+% Get the mean Naka-Ruston paramters for each direction (as fit with the
 % TFE NR)
 for kk = 1:size(fitNRDirectionParams,1)
     for pp = 1:size(fitNRDirectionParams,2)
@@ -230,6 +235,7 @@ semIAMPBetas  = [semIAMPBetas;semBaseline];
 % ADD CROSS VALIDATION HERE
 % [rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues, paramsFitIAMP, packetPocket, 'showPlots', true);
 % crossval = [rmseMeanIAMP rmseMeanQCM rmseSemIAMP rmseSemQCM];
+
 %% Fit IAMP crfs with QCM
 % Set parameters and construct a QCM object.
 temporalFitQCM = tfeQCM('verbosity','none','dimension',analysisParams.theDimension);
@@ -296,7 +302,7 @@ NRDirectionObj = tfeNakaRushtonDirection(analysisParams.directionCoding(1:analys
 % Fit the packet
 [fitNRDirectionParams,~,objFitResponses] = NRDirectionObj.fitResponse(nrDirPacket);
 fprintf('\nNRDirection parameters from fit to IAMP betas:\n');
-QCMDirectionObj.paramPrint(fitNRDirectionParams)
+NRDirectionObj.paramPrint(fitNRDirectionParams)
 
 %% Fit the NRDirections with the constrtaints added to the IAMP beta weights
 
