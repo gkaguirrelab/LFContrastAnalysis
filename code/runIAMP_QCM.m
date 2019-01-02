@@ -265,9 +265,8 @@ temporalFitQCM.paramPrint(paramsQCMFit)
 %% Fit the tfeQCMDirections to the IAMP beta weights
 % create the packet
 stim = kron(analysisParams.directionCoding(1:analysisParams.theDimension,:).*analysisParams.maxContrastPerDir,analysisParams.contrastCoding);
+stim = [stim, [0;0]];
 [qcmDirStimDirections,qcmDirStimContrasts] = tfeQCMStimuliToDirectionsContrasts(stim,'precision',4);
-qcmDirStimDirections = [qcmDirStimDirections,[0;0]];
-qcmDirStimContrasts  = [qcmDirStimContrasts, 0];
 qcmDirPacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
 qcmDirPacket.stimulus.timebase = 1:size(qcmDirPacket.stimulus.values,2);
 qcmDirPacket.response.values   = meanIAMPBetas';
@@ -289,6 +288,7 @@ QCMDirectionObj.paramPrint(fitQCMDirectionParams)
 
 % Create the packet 
 nrDirPacket = qcmDirPacket;
+[uniqueDirections,directionIndices] = tfeQCMParseDirections(qcmDirStimDirections,'precision',4);
 
 % Create the tfeNakaRushtonDirection object
 NOOFFSET = false;
@@ -296,7 +296,11 @@ commonAmp = false;
 commonSemi = false;
 commonExp = false;
 commonOffset = true;
-NRDirectionObj = tfeNakaRushtonDirection(analysisParams.directionCoding(1:analysisParams.theDimension,:), ...
+commonAmpExpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
+        'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',false,'commonOffset',true);
+
+
+%tfeNakaRushtonDirection(analysisParams.directionCoding(1:analysisParams.theDimension,:), ...
     'lockOffsetToZero',NOOFFSET,'commonAmp',commonAmp,'commonSemi',commonSemi,'commonExp',commonExp,'commonOffset',commonOffset);
 
 % Fit the packet
