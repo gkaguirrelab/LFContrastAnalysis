@@ -24,10 +24,10 @@ analysisParams.generateCrossValPlots = false;
 [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 
 % Run the IAMP/QCM model
-[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM, meanNRParams] = runIAMP_QCM(analysisParams,fullCleanData);
+[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM] = runIAMP_QCM(analysisParams,fullCleanData);
 
 % Plot the CRF from the IAMP and QCM fits
-nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit, meanNRParams);
+nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 
 % Plot isoresponce contour
 thresholds = [0.10, 0.2, 0.3];
