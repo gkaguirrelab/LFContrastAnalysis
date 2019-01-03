@@ -1,4 +1,4 @@
-function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, meanNRParams, crossval] = runIAMP_QCM(analysisParams,fullCleanData)
+function [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP, fitResponseStructQCM, fitParams, meanNRParams, crossval] = runIAMP_QCM(analysisParams,fullCleanData)
 % Takes in the clean time series data and the analysis params and runs the IMAP-QCM model.
 %
 % Syntax:
@@ -280,9 +280,9 @@ defaultParamsInfo.noOffset = false;
 QCMDirectionObj = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
 
 % Fit the packet
-[fitQCMDirectionParams,fVal,fitQCMDirectionResponseStruct] = QCMDirectionObj.fitResponse(qcmDirPacket,'defaultParamsInfo',defaultParamsInfo);
+[fitParams.QCMDirParams,fVal,fitQCMDirectionResponseStruct] = QCMDirectionObj.fitResponse(qcmDirPacket,'defaultParamsInfo',defaultParamsInfo);
 fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
-QCMDirectionObj.paramPrint(fitQCMDirectionParams)
+QCMDirectionObj.paramPrint(fitParams.QCMDirParams)
 
 % Create the packet for NR fits
 nrDirPacket = qcmDirPacket;
@@ -294,9 +294,9 @@ commonOffsetNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
         'lockOffsetToZero',false,'commonAmp',false,'commonSemi',false,'commonExp',false,'commonOffset',true);
 
 % Fit the packet
-[fitNRDirectionParams,~,objFitResponses] = commonOffsetNRObj.fitResponse(nrDirPacket);
+[fitParams.NRDirParamsOff,~,objFitResponses] = commonOffsetNRObj.fitResponse(nrDirPacket);
 fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
-commonOffsetNRObj.paramPrint(fitNRDirectionParams)
+commonOffsetNRObj.paramPrint(fitParams.NRDirParamsOff)
 
 %% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET & AMP
 % Create the tfeNakaRushtonDirection object
@@ -304,9 +304,9 @@ commonAmpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
         'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',false,'commonOffset',true);
 
 % Fit the packet
-[fitNRDirectionParams,~,objFitResponses] = commonAmpNRObj.fitResponse(nrDirPacket);
+[fitParams.NRDirParamsOffAmp,~,objFitResponses] = commonAmpNRObj.fitResponse(nrDirPacket);
 fprintf('\nNRDirection parameters from fit to IAMP betas with common offset & amplitude:\n');
-commonAmpNRObj.paramPrint(fitNRDirectionParams)
+commonAmpNRObj.paramPrint(fitParams.NRDirParamsOffAmp)
 
 %% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET, AMP, & EXP
 % Create the tfeNakaRushtonDirection object
@@ -314,7 +314,9 @@ commonAmpExpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
         'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',true,'commonOffset',true);
 
 % Fit the packet
-[fitNRDirectionParams,~,objFitResponses] = commonAmpExpNRObj.fitResponse(nrDirPacket);
+[fitParams.NRDirParamsOffAmpExp,~,objFitResponses] = commonAmpExpNRObj.fitResponse(nrDirPacket);
 fprintf('\nNRDirection parameters from fit to IAMP betas with common offset & amplitude & exponent:\n');
-commonAmpExpNRObj.paramPrint(fitNRDirectionParams)
+commonAmpExpNRObj.paramPrint(fitParams.NRDirParamsOffAmpExp)
 end
+
+
