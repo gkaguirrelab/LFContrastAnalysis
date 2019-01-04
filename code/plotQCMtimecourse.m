@@ -1,4 +1,4 @@
-function [] = plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,baseline);
+function [] = plotQCMtimecourse(analysisParams, varargin) 
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
@@ -19,6 +19,15 @@ function [] = plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysi
 %    none
 
 % MAB 09/09/18
+
+% paramsFitIAMP,packetPocket,meanIAMPBetas,fitResponseStructQCM,baseline
+% variable i need to add as key vaulue pairs plus fitParams
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('thePacket',@isstruct);
+p.addParameter('defaultParamsInfo',[],@(x)(isempty(x) | isstruct(x)));
+p.addParameter('defaultParams',[],@(x)(isempty(x) | isstruct(x)));
+p.parse(thePacket,varargin{:});
+
 
 % IAMP object
 temporalFitIAMP = tfeIAMP('verbosity','none');
