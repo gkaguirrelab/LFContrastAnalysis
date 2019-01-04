@@ -89,13 +89,13 @@ for ii = 1:length(analysisParams.sessionFolderName)
         plot(packets{counter}.response.timebase,packets{counter}.response.values,'Color',[.5 0 0]);
         
         % Plot IAMP predictions to stimulus
-        if exist('temporalFitIAMPObj')
+        if exist('paramsIAMP')
             IAMPResponses = temporalFitIAMPObj.computeResponse(paramsFitIAMP{counter},packets{counter}.stimulus,packets{counter}.kernel);
             plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[.1 .8 0]);
         end
         
         % Doctor up the parameters to use mean IAMP values and plot again
-        if exist('temporalFitIAMPObj')
+        if exist('paramsMeanBetas')
         IAMPResponsesMean = temporalFitIAMPObj.computeResponse(paramsFitIAMPMean,packets{counter}.stimulus,packets{counter}.kernel);
         plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
         end
