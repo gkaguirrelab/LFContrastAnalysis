@@ -1,8 +1,8 @@
-function [] = plotQCMtimecourse(analysisParams, varargin) 
+function [] = plotQCMtimecourse(analysisParams, packets, varargin)
 % Takes in a text file name and retuns a cell of the lines of the text file
 %
 % Syntax:
-%   filesCell = textFile2cell(inFile)
+%   filesCell = plotQCMtimecourse(inFile)
 %
 % Description:
 %    This function takes in a file name for a trext file and returns a cell
@@ -19,28 +19,60 @@ function [] = plotQCMtimecourse(analysisParams, varargin)
 %    none
 
 % MAB 09/09/18
+% MAB 01/03/19 -- made more general
 
-% paramsFitIAMP,packetPocket,meanIAMPBetas,fitResponseStructQCM,baseline
+% paramsFitIAMP,meanIAMPBetas,fitResponseStructQCM,baseline
 % variable i need to add as key vaulue pairs plus fitParams
+
+% NOTE: MB: change so the the input for the mean beta weights is the iamp
+% fit with the paramsMainMatrix altered to contian the mean betas (as is
+% done below. this allows for one less key/value pair.
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
-p.addRequired('thePacket',@isstruct);
-p.addParameter('defaultParamsInfo',[],@(x)(isempty(x) | isstruct(x)));
-p.addParameter('defaultParams',[],@(x)(isempty(x) | isstruct(x)));
+p.addRequired('analysisParams',@isstruct);
+p.addRequired('packets',@iscell);
+p.addParameter('paramsIAMP',[],iscell);
+p.addParameter('paramsMeanBetas',[],@(x)(isvector(x) | iscell(x)));
+p.addParameter('paramsQCMDir',[],@isstruct);
+p.addParamter('paramsNakaRushton',[],@isstruct);
+p.addParamter('nakaRushtonDirections',[],@ismatrix)
+p.addParamter('baseline',0,@isnumeric);
 p.parse(thePacket,varargin{:});
 
+% Sort varargin
+paramsIAMP            = p.Results.paramsIAMP;
+paramsMeanBetas       = p.Results.paramsMeanBetas;
+paramsQCMDir          = p.Results.paramsQCMDir;
+paramsNakaRushton     = p.Results.paramsNakaRushton;
+nakaRushtonDirections = p.Resutls.nakaRushtonDirections;
+baseline              = p.Results.baseline;
 
-% IAMP object
-temporalFitIAMP = tfeIAMP('verbosity','none');
+% Create fit objects
+% IAMP Object
+if ~isempty(paramsIAMP) | ~isempty(paramsMeanBetas)
+    temporalFitIAMPObj = tfeIAMP('verbosity','none');
+end
+
+% QCM Object
+if ~isempty(paramsQCMDir)
+    QCMDirectionObj = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
+end
+
+% Naka-Ruston Object
+if ~isempty(paramsNakaRushton)
+    commonOffsetNRObj = tfeNakaRushtonDirection(nakaRushtonDirections);
+end
 
 % Get subplot sizing
-rws = ceil(sqrt(analysisParams.numAcquisitions*length(analysisParams.sessionFolderName)));
+rws = ceil(sqrt(length(packets)));
 cols = rws-1;
-if rws*cols < analysisParams.numAcquisitions*length(analysisParams.sessionFolderName)
+if rws*cols < length(packets)
     cols = rws;
 end
 
-% Set indexing for betas 
-betaLength = (length(meanIAMPBetas)-1)/length(analysisParams.sessionFolderName);
+% Set indexing for betas
+if ~isempty(paramsMeanBetas)
+    betaLength = (length(paramsMeanBetas.paramMainMatrix)-1)/length(analysisParams.sessionFolderName);
+end
 
 % Open figure
 figure
@@ -49,24 +81,29 @@ figure
 counter = 1;
 for ii = 1:length(analysisParams.sessionFolderName)
     for jj = 1:analysisParams.numAcquisitions
-        % Regenerate IAMP predictions to time series
-        IAMPResponses = temporalFitIAMP.computeResponse(paramsFitIAMP{counter},packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
         
-        % Plot them
+        % Plot
         subplot(rws,cols,counter); hold on
-        plot(packetPocket{counter}.response.timebase,packetPocket{counter}.response.values,'Color',[.5 0 0]);
-        plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[.1 .8 0]);
+        
+        % Plot fMRI Time Course
+        plot(packets{counter}.response.timebase,packets{counter}.response.values,'Color',[.5 0 0]);
+        
+        % Plot IAMP predictions to stimulus
+        if exist('temporalFitIAMPObj')
+            IAMPResponses = temporalFitIAMPObj.computeResponse(paramsFitIAMP{counter},packets{counter}.stimulus,packets{counter}.kernel);
+            plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[.1 .8 0]);
+        end
         
         % Doctor up the parameters to use mean IAMP values and plot again
-        paramsFitIAMPMean = paramsFitIAMP{counter};
-        paramsFitIAMPMean.paramMainMatrix(1:end-1) = [meanIAMPBetas(1+((ii-1)*betaLength):ii*betaLength); baseline]; 
-        IAMPResponsesMean = temporalFitIAMP.computeResponse(paramsFitIAMPMean,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
+        if exist('temporalFitIAMPObj')
+        IAMPResponsesMean = temporalFitIAMPObj.computeResponse(paramsFitIAMPMean,packets{counter}.stimulus,packets{counter}.kernel);
         plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
-        
+        end
+
         % Doctor up parameters to use the QCM fit to the mean IAMP
         paramsFitIAMPQCM = paramsFitIAMP{counter};
         paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), baseline]' ;
-        IAMPResponsesQCM = temporalFitIAMP.computeResponse(paramsFitIAMPQCM,packetPocket{counter}.stimulus,packetPocket{counter}.kernel);
+        IAMPResponsesQCM = temporalFitIAMPObj.computeResponse(paramsFitIAMPQCM,packets{counter}.stimulus,packets{counter}.kernel);
         plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
         
         % Set axis labels
@@ -75,7 +112,7 @@ for ii = 1:length(analysisParams.sessionFolderName)
         title(sprintf('Session %s, Run %s', num2str(ii), num2str(jj)))
         % Change line size
         set(findall(gca, 'Type', 'Line'),'LineWidth',1);
-        counter = counter +1; 
+        counter = counter +1;
     end
 end
 legend('time course','IAMP fit',' Mean IAMP params', 'Mean QCM params')

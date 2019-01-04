@@ -104,7 +104,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         checkDirections = tfeQCMParseDirections(stimDirections);
         % [WRITE A CHECK HERE THAT EACH COLUMN OF indDirectionDirections is
         % in in checkDirections, and vice versa.
-          
+        
         %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
         %istead of set here]
         responseStruct.timeStep = analysisParams.timeStep;
@@ -144,10 +144,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             'searchMethod','linearRegression');
         
         % Look at IAMP fit contrast response functions
-%         stimulusStruct.values   = [generateStimCombinations(analysisParams.contrastCoding,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension),[0;0]];
-%         stimulusStruct.timebase = 1:length(stimulusStruct.values);
-%         figure; clf; hold on;
-%         plot(paramsFit.paramMainMatrix(1:end-1));
+        %         stimulusStruct.values   = [generateStimCombinations(analysisParams.contrastCoding,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension),[0;0]];
+        %         stimulusStruct.timebase = 1:length(stimulusStruct.values);
+        %         figure; clf; hold on;
+        %         plot(paramsFit.paramMainMatrix(1:end-1));
         
         % Fit Naka-Ruston to the timecourse with things common across directions
         NOOFFSET = false;
@@ -173,11 +173,11 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         %NRDirectionObj.paramPrint(fitNRDirectionParams{sessionNum,jj});
         
         % Plot data and IAMP fit
-%         if(analysisParams.generateIAMPPlots)
-%             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
-%             temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
-%             NRDirectionObj.plot(NRDirectionFitResponses,'Color',[0 0 1],'NewWindow',false);
-%         end
+        %         if(analysisParams.generateIAMPPlots)
+        %             temporalFit.plot(thePacket.response,'Color',[1 0 0]);
+        %             temporalFit.plot(IAMPResponses,'Color',[0 1 0],'NewWindow',false);
+        %             NRDirectionObj.plot(NRDirectionFitResponses,'Color',[0 0 1],'NewWindow',false);
+        %         end
         paramsFitIAMP{count} = paramsFit;
         packetPocket{count} = thePacket;
         
@@ -195,9 +195,9 @@ end
 % TFE NR)
 % for kk = 1:size(fitNRDirectionParams,1)
 %     for pp = 1:size(fitNRDirectionParams,2)
-%         
+%
 %         tmpParams = fitNRDirectionParams{kk,pp};
-%         
+%
 %         for gg = 1:size(tmpParams,2);
 %             crfAmp(pp,gg)      = tmpParams(gg).crfAmp;
 %             crfExponent(pp,gg) = tmpParams(gg).crfExponent;
@@ -207,14 +207,14 @@ end
 %             noiseSd(pp,gg)     = tmpParams(gg).noiseSd;
 %         end
 %     end
-%     
+%
 %     meanNRParams.crfAmp(kk,:) = mean(crfAmp);
 %     meanNRParams.crfExponent(kk,:) = mean(crfExponent);
 %     meanNRParams.crfOffset(kk,:) = mean(crfOffset);
 %     meanNRParams.crfSemi(kk,:) = mean(crfSemi);
 %     meanNRParams.expFalloff(kk,:) = mean(expFalloff);
 %     meanNRParams.noiseSd(kk,:) = mean(noiseSd);
-%     
+%
 % end
 
 baselineBetas = betas(end,:,:);
@@ -228,9 +228,14 @@ baselineCond  = [];
 for pp = 1:size(IAMPBetas,2)
     meanIAMPBetas = [meanIAMPBetas; IAMPBetas(:,pp)];
     semIAMPBetas  = [semIAMPBetas; IAMPsem(:,pp)];
+    fitParams.meanIAMPBetas{pp} = paramsFit;
+    fitParams.meanIAMPBetas{pp}.paramMainMatrix = [];
+    fitParams.meanIAMPBetas{pp}.paramMainMatrix = IAMPBetas(:,pp);   
 end
 meanIAMPBetas = [meanIAMPBetas;meanBaseline];
 semIAMPBetas  = [semIAMPBetas;semBaseline];
+
+
 
 % ADD CROSS VALIDATION HERE
 % [rmseMeanIAMP, rmseMeanQCM, rmseSemIAMP, rmseSemQCM] = crossValidateIAMP_QCM(analysisParams,betas,timeCourseValues, paramsFitIAMP, packetPocket, 'showPlots', true);
@@ -291,7 +296,7 @@ nrDirPacket = qcmDirPacket;
 %% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET
 % Create the tfeNakaRushtonDirection object
 commonOffsetNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-        'lockOffsetToZero',false,'commonAmp',false,'commonSemi',false,'commonExp',false,'commonOffset',true);
+    'lockOffsetToZero',false,'commonAmp',false,'commonSemi',false,'commonExp',false,'commonOffset',true);
 
 % Fit the packet
 [fitParams.NRDirParamsOff,~,objFitResponses] = commonOffsetNRObj.fitResponse(nrDirPacket);
@@ -301,7 +306,7 @@ commonOffsetNRObj.paramPrint(fitParams.NRDirParamsOff)
 %% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET & AMP
 % Create the tfeNakaRushtonDirection object
 commonAmpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-        'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',false,'commonOffset',true);
+    'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',false,'commonOffset',true);
 
 % Fit the packet
 [fitParams.NRDirParamsOffAmp,~,objFitResponses] = commonAmpNRObj.fitResponse(nrDirPacket);
@@ -311,7 +316,7 @@ commonAmpNRObj.paramPrint(fitParams.NRDirParamsOffAmp)
 %% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET, AMP, & EXP
 % Create the tfeNakaRushtonDirection object
 commonAmpExpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-        'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',true,'commonOffset',true);
+    'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',true,'commonOffset',true);
 
 % Fit the packet
 [fitParams.NRDirParamsOffAmpExp,~,objFitResponses] = commonAmpExpNRObj.fitResponse(nrDirPacket);
