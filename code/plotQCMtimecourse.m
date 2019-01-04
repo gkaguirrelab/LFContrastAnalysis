@@ -24,27 +24,34 @@ function [] = plotQCMtimecourse(analysisParams, packets, varargin)
 % paramsFitIAMP,meanIAMPBetas,fitResponseStructQCM,baseline
 % variable i need to add as key vaulue pairs plus fitParams
 
-% NOTE: MB: change so the the input for the mean beta weights is the iamp
-% fit with the paramsMainMatrix altered to contian the mean betas (as is
-% done below. this allows for one less key/value pair.
-p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+% NOTE: MB: I want to change this to just take the model types as key value
+% pair inputs and some how mave multiples inputs of them.
+p = inputParser;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('packets',@iscell);
-p.addParameter('paramsIAMP',[],iscell);
+p.addParameter('paramsIAMP',[],@iscell);
 p.addParameter('paramsMeanBetas',[],@(x)(isvector(x) | iscell(x)));
 p.addParameter('paramsQCMDir',[],@isstruct);
-p.addParamter('paramsNakaRushton',[],@isstruct);
-p.addParamter('nakaRushtonDirections',[],@ismatrix)
-p.addParamter('baseline',0,@isnumeric);
-p.parse(thePacket,varargin{:});
+p.addParameter('paramsNakaRushton',[],@(x)(isstruct(x) | iscell(x)));
+p.addParameter('nakaRushtonDirections',[],@ismatrix)
+p.addParameter('baseline',[],@isnumeric);
+p.parse(analysisParams, packets,varargin{:});
 
 % Sort varargin
 paramsIAMP            = p.Results.paramsIAMP;
 paramsMeanBetas       = p.Results.paramsMeanBetas;
 paramsQCMDir          = p.Results.paramsQCMDir;
 paramsNakaRushton     = p.Results.paramsNakaRushton;
-nakaRushtonDirections = p.Resutls.nakaRushtonDirections;
+nakaRushtonDirections = p.Results.nakaRushtonDirections;
 baseline              = p.Results.baseline;
+
+% Make sure a single NR fit ggiven as a struct become a cell for looping
+% reasons with mutliple NR fit inputs as a cell.
+if ~isempty(paramsNakaRushton) & ~iscell(paramsNakaRushton)
+    tmp = paramsNakaRushton;
+    clear paramsNakaRushton
+    paramsNakaRushton{1} = tmp;
+end
 
 % Create fit objects
 % IAMP Object
@@ -71,7 +78,7 @@ end
 
 % Set indexing for betas
 if ~isempty(paramsMeanBetas)
-    betaLength = (length(paramsMeanBetas.paramMainMatrix)-1)/length(analysisParams.sessionFolderName);
+    betaLength = (length(paramsMeanBetas{1}.paramMainMatrix)-1)/length(analysisParams.sessionFolderName);
 end
 
 % Open figure
@@ -89,22 +96,46 @@ for ii = 1:length(analysisParams.sessionFolderName)
         plot(packets{counter}.response.timebase,packets{counter}.response.values,'Color',[.5 0 0]);
         
         % Plot IAMP predictions to stimulus
-        if exist('paramsIAMP')
-            IAMPResponses = temporalFitIAMPObj.computeResponse(paramsFitIAMP{counter},packets{counter}.stimulus,packets{counter}.kernel);
+        if ~isempty(paramsIAMP)
+            IAMPResponses = temporalFitIAMPObj.computeResponse(paramsIAMP{counter},packets{counter}.stimulus,packets{counter}.kernel);
             plot(IAMPResponses.timebase, IAMPResponses.values,'Color',[.1 .8 0]);
         end
         
-        % Doctor up the parameters to use mean IAMP values and plot again
-        if exist('paramsMeanBetas')
-        IAMPResponsesMean = temporalFitIAMPObj.computeResponse(paramsFitIAMPMean,packets{counter}.stimulus,packets{counter}.kernel);
-        plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
+        % strip attentional event regressor
+        packets{counter}.stimulus.values(end,:) = [];
+        
+        % Plot the  mean IAMP predictions to stimulus
+        if ~isempty(paramsMeanBetas) & ~isempty(baseline)
+            % add baseline
+            paramsMeanBetas{ii}.paramMainMatrix = [paramsMeanBetas{ii}.paramMainMatrix; baseline];;
+            % compute the response
+            IAMPResponsesMean = temporalFitIAMPObj.computeResponse(paramsMeanBetas{ii},packets{counter}.stimulus,packets{counter}.kernel);
+            plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
+        elseif ~isempty(paramsMeanBetas)
+            IAMPResponsesMean = temporalFitIAMPObj.computeResponse(paramsMeanBetas{ii},packets{counter}.stimulus,packets{counter}.kernel);
+            plot(IAMPResponsesMean.timebase,IAMPResponsesMean.values,'Color',[0 0.1 .9]);
         end
-
-        % Doctor up parameters to use the QCM fit to the mean IAMP
-        paramsFitIAMPQCM = paramsFitIAMP{counter};
-        paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), baseline]' ;
-        IAMPResponsesQCM = temporalFitIAMPObj.computeResponse(paramsFitIAMPQCM,packets{counter}.stimulus,packets{counter}.kernel);
-        plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
+        
+        % Plot QCM Directions predictions to stimulus
+        if ~isempty(paramsQCMDir)
+            QCMDirResponses = QCMDirectionObj.computeResponse(paramsQCMDir,packets{counter}.stimulus,packets{counter}.kernel);
+            plot(QCMDirResponses.timebase, QCMDirResponses.values,'Color',[0 .8 .5]);
+        end
+        
+        % Plot NR Directions predictions to stimulus
+        if ~isempty(paramsNakaRushton)
+            for pp = 1:length(paramsNakaRushton)
+                NRDirResponses = QCMDirectionObj.computeResponse(paramsNakaRushton{pp},packets{counter}.stimulus,packets{counter}.kernel);
+                plot(NRDirResponses.timebase, NRDirResponses.values,'Color',[.46 .4 .1]);
+            end
+        end
+        
+        % Not sure if we still want this
+        %         % Doctor up parameters to use the QCM fit to the mean IAMP
+        %         paramsFitIAMPQCM = paramsFitIAMP{counter};
+        %         paramsFitIAMPQCM.paramMainMatrix(1:end-1) = [fitResponseStructQCM.values(1+((ii-1)*betaLength):ii*betaLength), baseline]' ;
+        %         IAMPResponsesQCM = temporalFitIAMPObj.computeResponse(paramsFitIAMPQCM,packets{counter}.stimulus,packets{counter}.kernel);
+        %         plot(IAMPResponsesQCM.timebase,IAMPResponsesQCM.values,'Color',[0 0 0]);
         
         % Set axis labels
         ylabel('PSC')
@@ -115,5 +146,5 @@ for ii = 1:length(analysisParams.sessionFolderName)
         counter = counter +1;
     end
 end
-legend('time course','IAMP fit',' Mean IAMP params', 'Mean QCM params')
+%legend('time course','IAMP fit',' Mean IAMP params', 'Mean QCM params')
 end
