@@ -23,8 +23,8 @@ analysisParams.generateCrossValPlots = false;
 % Get the cleaned time series
 [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 
-% % Run the IAMP/QCM model
-% [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas, packetPocket, paramsFitIAMP,fitResponseStructQCM,fitParams] = runIAMP_QCM(analysisParams,fullCleanData);
+% Run the IAMP/QCM model
+[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas, packetPocket, paramsFitIAMP,fitResponseStructQCM,fitParams] = runIAMP_QCM(analysisParams,fullCleanData);
 % 
 % % Fit IAMP 
 % % 
@@ -45,14 +45,14 @@ analysisParams.generateCrossValPlots = false;
 % % Here is an example for QCM
 % [qcmOBJ,qcmParams] = fitDirectionModel('qcmFit',analysisParams,directionPacketPocket);
 
-
-% Plot the CRF from the IAMP and QCM fits
-nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
-
-% Plot isoresponce contour
-thresholds = [0.10, 0.2, 0.3];
-colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
-[hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
-
-% Use QCM fit to IAMP to predict timecourse.
-plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,paramsQCMFit.crfOffset);
+% 
+% % Plot the CRF from the IAMP and QCM fits
+% nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
+% 
+% % Plot isoresponce contour
+% thresholds = [0.10, 0.2, 0.3];
+% colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
+% [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
+% 
+% % Use QCM fit to IAMP to predict timecourse.
+% plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,paramsQCMFit.crfOffset);

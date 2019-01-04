@@ -1,0 +1,1 @@
+function [iampTimeCoursePacketPocket,iampOBJ,iampParams] = fitIAMP(analysisParams,fullCleanData);
