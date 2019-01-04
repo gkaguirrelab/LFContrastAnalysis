@@ -23,8 +23,28 @@ analysisParams.generateCrossValPlots = false;
 % Get the cleaned time series
 [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 
-% Run the IAMP/QCM model
-[analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas,packetPocket,paramsFitIAMP,fitResponseStructQCM,fitParams] = runIAMP_QCM(analysisParams,fullCleanData);
+% % Run the IAMP/QCM model
+% [analysisParams,paramsQCMFit, meanIAMPBetas, semIAMPBetas, packetPocket, paramsFitIAMP,fitResponseStructQCM,fitParams] = runIAMP_QCM(analysisParams,fullCleanData);
+% 
+% % Fit IAMP 
+% % 
+% % Fit IAMP to each constructed packet and create packetPocket cell array of
+% % all the fit packets.
+% %     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
+% %     iampOBJ - the tfe IAMP object
+% %     iampParams - cell array of iampParams for each object
+% %     
+% [iampTimeCoursePacketPocket,iampOBJ,iampParams] = fitIAMP(analysisParams,fullCleanData);
+% 
+% % Get directon/contrast form of time course and IAMP crf packet pockets
+% directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(analysisParams,iampTimeCoursePacketPocket);
+% directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampObj.averageParams(iampParams));
+% 
+% % Fit the direction based models
+% % 
+% % Here is an example for QCM
+% [qcmOBJ,qcmParams] = fitDirectionModel('qcmFit',analysisParams,directionPacketPocket);
+
 
 % Plot the CRF from the IAMP and QCM fits
 nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
