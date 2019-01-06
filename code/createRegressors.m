@@ -1,5 +1,5 @@
 function regressors = createRegressors(expParams,baselineCondNum,totalTime,deltaT)
-
+% NOTE: MB: NEED TO COMMENT THIS 
 
 condRegMat = zeros(length(unique(expParams(:,3)))-length(baselineCondNum),totalTime/deltaT,length(unique(expParams(:,4))));
 baselineRegVec = zeros(1,totalTime/deltaT);

@@ -1,6 +1,6 @@
 function directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket)
 % Takes packets procuded by fit_IAMP and replaces the stimulus with 
-% direction and contrast.
+% direction and contrast for fit to the time course.
 %
 % Syntax:
 %    directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket)
