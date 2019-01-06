@@ -36,10 +36,10 @@ analysisParams.generateCrossValPlots = false;
 
 [analysisParams, iampTimeCoursePacketPocket,iampOBJ,iampParams] = fit_IAMP(analysisParams,fullCleanData);
 
-% % Get directon/contrast form of time course and IAMP crf packet pockets
-% directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(analysisParams,iampTimeCoursePacketPocket);
-% directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampObj.averageParams(iampParams));
-% 
+% Get directon/contrast form of time course and IAMP crf packet pockets
+directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(analysisParams,iampTimeCoursePacketPocket);
+directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampObj.averageParams(iampParams));
+ 
 % % Fit the direction based models
 % % 
 % % Here is an example for QCM

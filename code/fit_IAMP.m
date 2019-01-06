@@ -25,6 +25,7 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit
 %    none
 
 % MAB 09/09/18
+% MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
 
 count = 1;
 for sessionNum = 1:length(analysisParams.sessionFolderName)
