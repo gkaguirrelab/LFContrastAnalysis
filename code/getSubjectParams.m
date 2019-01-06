@@ -23,12 +23,13 @@ switch subjID
         analysisParams.warpFileName = 'sub-LZ23_T1w_target-MNI152NLin2009cAsym_warp.h5';
         
         % Paramters for the QCM fit to IAMP:
+        analysisParams.theDimension = 2;
         analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
         analysisParams.numDirPerSession = 4;
-        analysisParams.theDimension = 2;
+        
         
         
     case 'KAS25'
@@ -52,12 +53,13 @@ switch subjID
         analysisParams.warpFileName = 'sub-KAS25_T1w_target-MNI152NLin2009cAsym_warp.h5';
         
         % Paramters for the QCM fit to IAMP:
+        analysisParams.theDimension = 2;
         analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
         analysisParams.numDirPerSession = 4;
-        analysisParams.theDimension = 2;
+        
         
     case 'AP26'
         % Convenience variables
@@ -80,6 +82,7 @@ switch subjID
         analysisParams.warpFileName = 'sub-AP26_T1w_target-MNI152NLin2009cAsym_warp.h5';
         
         % Paramters for the QCM fit to IAMP:
+        analysisParams.theDimension = 2;
         analysisParams.contrastCoding = [1, .5, .25, .125, .0625];
         analysisParams.LMVectorAngles = [ -45, 45, 0, 90, -22.5, 22.5, 67.5, 112.5];
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
