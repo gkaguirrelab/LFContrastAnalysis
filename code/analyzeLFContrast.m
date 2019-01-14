@@ -8,7 +8,7 @@ analysisParams.numClipFramesEnd   = 2;
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
-analysisParams.eccenRange  = [0 20];
+analysisParams.eccenRange  = [1 20];
 
 % Define the TR
 analysisParams.TR = 0.800;
@@ -36,7 +36,10 @@ analysisParams.generateCrossValPlots = false;
 
 % Get directon/contrast form of time course and IAMP crf packet pockets
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
-directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampObj.averageParams(iampParams));
+
+% Seperate out the fits per session to take the average 
+avgIampParams = {};
+directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(iampParams));
  
 % % Fit the direction based models
 % % 

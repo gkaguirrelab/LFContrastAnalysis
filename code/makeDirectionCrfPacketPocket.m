@@ -1,4 +1,4 @@
-function directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,avgIampParams, varargin);
+function directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampParams, varargin);
 % Takes packets procuded by fit_IAMP and replaces the stimulus with 
 % direction and contrast for contrast response function fits.
 %
@@ -29,17 +29,27 @@ function directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisPar
 
 p = inputParser;
 p.addRequired('analysisParams',@isstruct);
-p.addRequired('packets',@iscell);
-p.addParameter('paramsIAMP',[],@iscell);
-p.addParameter('paramsMeanBetas',[],@(x)(isvector(x) | iscell(x)));
-p.addParameter('paramsQCMDir',[],@isstruct);
-p.addParameter('paramsNakaRushton',[],@(x)(isstruct(x) | iscell(x)));
-p.addParameter('nakaRushtonDirections',[],@ismatrix)
-p.addParameter('baseline',[],@isnumeric);
-p.parse(analysisParams, packets,varargin{:});
+p.addRequired('iampParams',@isstruct);
+p.parse(analysisParams, iampParams,varargin{:});
 
-
+% Construct the stimulus 
 stim = kron(analysisParams.directionCoding(1:analysisParams.theDimension,:).*analysisParams.maxContrastPerDir,analysisParams.contrastCoding);
 stim = [stim, [0;0]];
 [qcmDirStimDirections,qcmDirStimContrasts] = tfeQCMStimuliToDirectionsContrasts(stim,'precision',4);
-qcmDirPacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
+
+% Make the packet - Stimulus
+thePacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
+thePacket.stimulus.timebase = 1:size(thePacket.stimulus.values,2);
+
+% Make the packet - Response 
+thePacket.response.values = iampParams.paramMainMatrix;
+thePacket.response.timbase = thePacket.stimulus.timebase;
+
+
+
+
+
+thePacket.kernel            = [];
+thePacket.metaData          = [];
+
+
