@@ -96,16 +96,6 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         [stimDirections,stimContrasts] = tfeQCMStimuliToDirectionsContrasts(LMSContrastMat, ...
             'zeroContrastDirection',indDirectionDirections(:,1),'precision',directionPrecision);
         
-        %[ * NOTE: MB: make sure the timestep is loaded from the pulse params
-        %istead of set here]
-        responseStruct.timeStep = analysisParams.timeStep;
-        
-        % get attention event regressor
-        [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', stimulusStruct.timebase);
-        
-        % add attention events to regressor matrix
-        stimulusStruct.values = [stimulusStruct.values;eventsRegressor];
-        
         % Set the number of instances.
         clear defaultParamsInfo
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
