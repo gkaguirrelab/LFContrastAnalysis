@@ -29,6 +29,7 @@ switch subjID
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
         analysisParams.numDirPerSession = 4;
+        analysisParams.numRunsPerSession = 10;
         
         
         
@@ -60,7 +61,6 @@ switch subjID
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
         analysisParams.numDirPerSession = 4;
         
-        
     case 'AP26'
         % Convenience variables
         analysisParams.projectName       = 'LFContrastAnalysis';
@@ -88,5 +88,5 @@ switch subjID
         analysisParams.directionCoding = vectorAngle2LMScontrast(analysisParams.LMVectorAngles,'LM');
         analysisParams.maxContrastPerDir = [0.12,0.60,0.14,0.22,0.085,0.20,0.40,0.13]; % max contrast in the same order as above
         analysisParams.numDirPerSession = 4;
-        analysisParams.theDimension = 2;
+
 end

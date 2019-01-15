@@ -38,9 +38,11 @@ analysisParams.generateCrossValPlots = false;
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
 
 % Seperate out the fits per session to take the average 
-avgIampParams = {};
-directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(iampParams));
- 
+for ii = 1:analysisParams.numAcquisitions
+    concatParams{ii} = iampOBJ.concatenateParams(iampParams(:,ii));
+end
+
+directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
 % % Fit the direction based models
 % % 
 % % Here is an example for QCM

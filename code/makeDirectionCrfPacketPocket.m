@@ -38,18 +38,17 @@ stim = [stim, [0;0]];
 [qcmDirStimDirections,qcmDirStimContrasts] = tfeQCMStimuliToDirectionsContrasts(stim,'precision',4);
 
 % Make the packet - Stimulus
-thePacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
-thePacket.stimulus.timebase = 1:size(thePacket.stimulus.values,2);
+directionCrfMeanPacketPocket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
+directionCrfMeanPacketPocket.stimulus.timebase = 1:size(directionCrfMeanPacketPocket.stimulus.values,2);
 
 % Make the packet - Response 
-thePacket.response.values = iampParams.paramMainMatrix;
-thePacket.response.timbase = thePacket.stimulus.timebase;
+directionCrfMeanPacketPocket.response.values = iampParams.paramMainMatrix;
+directionCrfMeanPacketPocket.response.timbase = directionCrfMeanPacketPocket.stimulus.timebase;
 
+% Add an empty kernel and metadata 
+directionCrfMeanPacketPocket.kernel            = [];
+directionCrfMeanPacketPocket.metaData          = [];
 
-
-
-
-thePacket.kernel            = [];
-thePacket.metaData          = [];
+end
 
 

@@ -27,8 +27,10 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
 
-count = 1;
-for sessionNum = 1:length(analysisParams.sessionFolderName)
+
+analysisParams.numSessions = length(analysisParams.sessionFolderName);
+
+for sessionNum = 1:analysisParams.numSessions
     
     % Gets the path to a text file that contains the mat file names needed
     % to get the trail order information for each run.
@@ -126,11 +128,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
         
-        iampParams{count} = paramsFit;
-        iampTimeCoursePacketPocket{count} = thePacket;
-        
-        % update count
-        count = count+1;
+        iampParams{sessionNum,jj} = paramsFit;
+        iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
+
     end
     
 end
