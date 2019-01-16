@@ -42,8 +42,8 @@ directionCrfMeanPacketPocket.stimulus.values   = [qcmDirStimDirections; qcmDirSt
 directionCrfMeanPacketPocket.stimulus.timebase = 1:size(directionCrfMeanPacketPocket.stimulus.values,2);
 
 % Make the packet - Response 
-directionCrfMeanPacketPocket.response.values = iampParams.paramMainMatrix;
-directionCrfMeanPacketPocket.response.timbase = directionCrfMeanPacketPocket.stimulus.timebase;
+directionCrfMeanPacketPocket.response.values = iampParams.paramMainMatrix';
+directionCrfMeanPacketPocket.response.timebase = directionCrfMeanPacketPocket.stimulus.timebase;
 
 % Add an empty kernel and metadata 
 directionCrfMeanPacketPocket.kernel            = [];

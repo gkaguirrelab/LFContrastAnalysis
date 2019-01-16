@@ -1,64 +1,81 @@
+function [fitOBJ,fitParamsCell] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
+% Takes in the clean time series data and the analysis params and fits the IAMP model.
+%
+% Syntax:
+%   [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit_IAMP(analysisParams, fullCleanData);
+%
+% Description:
+%    This function takes in the clean time series data and the analysis params
+%    and fits the IMAP model. This function builds a stimulus design matirx
+%    based on the analysisParams (from each run of the experiemnt) and run the
+%    IAMP model on the cleaned and trial sorted data.
+%
+% Inputs:
+%    analysisParams             - Struct of important information for the
+%                                 analysis
+%    fullCleanData              - The cleaned time course
+%
+% Outputs:
+%    analysisParams             - Returns analysisParams with any updates
+%    iampTimeCoursePacketPocket - Cell array of IAMP packets for each run
+%    iampOBJ                    - The IAMP object
+%    iampParams                 - Cell array of IAMP parameter fits for each run
+%
+% Optional key/value pairs:
+%    none
+
+% MAB 09/09/18
+% MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
 
 %% Fit the tfeQCM to the IAMP beta weights
 % allow QCM to fit the offset
-clear defaultParamsInfo
-defaultParamsInfo.noOffset = false;
-[paramsQCMFit,fVal,fitResponseStructQCM] = temporalFitQCM.fitResponse(thePacket,'defaultParamsInfo',defaultParamsInfo);
-fprintf('\nModel parameter from fits from tfeQCM to IAMP betas:\n');
-temporalFitQCM.paramPrint(paramsQCMFit)
 
-%% Fit the tfeQCMDirections to the IAMP beta weights
-% create the packet
-stim = kron(analysisParams.directionCoding(1:analysisParams.theDimension,:).*analysisParams.maxContrastPerDir,analysisParams.contrastCoding);
-stim = [stim, [0;0]];
-[qcmDirStimDirections,qcmDirStimContrasts] = tfeQCMStimuliToDirectionsContrasts(stim,'precision',4);
-qcmDirPacket.stimulus.values   = [qcmDirStimDirections; qcmDirStimContrasts];
-qcmDirPacket.stimulus.timebase = 1:size(qcmDirPacket.stimulus.values,2);
-qcmDirPacket.response.values   = meanIAMPBetas';
-qcmDirPacket.response.timebase = 1:length(meanIAMPBetas);
-qcmDirPacket.kernel            = [];
-qcmDirPacket.metaData          = [];
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('analysisParams',@isstruct);
+p.addRequired('modelType',@ischar);
+p.addRequired('packetPocket',@iscell);
+p.addParameter('lockOffsetToZero',false,@islogical);
+p.addParameter('commonAmp',false,@islogical);
+p.addParameter('commonSemi',false,@islogical);
+p.addParameter('commonExp',false,@islogical);
+p.addParameter('commonOffset',true,@islogical);
 
-% Create the tfeQCMDirection object
-clear defaultParamsInfo
-defaultParamsInfo.noOffset = false;
-QCMDirectionObj = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
+p.parse(analysisParams,modelType,packetPocket,varargin{:});
 
-% Fit the packet
-[fitParams.QCMDirParams,fVal,fitQCMDirectionResponseStruct] = QCMDirectionObj.fitResponse(qcmDirPacket,'defaultParamsInfo',defaultParamsInfo);
-fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
-QCMDirectionObj.paramPrint(fitParams.QCMDirParams)
+switch modelType
+    case 'qcmFit'
+        clear defaultParamsInfo
+        defaultParamsInfo.noOffset = false;
+        fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
+        for ii = 1:length(packetPocket)
+            % Fit the packet
+            [fitParamsCell{ii},fVal,fitQCMDirectionResponseStruct] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo);
+            fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
+            fitOBJ.paramPrint(fitParamsCell{ii})
+        end
+        
+    case 'nrFit'
+        
+        uniqueDirections = round(analysisParams.directionCoding(1:analysisParams.theDimension,:),4);
+        
+        %% Fit the NRDirections to the the with the key/value pair flags
+        % Create the tfeNakaRushtonDirection object
+        fitOBJ = tfeNakaRushtonDirection(uniqueDirections, ...
+            'lockOffsetToZero',p.Results.lockOffsetToZero,'commonAmp',p.Results.commonAmp,'commonSemi', p.Results.commonSemi, ...
+            'commonExp',p.Results.commonExp,'commonOffset',p.Results.commonOffset);
+        
+        % loop over packets in the cell
+        for ii = 1:length(packetPocket)
+            % Fit the packet
+            [fitParamsCell{ii},~,objFitResponses] = fitOBJ.fitResponse(packetPocket{ii});
+            fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
+            fitOBJ.paramPrint(fitParamsCell{ii})
+        end
+        
+end
 
-% Create the packet for NR fits
-nrDirPacket = qcmDirPacket;
-[uniqueDirections,directionIndices] = tfeQCMParseDirections(qcmDirStimDirections,'precision',4);
 
-%% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET
-% Create the tfeNakaRushtonDirection object
-commonOffsetNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-    'lockOffsetToZero',false,'commonAmp',false,'commonSemi',false,'commonExp',false,'commonOffset',true);
+end
 
-% Fit the packet
-[fitParams.NRDirParamsOff,~,objFitResponses] = commonOffsetNRObj.fitResponse(nrDirPacket);
-fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
-commonOffsetNRObj.paramPrint(fitParams.NRDirParamsOff)
 
-%% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET & AMP
-% Create the tfeNakaRushtonDirection object
-commonAmpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-    'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',false,'commonOffset',true);
 
-% Fit the packet
-[fitParams.NRDirParamsOffAmp,~,objFitResponses] = commonAmpNRObj.fitResponse(nrDirPacket);
-fprintf('\nNRDirection parameters from fit to IAMP betas with common offset & amplitude:\n');
-commonAmpNRObj.paramPrint(fitParams.NRDirParamsOffAmp)
-
-%% Fit the NRDirections to the the IAMP beta weights WITH COMMON OFFSET, AMP, & EXP
-% Create the tfeNakaRushtonDirection object
-commonAmpExpNRObj = tfeNakaRushtonDirection(uniqueDirections, ...
-    'lockOffsetToZero',false,'commonAmp',true,'commonSemi',false,'commonExp',true,'commonOffset',true);
-
-% Fit the packet
-[fitParams.NRDirParamsOffAmpExp,~,objFitResponses] = commonAmpExpNRObj.fitResponse(nrDirPacket);
-fprintf('\nNRDirection parameters from fit to IAMP betas with common offset & amplitude & exponent:\n');
-commonAmpExpNRObj.paramPrint(fitParams.NRDirParamsOffAmpExp)

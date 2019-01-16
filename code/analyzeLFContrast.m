@@ -42,16 +42,31 @@ for ii = 1:analysisParams.numAcquisitions
     concatParams{ii} = iampOBJ.concatenateParams(iampParams(:,ii));
 end
 
-directionCrfMeanPacketPocket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
+directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
+
 % % Fit the direction based models
 % % 
-% % Here is an example for QCM
-% [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel('qcmFit',analysisParams,directionCrfMeanPacketPocket);
+% % Fit the CRF with the QCM -- { } is because this expects a cell
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
+
+% % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+
+% % Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true);
+
+% % Fit the CRF with the NR common amplitude, semisaturation, and exponent  -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmpSemiExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true, 'commonExp', true);
 
 % 
 % % Plot the CRF from the IAMP and QCM fits
 % nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 % 
+
+% %Plot the time course prediction for each run using the different fits to
+% %the crf
+
+
 % % Plot isoresponce contour
 % thresholds = [0.10, 0.2, 0.3];
 % colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
