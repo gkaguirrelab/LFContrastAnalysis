@@ -1,4 +1,4 @@
-function [fitOBJ,fitParamsCell] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
+function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -49,7 +49,7 @@ switch modelType
         fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
         for ii = 1:length(packetPocket)
             % Fit the packet
-            [fitParamsCell{ii},fVal,fitQCMDirectionResponseStruct] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo);
+            [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo);
             fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
             fitOBJ.paramPrint(fitParamsCell{ii})
         end

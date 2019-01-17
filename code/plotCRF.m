@@ -1,4 +1,4 @@
-function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit, meanNRParams)
+function [params] = plotCRF(analysisParams,directions, modelParamsCell, varargin)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
@@ -15,14 +15,7 @@ function [params] = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,p
 %    paramsQCMFit              - Parameter fits to the QCM model (struct)
 %
 % Outputs:
-%    params                    - Parameters of the Naka-Rushton fit. Each
-%                                row of the matrix returned are the paramters
-%                                fit to the IAMP CRF for a single run.
-%                                The columns are:
-%                                   Rmax  = params(1)
-%                                   sigma = params(2)
-%                                   n     = params(3)
-%                                response = Rmax*[contrast^n]/[contrast^n + sigma^n]
+%    figHdl                    - Figure handle
 %
 % Optional key/value pairs:
 %    none
@@ -42,7 +35,7 @@ rws = ceil(sqrt(size(analysisParams.directionCoding,2)));
 cols = rws;
 indx = length(analysisParams.contrastCoding);
 figure
-for ii = 1:size(analysisParams.directionCoding,2)
+for ii = 1:size(directions,2)
     
     % Get the contrast spacing for each plot.
     maxConVal = analysisParams.maxContrastPerDir(ii);

@@ -32,7 +32,7 @@ analysisParams.generateCrossValPlots = false;
 %     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
 %     iampOBJ - the tfe IAMP object
 %     iampParams - cell array of iampParams for each object   
-[analysisParams,iampTimeCoursePacketPocket,iampOBJ,iampParams] = fit_IAMP(analysisParams,fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses] = fit_IAMP(analysisParams,fullCleanData);
 
 % Get directon/contrast form of time course and IAMP crf packet pockets
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
@@ -50,7 +50,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+[nrCrfOBJ,nrCrfParamsAmp, objFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
 % Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true);

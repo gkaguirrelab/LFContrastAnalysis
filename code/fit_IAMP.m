@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit_IAMP(analysisParams, fullCleanData)
+function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses] = fit_IAMP(analysisParams, fullCleanData)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -130,7 +130,7 @@ for sessionNum = 1:analysisParams.numSessions
         
         iampParams{sessionNum,jj} = paramsFit;
         iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
-
+        iampResponses{jj} = IAMPResponses;
     end
     
 end
