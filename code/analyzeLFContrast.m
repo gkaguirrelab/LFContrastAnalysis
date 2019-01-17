@@ -50,7 +50,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmp, objFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+[nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
 % Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true);
@@ -59,7 +59,8 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 [nrCrfOBJ,nrCrfParamsAmpSemiExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true, 'commonExp', true);
 
 
-% plot the CRF
+[responses] =  responseFromPacket(qcmCrfMeanOBJ, analysisParams, qcmCrfMeanParams, {directionCrfMeanPacket}, 'upsampleCrf', true);
+% Upsample the NR repsonses 
 
 
 
