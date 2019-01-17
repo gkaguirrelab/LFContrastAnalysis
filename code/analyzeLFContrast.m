@@ -44,22 +44,36 @@ end
 
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
 
-% % Fit the direction based models
-% % 
-% % Fit the CRF with the QCM -- { } is because this expects a cell
+%% Fit the direction based models to the mean IAMP beta weights 
+
+% Fit the CRF with the QCM -- { } is because this expects a cell
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
-% % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
+% Fit the CRF with the NR common amplitude -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
-% % Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
+% Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true);
 
-% % Fit the CRF with the NR common amplitude, semisaturation, and exponent  -- { } is because this expects a cell
+% Fit the CRF with the NR common amplitude, semisaturation, and exponent  -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmpSemiExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true, 'commonExp', true);
 
-% 
-% % Plot the CRF from the IAMP and QCM fits
+
+% plot the CRF
+
+
+
+
+
+
+
+%% Compute responses to the direction stimuli from each run with the fit from above
+
+
+[responses, plotPocket] =  responseFromPacket(obj, params, packetPocket)
+
+ 
+%% Plot the CRF from the IAMP, QCM, and  fits
 % nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
 % 
 
