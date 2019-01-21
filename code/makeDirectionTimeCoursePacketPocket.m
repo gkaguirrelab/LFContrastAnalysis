@@ -1,5 +1,5 @@
 function directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket)
-% Takes packets procuded by fit_IAMP and replaces the stimulus with 
+% Takes packets procuded by fit_IAMP and replaces the stimulus with
 % direction and contrast for fit to the time course.
 %
 % Syntax:
@@ -13,29 +13,33 @@ function directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(i
 %    packets
 %
 % Inputs:
-%   iampTimeCoursePacketPocket - Cell array of IAMP packets from fit_IAMP 
+%   iampTimeCoursePacketPocket - Cell array of IAMP packets from fit_IAMP
 %
 % Outputs:
 %   directionTimeCoursePacketPocket - Cell array of packets for directions
-%                                     based models such as QCM and Naka-Ruston 
+%                                     based models such as QCM and Naka-Ruston
 %
 % Optional key/value pairs:
 %   none
 
-% MAB 01/06/19
+% History:
+%   MAB 01/06/19                Wrote it
+%   MAB, DHB  01/21/19  
 
-for ii = 1:length(iampTimeCoursePacketPocket)
-    
-    % Get a packet
-    thePacket = iampTimeCoursePacketPocket{ii};
-    
-    % Create stimulus from meta data
-    newStim = [thePacket.metaData.stimDirections; thePacket.metaData.stimContrasts];
-    
-    % Replace the existing stim with new stim 
-    thePacket.stimulus.values = newStim;
-    
-    directionTimeCoursePacketPocket{ii} = thePacket;    
+for ii = 1:size(iampTimeCoursePacketPocket,1)
+    for jj = 1:size(iampTimeCoursePacketPocket,2)
+        
+        % Get a packet
+        thePacket = iampTimeCoursePacketPocket{ii,jj};
+        
+        % Create stimulus from meta data
+        newStim = [thePacket.metaData.stimDirections; thePacket.metaData.stimContrasts];
+        
+        % Replace the existing stim with new stim
+        thePacket.stimulus.values = newStim;
+        
+        directionTimeCoursePacketPocket{ii,jj} = thePacket;
+    end
 end
 
 end

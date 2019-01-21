@@ -1,5 +1,5 @@
 function [responses] =  responseFromPacket(obj, analysisParams, params, packetPocket, varargin)
-% computes the response to a multiple packet/param inputs
+% Compute the response to a multiple packet/param inputs
 %
 % Syntax:
 %    [responses] =  responseFromPacket(obj, analysisParams, params, packetPocket);
@@ -15,6 +15,7 @@ function [responses] =  responseFromPacket(obj, analysisParams, params, packetPo
 %    params                     - paramters of the model used for the
 %                                 response calculation 
 %    packetPocket               - A cell array of packets 
+%
 % Outputs:
 %    responses                  - A cell array of responses  
 %
