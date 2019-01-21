@@ -78,7 +78,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 %% Do some plotting of these fits
 %
 % Upsample the NR repsonses 
-%  Need a function here
+crfStimulus = upsampleCRF(analysisParams);
 
 % Predict the responses (get rid of upsampling and do it separately,
 % probaby don't need to pass analysisParams).
