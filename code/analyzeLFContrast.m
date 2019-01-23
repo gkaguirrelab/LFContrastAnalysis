@@ -80,7 +80,6 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 % Upsample the NR repsonses 
 crfStimulus = upsampleCRF(analysisParams);
 
-
 %% Predict CRF from direction model fits
 %
 % Predict the responses for CRF with params from NR common Amp.
@@ -101,17 +100,19 @@ crfPlot.respQCMCrf.color = [0, 1, 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
 iampPoints = iampOBJ.averageParams(concatParams);
-plotCRF(analysisParams, crfPlot, crfStimulus, iampsPoints);
-% 
+plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
+ 
 
 % %Plot the time course prediction for each run using the different fits to
 % %the crf
 
+plotTimeCourse(analysisParams, a);
+
 
 % % Plot isoresponce contour
-% thresholds = [0.10, 0.2, 0.3];
-% colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
-% [hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
-% 
-% % Use QCM fit to IAMP to predict timecourse.
-% plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,paramsQCMFit.crfOffset);
+thresholds = [0.10, 0.2, 0.3];
+colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
+[hdl] = plotIsoresponse(analysisParams,meanIAMPBetas,paramsQCMFit,thresholds,nrParams,colors);
+
+% Use QCM fit to IAMP to predict timecourse.
+plotQCMtimecourse(paramsFitIAMP,packetPocket,meanIAMPBetas,analysisParams,fitResponseStructQCM,paramsQCMFit.crfOffset);

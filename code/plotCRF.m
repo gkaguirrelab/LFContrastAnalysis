@@ -53,19 +53,19 @@ for ii = 1:size(analysisParams.directionCoding,2)
         xAxisIamp = maxConVal.*analysisParams.contrastCoding;
         %% Plot the stuff
         subplot(rws,cols,ii); hold on
-        p1 = plot(xAxisModels,crfValues,'color',theModelResp.color);
-        scatter(xAxisIamp,iampVals,'k');
+        p(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
+        q1    = scatter(xAxisIamp,iampVals,'*k');
         
         ylabel('Mean Beta Weight')
         xlabel('Contrast')
-        
+        title(sprintf('LM stim = %s', num2str(analysisParams.LMVectorAngles(ii))));
         ylim([-0.3 1.4]);
 
     end
 end
 
 
-legend(feids)
+legend([p, q1], fields, 'IAMP Points')
 end
 
 
