@@ -20,38 +20,23 @@ function [responses] =  responseFromPacket(obj, analysisParams, params, packetPo
 %    responses                  - A cell array of responses  
 %
 % Optional key/value pairs:
-%    upsampleCRF                - Upsample stimulus input for CRF. 
+%    none 
 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('obj',@isobject);
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('params',@isstruct);
 p.addRequired('packetPocket',@iscell);
-p.addParameter('upsampleCRF',false,@islogical);
 p.parse(obj, analysisParams, params, packetPocket, varargin{:});
 
 
-if p.Results.upsampleCRF
-    contrastSpacing = linspace(max(analysisParams.contrastCoding),0,analysisParams.numSamples);
-    tmpStim         = generateStimCombinations(contrastSpacing,analysisParams.directionCoding,analysisParams.maxContrastPerDir,analysisParams.theDimension);
-    crfTimebase     = 1:length(tmpStim);
-    [directions,contrasts] = tfeQCMStimuliToDirectionsContrasts(tmpStim,'precision',4);
-    crfStimulus     = [directions;contrasts];
-end
-
+% loop over packets 
 for ii = 1:length(packetPocket)
     
-    if p.Results.upsampleCRF
-        packetPocket{ii}.stimulus = crfStimulus;
-    end
     
     responses{ii}.values   = obj.computeResponse(params,packetPocket{ii}.stimulus,packetPocket{ii}.kernel);
-    
-    if p.Results.upsampleCRF
-        responses{ii}.timebase = crfTimebase;
-    else
-        responses{ii}.timebase = packetPocket{ii}.stimulus.timebase;
-    end
+
+
     
     
 end

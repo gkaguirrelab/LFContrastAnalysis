@@ -80,14 +80,28 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 % Upsample the NR repsonses 
 crfStimulus = upsampleCRF(analysisParams);
 
-% Predict the responses (get rid of upsampling and do it separately,
-% probaby don't need to pass analysisParams).
-[responses] =  responseFromPacket(qcmCrfMeanOBJ, analysisParams, qcmCrfMeanParams, {directionCrfMeanPacket}, 'upsampleCrf', true);
 
+%% Predict CRF from direction model fits
+%
+% Predict the responses for CRF with params from NR common Amp.
+crfPlot.respNrCrfAmp = nrCrfOBJ.computeResponse(nrCrfParamsAmp{1},crfStimulus,[]);
+crfPlot.respNrCrfAmp.color = [0, 0, 1];
 
- 
+% Predict the responses for CRF with params from NR common Amp and Semi
+crfPlot.respNrCrfAmpSemi = nrCrfOBJ.computeResponse(nrCrfParamsAmpSemi{1},crfStimulus,[]);
+crfPlot.respNrCrfAmpSemi.color = [0, .33, 1];
+
+% Predict the responses for CRF with params from NR common Amp, Semi, and Exp
+crfPlot.respNrCrfAmpSemiExp = nrCrfOBJ.computeResponse(nrCrfParamsAmpSemiExp{1},crfStimulus,[]);
+crfPlot.respNrCrfAmpSemiExp.color = [0, .66, 1];
+
+% Predict the responses for CRF with params from QCM
+crfPlot.respQCMCrf = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},crfStimulus,[]);
+crfPlot.respQCMCrf.color = [0, 1, 0]; 
+
 %% Plot the CRF from the IAMP, QCM, and  fits
-% nrParams = plotIAMP_QCM_CRF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit);
+iampPoints = iampOBJ.averageParams(concatParams);
+plotCRF(analysisParams, crfPlot, crfStimulus, iampsPoints);
 % 
 
 % %Plot the time course prediction for each run using the different fits to

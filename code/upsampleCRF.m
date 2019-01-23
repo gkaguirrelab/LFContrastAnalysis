@@ -37,6 +37,7 @@ tmpStim         = generateStimCombinations(contrastSpacing,analysisParams.direct
 [directions,contrasts] = tfeQCMStimuliToDirectionsContrasts(tmpStim,'precision',4);
 
 % match format expected by tfe
-crfStimulus     = [directions;contrasts];
+crfStimulus.values     = [directions;contrasts];
+crfStimulus.timebase   = 1:size(crfStimulus.values,2);
 
 end
