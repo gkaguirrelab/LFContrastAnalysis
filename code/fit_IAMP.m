@@ -106,11 +106,13 @@ for sessionNum = 1:analysisParams.numSessions
         kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
         
         % Take the median across voxels
-        rawTC{sessionNum,jj} = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
+        rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
+        rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
+        rawTC{sessionNum,jj}.plotColor = [0,0,0];
         
         %%  Make the IAMP packet
         % the response
-        thePacket.response.values   = rawTC{sessionNum,jj};
+        thePacket.response.values   = rawTC{sessionNum,jj}.values;
         thePacket.response.timebase = stimulusStruct.timebase;
         % the stimulus
         thePacket.stimulus.timebase = stimulusStruct.timebase;

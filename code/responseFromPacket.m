@@ -52,9 +52,8 @@ for ii = 1:size(packetPocket,1)
     
     for jj = 1:size(packetPocket,2)
         
-        theModelPreds{ii,jj}.values    = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
-        theModelPreds{ii,jj}.timebase  = packetPocket{ii,jj}.stimulus.timebase;
-        theModelPreds{ii,jj}.plotColor = p.Results.plotColor;
+        theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+        theModelPreds{ii,jj}.plotColor   = p.Results.plotColor;
         
     end
 end

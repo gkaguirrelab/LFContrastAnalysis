@@ -103,13 +103,27 @@ iampPoints = iampOBJ.averageParams(concatParams);
 plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
  
 %% Get the time course predicitions of the CRF params
-a = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket);
+%
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
+
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
+
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpSemiExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
+
+% Get the time course predicitions fromt the QCM params fit to the CRF
+timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
+
+% Add clean time 
+timeCoursePlot.rawTC = rawTC;
 
 
 % %Plot the time course prediction for each run using the different fits to
 % %the crf
 
-plotTimeCourse(analysisParams, a);
+plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift);
 
 
 % % Plot isoresponce contour

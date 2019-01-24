@@ -1,5 +1,4 @@
-function plotTimeCourse(analysisParams, )
-
+function plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
 % Provides a higher resolution contrast/direcetions base for CRF predictions
 % 
 % Syntax:
@@ -17,6 +16,10 @@ function plotTimeCourse(analysisParams, )
 %                           * maxContrastPerDirection 
 %                           * theDimention 
 %                           * numSamples - upsample resolution 
+% baselineShift         - A matrix with the shisft need to add the baseline
+%                         back to the time course predicitions. should be a
+%                         matrix of size numSessions x numAcquisitions. if 
+%                         no baseline shisft have a matrix of all zeros 
 % Outputs:
 %   crfStimulus         - Upsampled contrast/directions stimuli. 
 %
@@ -27,58 +30,43 @@ function plotTimeCourse(analysisParams, )
 %   01/23/2019 MAB Wrote it. 
 
 % subplot size
-rws = ceil(sqrt(length(packets)));
+rws = ceil(sqrt(analysisParams.numSessions*analysisParams.numAcquisitions));
 cols = rws-1;
-if rws*cols < length(packets)
+if rws*cols < analysisParams.numSessions*analysisParams.numAcquisitions
     cols = rws;
 end
 
-% indexind for models
-modelIndx = analysisParams.numSamples;
-iampIndx = length(analysisParams.contrastCoding);
+% reshape baselineShift
+baselineShift = baselineShift';
+baselineShift = baselineShift(:);
 
-% get x axis values 
-contrastSpacing = crfStimulus.values(end,:);
-fields = fieldnames(crfPlotStruct);
+fields = fieldnames(timeCoursePlot);
 
 figHdl = figure; 
 
-for ii = 1:size(analysisParams.directionCoding,2)
+for ii = 1:analysisParams.numSessions*analysisParams.numAcquisitions
     
     for jj = 1:length(fields)
         
-        theModelResp = eval(['crfPlotStruct.', fields{jj}]);
+        theModelResp = eval(['timeCoursePlot.', fields{jj}]);
         
-        % Get the contrast spacing for each plot.
-        maxConVal = analysisParams.maxContrastPerDir(ii);
+        response = theModelResp{ii}.values + baselineShift(ii);
         
-        if ii == 1
-            crfValues = theModelResp.values(1:modelIndx);
-            xAxisModels = contrastSpacing(1:modelIndx);
-            iampVals = iampsPoints.paramMainMatrix(1:iampIndx)';
-        else
-            crfValues = theModelResp.values((ii-1)*modelIndx+1:ii*modelIndx);
-            xAxisModels = contrastSpacing((ii-1)*modelIndx+1:ii*modelIndx);
-            iampVals = iampsPoints.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
-        end
-        
-        xAxisIamp = maxConVal.*analysisParams.contrastCoding;
-        %% Plot the stuff
         subplot(rws,cols,ii); hold on
-        p(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
-        q1    = scatter(xAxisIamp,iampVals,'*k');
+        p(jj) = plot(theModelResp{ii}.timebase,response,'color',theModelResp{ii}.plotColor);
+
         
         % put info 
-        ylabel('Mean Beta Weight')
-        xlabel('Contrast')
-        title(sprintf('LM stim = %s', num2str(analysisParams.LMVectorAngles(ii))));
-        ylim([-0.3 1.4]);
+        ylabel('PSC')
+        xlabel('Time mS')
+        title(sprintf('Run = %s', num2str(ii)));
+
 
     end
 end
 
 
-legend([p, q1], fields, 'IAMP Points')
+legend(p, fields)
 end
 
 
