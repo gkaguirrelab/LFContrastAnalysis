@@ -1,28 +1,32 @@
-function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
-% Takes in the clean time series data and the analysis params and fits the IAMP model.
+function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin)
+% Fits mutliple packets given a model type. 
 %
 % Syntax:
-%   [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit_IAMP(analysisParams, fullCleanData);
+%   [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
 %
 % Description:
-%    This function takes in the clean time series data and the analysis params
-%    and fits the IMAP model. This function builds a stimulus design matirx
-%    based on the analysisParams (from each run of the experiemnt) and run the
-%    IAMP model on the cleaned and trial sorted data.
+%    This function takes in the a cell array of packets and returnd a cell
+%    array of fit params, responses and the fit object. This currently
+%    works for the naka-rushotn and qcm models. 
 %
 % Inputs:
-%    analysisParams             - Struct of important information for the
-%                                 analysis
-%    fullCleanData              - The cleaned time course
+%    analysisParams     - Struct of important information for the
+%                         analysis
+%    modelType          - the type of model. Either qcmFit or nrFit
+%    packetPocket       - Cell array of packets to be fit
 %
 % Outputs:
-%    analysisParams             - Returns analysisParams with any updates
-%    iampTimeCoursePacketPocket - Cell array of IAMP packets for each run
-%    iampOBJ                    - The IAMP object
-%    iampParams                 - Cell array of IAMP parameter fits for each run
+%    fitOBJ             - The object used ofr fitting
+%    fitParamsCell      - Cell array of fit params 
+%    objFitResponses    - Cell array of the fit responses
 %
 % Optional key/value pairs:
-%    none
+%    Options for the NR model fit:
+%    lockOffsetToZero - default false
+%    commonAmp        - default false
+%    commonSemi       - default false
+%    commonExp        - default false 
+%    commonOffset     - default true
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -67,7 +71,7 @@ switch modelType
         % loop over packets in the cell
         for ii = 1:length(packetPocket)
             % Fit the packet
-            [fitParamsCell{ii},~,objFitResponses] = fitOBJ.fitResponse(packetPocket{ii});
+            [fitParamsCell{ii},~,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii});
             fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
             fitOBJ.paramPrint(fitParamsCell{ii})
         end

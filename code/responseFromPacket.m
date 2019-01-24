@@ -2,8 +2,7 @@ function [theModelPreds] =  responseFromPacket(predictionsType, analysisParams, 
 % Compute the response to a multiple packet/param inputs
 %
 % Syntax:
-%    [responses] =  predictTimeCourse(obj, analysisParams, params, packetPocket);
-%
+%    [theModelPreds] =  responseFromPacket(predictionsType, analysisParams, fitParams, packetPocket, varargin)%
 % Description:
 %    This function takes in a fitting object, parameters, and a cell of packets
 %    and returns the timecourse prediction of the model.
@@ -13,7 +12,7 @@ function [theModelPreds] =  responseFromPacket(predictionsType, analysisParams, 
 %                                 or qcmPred)
 %    analysisParams             - Struct of important information for the
 %                                 analysis
-%    params                     - paramters of the model used for the
+%    fitParams                     - paramters of the model used for the
 %                                 response calculation
 %    packetPocket               - A cell array of packets
 %

@@ -1,33 +1,30 @@
-function plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
-% Provides a higher resolution contrast/direcetions base for CRF predictions
+function figHdl = plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
+%Plots the predictions of each model for each run. 
 % 
 % Syntax:
-%   [crfStimulus] = upsampleCRF(analysisParams)
+%   plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
 %             
 % Description:
-%   This function takes in a fitting object, parameters, and a cell of packets
-%   and returns the timecourse prediction of the model. 
+%   Plots the predictions of each model for each run. 
 %
 % Inputs:    
 %   analysisParams      - Struct of important information for the
-%                         analysis. Relevant fields for this are:
-%                           * contrastCoding 
-%                           * directionCoding 
-%                           * maxContrastPerDirection 
-%                           * theDimention 
-%                           * numSamples - upsample resolution 
-% baselineShift         - A matrix with the shisft need to add the baseline
-%                         back to the time course predicitions. should be a
-%                         matrix of size numSessions x numAcquisitions. if 
+%                         analysis. 
+%   timeCoursePlot      - A stuct of model predictions. Each field should
+%                         be a different model containing subfields for
+%                         avalues, timebase, and plotColor. 
+%   baselineShift       - A matrix with the shift needed to add the baseline
+%                         back to the time course predicitions. This should be a
+%                         matrix of size numSessions x numAcquisitions. If 
 %                         no baseline shisft have a matrix of all zeros 
 % Outputs:
-%   crfStimulus         - Upsampled contrast/directions stimuli. 
+%   figHdl              - Figure handle  
 %
 % Optional key/value pairs:
 %   none
 
 % History:
-%   01/23/2019 MAB Wrote it. 
+%   01/24/2019 MAB Wrote it. 
 
 % subplot size
 rws = ceil(sqrt(analysisParams.numSessions*analysisParams.numAcquisitions));

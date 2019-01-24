@@ -2,7 +2,8 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
-%   [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams] = fit_IAMP(analysisParams, fullCleanData);
+%   [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams,
+%   iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData);
 %
 % Description:
 %    This function takes in the clean time series data and the analysis params
@@ -20,7 +21,8 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    iampTimeCoursePacketPocket - Cell array of IAMP packets for each run 
 %    iampOBJ                    - The IAMP object
 %    iampParams                 - Cell array of IAMP parameter fits for each run 
-%
+%    iampResponses              - Model response to each run
+%    rawTC                      - meadaind time course for each run 
 % Optional key/value pairs:
 %    none
 
