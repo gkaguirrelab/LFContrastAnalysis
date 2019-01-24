@@ -1,7 +1,6 @@
 function [crfStimulus] = upsampleCRF(analysisParams,varargin)
 % Provides a higher resolution contrast/direcetions base for CRF predictions
 % 
-%
 % Syntax:
 %   [crfStimulus] = upsampleCRF(analysisParams)
 %             
@@ -22,6 +21,10 @@ function [crfStimulus] = upsampleCRF(analysisParams,varargin)
 %
 % Optional key/value pairs:
 %   none
+
+% History:
+%   01/22/2019 MAB Wrote it. 
+
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.parse(analysisParams, varargin{:});

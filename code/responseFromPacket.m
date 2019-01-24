@@ -1,42 +1,60 @@
-function [responses] =  responseFromPacket(obj, analysisParams, params, packetPocket, varargin)
+function [theModelPreds] =  responseFromPacket(predictionsType, analysisParams, fitParams, packetPocket, varargin)
 % Compute the response to a multiple packet/param inputs
 %
 % Syntax:
-%    [responses] =  responseFromPacket(obj, analysisParams, params, packetPocket);
+%    [responses] =  predictTimeCourse(obj, analysisParams, params, packetPocket);
 %
 % Description:
 %    This function takes in a fitting object, parameters, and a cell of packets
-%    and returns the timecourse prediction of the model. 
+%    and returns the timecourse prediction of the model.
 %
 % Inputs:
-%    obj                        - Fitting objects     
+%    predictionsType            - Model used for predicition (either nrPred
+%                                 or qcmPred)
 %    analysisParams             - Struct of important information for the
-%                                 analysis 
+%                                 analysis
 %    params                     - paramters of the model used for the
-%                                 response calculation 
-%    packetPocket               - A cell array of packets 
+%                                 response calculation
+%    packetPocket               - A cell array of packets
 %
 % Outputs:
-%    responses                  - A cell array of responses  
+%    theModelPreds              - A cell array of responses
 %
 % Optional key/value pairs:
-%    none 
+%    plotColor                  - rgb vector setting the color of the line
 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
-p.addRequired('obj',@isobject);
+p.addRequired('predictionsType',@ischar);
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('params',@isstruct);
 p.addRequired('packetPocket',@iscell);
-p.parse(obj, analysisParams, params, packetPocket, varargin{:});
+p.addParameter('plotColor',[1 , 1, 1],@isvector);
+p.parse(predictionsType, analysisParams, fitParams, packetPocket, varargin{:});
 
 
-% loop over packets 
-for ii = 1:length(packetPocket)
+% loop over packets
+for ii = 1:size(packetPocket,1)
     
+    switch predictionsType
+        case 'nrPred'
+            srt = analysisParams.numDirPerSession*(ii - 1) + 1;
+            stp = analysisParams.numDirPerSession*ii;
+            directions = analysisParams.directionCoding(1:analysisParams.theDimension, srt:stp);
+            fitOBJ = tfeNakaRushtonDirection(directions);
+            
+            params = fitParams(srt:stp);
+        case 'qcmPred'
+            fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
+            params = fitParams;
+        otherwise
+            error('Model not known');
+    end
     
-    responses{ii}.values   = obj.computeResponse(params,packetPocket{ii}.stimulus,packetPocket{ii}.kernel);
-
-
-    
-    
+    for jj = 1:size(packetPocket,2)
+        
+        theModelPreds{ii,jj}.values    = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+        theModelPreds{ii,jj}.timebase  = packetPocket{ii,jj}.stimulus.timebase;
+        theModelPreds{ii,jj}.plotColor = p.Results.plotColor;
+        
+    end
 end

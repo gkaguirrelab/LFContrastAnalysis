@@ -1,8 +1,8 @@
-function [fig1] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints);
+function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
-%   [] = plotCF(analysisParams,meanIAMPBetas,semIAMPBetas,paramsQCMFit)
+%   [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints);
 %
 % Description:
 %    This function plots the IAMP fits and IAMP-QCM predictions from runIAMP_QCM.m as contrast response
@@ -10,9 +10,13 @@ function [fig1] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoint
 %
 % Inputs:
 %    analysisParams            - Analysis parameter stuct set in analyzeLFContrast (Struct)
-%    meanIAMPBetas             - Mean beta weughts across runs per contrast level and direction (vector)
-%    semIAMPBetas              - Standard error of the beta weigths in meanIAMPBetas (vector)
-%    paramsQCMFit              - Parameter fits to the QCM model (struct)
+%    crfPlotStruct             - A struct containing each model you want
+%                                plotted as a field. Each model must subfields 
+%                                of values (the CRF model predictions) and color 
+%                                (the color values of the line)
+%    crfStimulus               - The CRF stimulus used to make the model
+%                                predictions 
+%    iampsPoints               - The mean IAMP beta weights 
 %
 % Outputs:
 %    figHdl                    - Figure handle
@@ -25,11 +29,16 @@ function [fig1] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoint
 % Subplot size
 rws = ceil(sqrt(size(analysisParams.directionCoding,2)));
 cols = rws;
+
+% indexind for models
 modelIndx = analysisParams.numSamples;
 iampIndx = length(analysisParams.contrastCoding);
-fig1 = figure;
+
+% get x axis values 
 contrastSpacing = crfStimulus.values(end,:);
 fields = fieldnames(crfPlotStruct);
+
+figHdl = figure; 
 
 for ii = 1:size(analysisParams.directionCoding,2)
     
@@ -56,6 +65,7 @@ for ii = 1:size(analysisParams.directionCoding,2)
         p(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
         q1    = scatter(xAxisIamp,iampVals,'*k');
         
+        % put info 
         ylabel('Mean Beta Weight')
         xlabel('Contrast')
         title(sprintf('LM stim = %s', num2str(analysisParams.LMVectorAngles(ii))));

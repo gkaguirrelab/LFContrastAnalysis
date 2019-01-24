@@ -38,7 +38,7 @@ analysisParams.generateCrossValPlots = false;
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses] = fit_IAMP(analysisParams,fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -102,6 +102,9 @@ crfPlot.respQCMCrf.color = [0, 1, 0];
 iampPoints = iampOBJ.averageParams(concatParams);
 plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
  
+%% Get the time course predicitions of the CRF params
+a = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket);
+
 
 % %Plot the time course prediction for each run using the different fits to
 % %the crf

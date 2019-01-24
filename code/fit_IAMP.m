@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses] = fit_IAMP(analysisParams, fullCleanData)
+function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -106,11 +106,11 @@ for sessionNum = 1:analysisParams.numSessions
         kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
         
         % Take the median across voxels
-        responses = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1)';
+        rawTC{sessionNum,jj} = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
         
         %%  Make the IAMP packet
         % the response
-        thePacket.response.values   = responses';
+        thePacket.response.values   = rawTC{sessionNum,jj};
         thePacket.response.timebase = stimulusStruct.timebase;
         % the stimulus
         thePacket.stimulus.timebase = stimulusStruct.timebase;
