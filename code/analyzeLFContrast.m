@@ -98,6 +98,23 @@ crfPlot.respNrCrfAmpSemiExp.color = [0, .66, 1];
 crfPlot.respQCMCrf = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},crfStimulus,[]);
 crfPlot.respQCMCrf.color = [0, 1, 0]; 
 
+%% Now use the QCM to get NR parameters that can be applied to crfStimulus using the
+% Naka-Rushton objects.
+nrDirections = nrCrfOBJ.directions;
+nrContrasts = ones(1,size(nrDirections,2));
+tempStimulus.values = [nrDirections ; nrContrasts]
+tempStimulus.timebase = 1:size(nrDirections,2);
+tempResp = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},tempStimulus,[]);
+for ii = 1:length(nrCrfParamsAmpSemiExp{1})
+    nrQcmBasedParams{1}(ii) = nrCrfParamsAmpSemiExp{1}(ii);
+    nrQcmBasedParams{1}(ii).crfSemi = qcmCrfMeanParams{1}.crfSemi/tempResp.metaData.quadraticFactors(ii);
+    nrQcmBasedParams{1}(ii).crfExponent = qcmCrfMeanParams{1}.crfExponent;
+    nrQcmBasedParams{1}(ii).crfAmp = qcmCrfMeanParams{1}.crfAmp;
+    nrQcmBasedParams{1}(ii).crfOffset = qcmCrfMeanParams{1}.crfOffset;
+end
+crfPlot.respNrQcmBased = nrCrfOBJ.computeResponse(nrQcmBasedParams{1},crfStimulus,[]);
+crfPlot.respNrQcmBased.color = [1 0 0];
+
 %% Plot the CRF from the IAMP, QCM, and  fits
 iampPoints = iampOBJ.averageParams(concatParams);
 plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
