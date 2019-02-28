@@ -31,9 +31,9 @@ numContrast = length(analysisParams.contrastCoding );
 % level and condtion)
 for ii = 1:numCond
     if ii == 1
-        sortedBetas{ii} = meanIAMPBetas(1:numContrast);
+        sortedBetas{ii} = meanIAMPBetas.paramMainMatrix(1:numContrast);
     else
-        sortedBetas{ii} = meanIAMPBetas((ii-1)*numContrast+1:ii*numContrast);
+        sortedBetas{ii} = meanIAMPBetas.paramMainMatrix((ii-1)*numContrast+1:ii*numContrast);
     end
     
     % Scale the contrast spacing by the maximum contrast per direction
