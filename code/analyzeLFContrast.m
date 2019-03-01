@@ -66,11 +66,11 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
-% Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true);
+% Fit the CRF with the NR common Exponent -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
 
-% Fit the CRF with the NR common amplitude, semisaturation, and exponent  -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmpSemiExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonSemi', true, 'commonExp', true);
+% Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
@@ -83,16 +83,16 @@ crfStimulus = upsampleCRF(analysisParams);
 %% Predict CRF from direction model fits
 %
 % Predict the responses for CRF with params from NR common Amp.
-% crfPlot.respNrCrfAmp = nrCrfOBJ.computeResponse(nrCrfParamsAmp{1},crfStimulus,[]);
-% crfPlot.respNrCrfAmp.color = [0, 0, 1];
+crfPlot.respNrCrfAmp = nrCrfOBJ.computeResponse(nrCrfParamsAmp{1},crfStimulus,[]);
+crfPlot.respNrCrfAmp.color = [0, 0, 1];
 
-% Predict the responses for CRF with params from NR common Amp and Semi
-crfPlot.respNrCrfAmpSemi = nrCrfOBJ.computeResponse(nrCrfParamsAmpSemi{1},crfStimulus,[]);
-crfPlot.respNrCrfAmpSemi.color = [0, .33, 1];
+% Predict the responses for CRF with params from NR common Exp
+crfPlot.respNrCrfExp = nrCrfOBJ.computeResponse(nrCrfParamsExp{1},crfStimulus,[]);
+crfPlot.respNrCrfExp.color = [0, .33, 1];
 
-% Predict the responses for CRF with params from NR common Amp, Semi, and Exp
-% crfPlot.respNrCrfAmpSemiExp = nrCrfOBJ.computeResponse(nrCrfParamsAmpSemiExp{1},crfStimulus,[]);
-% crfPlot.respNrCrfAmpSemiExp.color = [0, .66, 1];
+% Predict the responses for CRF with params from NR common Amp and Exp
+crfPlot.respNrCrfAmpExp = nrCrfOBJ.computeResponse(nrCrfParamsAmpExp{1},crfStimulus,[]);
+crfPlot.respNrCrfAmpExp.color = [0, .66, 1];
 
 % Predict the responses for CRF with params from QCM
 crfPlot.respQCMCrf = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},crfStimulus,[]);
@@ -105,8 +105,8 @@ nrContrasts = ones(1,size(nrDirections,2));
 tempStimulus.values = [nrDirections ; nrContrasts];
 tempStimulus.timebase = 1:size(nrDirections,2);
 tempResp = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},tempStimulus,[]);
-for ii = 1:length(nrCrfParamsAmpSemiExp{1})
-    nrQcmBasedParams{1}(ii) = nrCrfParamsAmpSemiExp{1}(ii);
+for ii = 1:length(nrCrfParamsAmpExp{1})
+    nrQcmBasedParams{1}(ii) = nrCrfParamsAmpExp{1}(ii);
     nrQcmBasedParams{1}(ii).crfSemi = qcmCrfMeanParams{1}.crfSemi/tempResp.metaData.quadraticFactors(ii);
     nrQcmBasedParams{1}(ii).crfExponent = qcmCrfMeanParams{1}.crfExponent;
     nrQcmBasedParams{1}(ii).crfAmp = qcmCrfMeanParams{1}.crfAmp;
@@ -117,10 +117,10 @@ end
 
 % Fit the CRF with the NR common amplitude and semisaturation  -- { } is because this expects a cell
 % This time start with parameters unpacked from QCM filt.
-[nrQcmBasedCrfOBJ,nrQcmBasedCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, ...
-    'commonAmp', true, 'commonSemi', true, 'initialParams', nrQcmBasedParams{1});
-crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsAmpSemi{1},crfStimulus,[]);
-crfPlot.respNrQcmBasedCrfAmpSemi.color = [0.5 0.2 0.6];
+% [nrQcmBasedCrfOBJ,nrQcmBasedCrfParamsAmpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, ...
+%     'commonAmp', true, 'commonSemi', true, 'initialParams', nrQcmBasedParams{1});
+% crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsAmpSemi{1},crfStimulus,[]);
+% crfPlot.respNrQcmBasedCrfAmpSemi.color = [0.5 0.2 0.6];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
 iampPoints = iampOBJ.averageParams(concatParams);

@@ -62,7 +62,7 @@ switch modelType
         fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
         for ii = 1:length(packetPocket)
             % Fit the packet
-            [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.initialParams);
+            [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams);
             fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
             fitOBJ.paramPrint(fitParamsCell{ii})
         end
