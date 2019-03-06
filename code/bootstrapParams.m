@@ -30,7 +30,12 @@ analysisParams.numSamples = 25;
 
 for ii = 1:numBootstraps
     % create the random draws with replacement
+    sampleMatrix = randi([1,20],analysisParams.numAcquisitions,length(analysisParams.sessionFolderName));
     
+    % create run order text file
+    generateBootstrapDataFilesText(analysisParams,sampleMatrix)
+    
+    % get fits 
     [] = runDirectionModelFits(analysisParams,fullCleanData)
     
     
