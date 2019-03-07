@@ -9,26 +9,25 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    This function takes in the clean time series data and the analysis params
 %    and fits the IMAP model. This function builds a stimulus design matirx
 %    based on the analysisParams (from each run of the experiemnt) and run the
-%    IAMP model on the cleaned and trial sorted data. 
+%    IAMP model on the cleaned and trial sorted data.
 %
 % Inputs:
 %    analysisParams             - Struct of important information for the
-%                                 analysis 
+%                                 analysis
 %    fullCleanData              - The cleaned time course
 %
 % Outputs:
 %    analysisParams             - Returns analysisParams with any updates
-%    iampTimeCoursePacketPocket - Cell array of IAMP packets for each run 
+%    iampTimeCoursePacketPocket - Cell array of IAMP packets for each run
 %    iampOBJ                    - The IAMP object
-%    iampParams                 - Cell array of IAMP parameter fits for each run 
+%    iampParams                 - Cell array of IAMP parameter fits for each run
 %    iampResponses              - Model response to each run
-%    rawTC                      - meadaind time course for each run 
+%    rawTC                      - meadaind time course for each run
 % Optional key/value pairs:
 %    none
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
-
 
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
 
@@ -134,7 +133,7 @@ for sessionNum = 1:analysisParams.numSessions
         
         iampParams{sessionNum,jj} = paramsFit;
         iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
-        iampResponses{jj} = IAMPResponses;
+        iampResponses{sessionNum,jj} = IAMPResponses;
     end
     
 end

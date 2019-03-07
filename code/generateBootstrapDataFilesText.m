@@ -40,7 +40,7 @@ for ii = 1:length(analysisParams.sessionNumber)
     % this should eventually be change to something of the form so it makes less assumptions 
     % fprintf(fileID,'CRF_%s_scan%1.f.mat\n',analysisParams.sessionNumber{ii},[3, 3, 4, 5,6])
     
-    fprintf(fileID,'CRF_session1_scan%1.f.mat\n',sampleMatrix(:,ii))
+    fprintf(fileID,'CRF_session_1_scan%1.f.mat\n',sampleMatrix(:,ii))
     
     %% Close the file
     fclose(fileID);
