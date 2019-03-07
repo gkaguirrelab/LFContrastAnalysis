@@ -1,5 +1,6 @@
-numBootstraps = 10;
-numCores = 6;
+numBootstraps = 3;
+numCores = 2;
+
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('LZ23');
 
@@ -27,7 +28,7 @@ analysisParams.numSamples = 25;
 
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
-parpool(numCores);
+%parpool(numCores);
 
 parfor ii = 1:numBootstraps
     % create the random draws with replacement
@@ -35,12 +36,12 @@ parfor ii = 1:numBootstraps
     
     % random sample with replacement the iamp param fits 
     for jj  = 1:size(sampleMatrix,1)
-        iampTCPacketPocketBoot(jj,:) = iampTimeCoursePacketPocket(sampleMatrix(jj,:));
-        iampParamsbootstrap(jj,:) = iampParams(sampleMatrix(jj,:));
+        iampTCPacketPocketBoot{ii}(jj,:) = iampTimeCoursePacketPocket(sampleMatrix(jj,:));
+        iampParamsbootstrap{ii}(jj,:) = iampParams(sampleMatrix(jj,:));
     end
     
     % get fits 
-    [nrCrfParamsAmpVec(:,ii), nrCrfParamsExpVec(:,ii), nrCrfParamsAmpExpVec(:,ii), qcmCrfMeanParamsVec(:,ii)] = runDirectionModelFits(analysisParams,iampTCPacketPocketBoot,iampParamsbootstrap,iampOBJ);
+    [nrCrfParamsAmpVec(:,ii), nrCrfParamsExpVec(:,ii), nrCrfParamsAmpExpVec(:,ii), qcmCrfMeanParamsVec(:,ii)] = runDirectionModelFits(analysisParams,iampTCPacketPocketBoot{ii},iampParamsbootstrap{ii},iampOBJ);
 end
 
 
