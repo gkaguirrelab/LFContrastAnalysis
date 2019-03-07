@@ -1,5 +1,5 @@
 function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin)
-% Fits mutliple packets given a model type. 
+% Fits mutliple packets given a model type.
 %
 % Syntax:
 %   [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisParams, modelType, packetPocket, varargin);
@@ -7,7 +7,7 @@ function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisPar
 % Description:
 %    This function takes in the a cell array of packets and returnd a cell
 %    array of fit params, responses and the fit object. This currently
-%    works for the naka-rushotn and qcm models. 
+%    works for the naka-rushotn and qcm models.
 %
 % Inputs:
 %    analysisParams     - Struct of important information for the
@@ -17,20 +17,21 @@ function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisPar
 %
 % Outputs:
 %    fitOBJ             - The object used ofr fitting
-%    fitParamsCell      - Cell array of fit params 
+%    fitParamsCell      - Cell array of fit params
 %    objFitResponses    - Cell array of the fit responses
 %
 % Optional key/value pairs:
-%  'intialParams'         - Struct (default empty). Params structure
-%                           containing initial parameters for search.
-%                           See tfe.fitResponse for more.
+%  'intialParams'       - Struct (default empty). Params structure
+%                         containing initial parameters for search.
+%                         See tfe.fitResponse for more.
+%  'talkToMe'           - print model fit to screen
 %
 % Optional key/value pairs for NR model fits:
-%  'lockOffsetToZero'     - default false
-%  'commonAmp'            - default false
-%  'commonSemi'           - default false
-%  'commonExp'            - default false 
-%  'commonOffset'         - default true
+%  'lockOffsetToZero'   - default false
+%  'commonAmp'          - default false
+%  'commonSemi'         - default false
+%  'commonExp'          - default false
+%  'commonOffset'       - default true
 
 % History:
 %   MAB 09/09/18
@@ -51,7 +52,7 @@ p.addParameter('commonSemi',false,@islogical);
 p.addParameter('commonExp',false,@islogical);
 p.addParameter('commonOffset',true,@islogical);
 p.addParameter('initialParams',[],@(x)(isempty(x) | isstruct(x)));
-
+p.addParameter('talkToMe', true, @islogical)
 
 p.parse(analysisParams,modelType,packetPocket,varargin{:});
 
@@ -63,8 +64,10 @@ switch modelType
         for ii = 1:length(packetPocket)
             % Fit the packet
             [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams);
-            fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
-            fitOBJ.paramPrint(fitParamsCell{ii})
+            if p.Results.talkToMe
+                fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
+                fitOBJ.paramPrint(fitParamsCell{ii})
+            end
         end
         
     case 'nrFit'
@@ -81,8 +84,10 @@ switch modelType
         for ii = 1:length(packetPocket)
             % Fit the packet
             [fitParamsCell{ii},~,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'initialParams',p.Results.initialParams);
-            fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
-            fitOBJ.paramPrint(fitParamsCell{ii})
+            if p.Results.talkToMe
+                fprintf('\nNRDirection parameters from fit to IAMP betas with common offset:\n');
+                fitOBJ.paramPrint(fitParamsCell{ii})
+            end
         end
         
 end
