@@ -1,4 +1,4 @@
-function [nrCrfParamsAmpVec,nrCrfParamsExpVec,nrCrfParamsAmpExpVec,qcmCrfMeanParamsVec] = runDirectionModelFits(analysisParams,iampParams)
+function [nrCrfParamsAmpVec, nrCrfParamsExpVec, nrCrfParamsAmpExpVec, qcmCrfMeanParamsVec] = runDirectionModelFits(analysisParams,iampParams)
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %

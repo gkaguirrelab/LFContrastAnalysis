@@ -29,11 +29,13 @@ analysisParams.numSamples = 25;
 
 for ii = 1:numBootstraps
     % create the random draws with replacement
-    sampleMatrix = randi([1,10],analysisParams.numAcquisitions,length(analysisParams.sessionFolderName));
+    sampleMatrix = randi([1,10],length(analysisParams.sessionFolderName),analysisParams.numAcquisitions);
     
     % random sample with replacement the iamp param fits 
-    iampParams
+    for jj  = 1:size(sampleMatrix,1)
+        iampParamsbootstrap(jj,:) = iampParams(sampleMatrix(jj,:));
+    end
     
     % get fits 
-    [nrCrfParamsAmpVec] = runDirectionModelFits(analysisParams,iampTimeCoursePacketPocket,true);
+    [nrCrfParamsAmpVec, nrCrfParamsExpVec, nrCrfParamsAmpExpVec, qcmCrfMeanParamsVec] = runDirectionModelFits(analysisParams,iampParamsbootstrap);
 end
