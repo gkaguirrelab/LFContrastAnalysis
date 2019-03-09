@@ -163,6 +163,8 @@ semNrAmpExpRMSE = std(nrAmpExpRMSE(:))./sqrt(size(heldOutRunOrder,2));
 meanQcmRMSE= mean(qcmRMSE(:));
 semQcmRMSE = std(qcmRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
-
-
-
+plotnames = categorical({'meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','meanQcmRMSE'});
+barsForPlot = [meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanQcmRMSE];
+errorForPlot = [semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semQcmRMSE];
+bar(barsForPlot)
+errorbar(barsForPlot,errorForPlot)
