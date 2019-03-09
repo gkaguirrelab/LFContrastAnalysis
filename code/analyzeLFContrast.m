@@ -132,10 +132,10 @@ plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
 timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
+timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpSemiExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
+timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
 timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
