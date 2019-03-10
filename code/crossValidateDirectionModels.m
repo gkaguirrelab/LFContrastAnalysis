@@ -1,6 +1,6 @@
 %crossValidateDirectionModels
 heldOutRunOrder = [5, 10, 3, 7, 2, 8, 6, 9, 4, 1; ...
-    10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
+                   10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('LZ23');
@@ -89,6 +89,9 @@ for ii = 1:size(heldOutRunOrder,2)
     % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
     [nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
     
+        % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
+    [nrCrfOBJ,nrCrfParamsAmpExpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true, 'commonSemi', true);
+    
     % Fit the CRF with the QCM -- { } is because this expects a cell
     [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
     
@@ -107,6 +110,9 @@ for ii = 1:size(heldOutRunOrder,2)
     % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
     timeCoursePlot.nrAmpExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0.7, .6, .1]);
     
+    % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+    timeCoursePlot.nrAmpExpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.3, .3, .1]);
+    
     % Get the time course predicitions fromt the QCM params fit to the CRF
     timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
     
@@ -121,19 +127,22 @@ for ii = 1:size(heldOutRunOrder,2)
     for kk = 1:length(timeCoursePlot.heldOutRawTC)
         
         % Calculate the RMSE for the  NR preds
-        nrRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nr{kk}.values-timeCoursePlot.heldOutRawTC{1}.values).^2));
+        nrRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nr{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Amp preds
-        nrAmpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmp{kk}.values-timeCoursePlot.heldOutRawTC{1}.values).^2));
+        nrAmpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Exp preds
-        nrExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrExp{kk}.values-timeCoursePlot.heldOutRawTC{1}.values).^2));
+        nrExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrExp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Amp and Exp preds
-        nrAmpExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExp{kk}.values-timeCoursePlot.heldOutRawTC{1}.values).^2));
+        nrAmpExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        
+        % Calculate the RMSE for the NR common Amp and Exp preds
+        nrAmpExpSemiRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExpSemi{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the qcm
-        qcmRMSE(kk,ii) = sqrt(mean((timeCoursePlot.qcm{kk}.values-timeCoursePlot.heldOutRawTC{1}.values).^2));
+        qcmRMSE(kk,ii) = sqrt(mean((timeCoursePlot.qcm{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
     end
     
@@ -159,12 +168,18 @@ semNrExpRMSE = std(nrExpRMSE(:))./sqrt(size(heldOutRunOrder,2));
 meanNrAmpExpRMSE = mean(nrAmpExpRMSE(:));
 semNrAmpExpRMSE = std(nrAmpExpRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
+% Calculate the RMSE for the NR common Amp and Exp preds
+meanNrAmpExpSemiRMSE = mean(nrAmpExpSemiRMSE(:));
+semNrAmpExpSemiRMSE = std(nrAmpExpSemiRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
 % Calculate the RMSE for the qcm
 meanQcmRMSE= mean(qcmRMSE(:));
 semQcmRMSE = std(qcmRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
-plotnames = categorical({'meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','meanQcmRMSE'});
-barsForPlot = [meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanQcmRMSE];
-errorForPlot = [semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semQcmRMSE];
+
+figure;hold on 
+plotnames = categorical({'meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','semNrAmpExpSemiRMSE','meanQcmRMSE'});
+barsForPlot = [meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE];
+errorForPlot = [semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE];
 bar(barsForPlot)
 errorbar(barsForPlot,errorForPlot)
