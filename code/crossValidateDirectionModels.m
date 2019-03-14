@@ -32,7 +32,9 @@ analysisParams.numSamples = 25;
 % create the random draws with replacement
 sampleMatrix = randi([1,10],length(analysisParams.sessionFolderName),analysisParams.numAcquisitions);
 
-
+for ii = 1:analysisParams.numAcquisitions
+    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+end
 
 % Cross validation folds
 for ii = 1:size(heldOutRunOrder,2)
@@ -47,11 +49,19 @@ for ii = 1:size(heldOutRunOrder,2)
     tmpMat = ones(size(iampParams));
     tmpMat(1,heldOutRunOrder(1,ii)) = 0;
     tmpMat(2,heldOutRunOrder(2,ii)) = 0;
-    cvParams(1,:) = iampParams(logical(tmpMat(1,:)));
-    cvParams(2,:) = iampParams(logical(tmpMat(2,:)));
+    cvParams(1,:) = iampParams(1,logical(tmpMat(1,:)));
+    cvParams(2,:) = iampParams(2,logical(tmpMat(2,:)));
     
-    cvTCPackets(1,:) = iampTimeCoursePacketPocket(logical(tmpMat(1,:)));
-    cvTCPackets(2,:) = iampTimeCoursePacketPocket(logical(tmpMat(2,:)));
+    cvTCPackets(1,:) = iampTimeCoursePacketPocket(1,logical(tmpMat(1,:)));
+    cvTCPackets(2,:) = iampTimeCoursePacketPocket(2,logical(tmpMat(2,:)));
+    
+    for pp = 1:size(cvTCPackets,1)
+        for mm = 1:size(cvTCPackets,2)
+            meanVal(pp,mm) =  mean(cvTCPackets{pp,mm}.response.values);
+        end
+    end
+    
+    meanModel = ones(size(cvTCPackets{1}.response.values)).*mean(meanVal(:));
     
     % get fits
     % Get directon/contrast form of time course and IAMP crf packet pockets.
@@ -121,28 +131,30 @@ for ii = 1:size(heldOutRunOrder,2)
     
     % %Plot the time course prediction for each run using the different fits to
     % %the crf
-    %plotTimeCourse(analysisParams, timeCoursePlot, heldOutBaselineShift);
+    plotTimeCourse(analysisParams, timeCoursePlot, heldOutBaselineShift,2);
     
     %% Calculate RMSE
     for kk = 1:length(timeCoursePlot.heldOutRawTC)
         
+        meanModelRMSE(kk,ii) = sqrt(mean((meanModel-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        
         % Calculate the RMSE for the  NR preds
-        nrRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nr{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        nrRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nr{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
         % Calculate the RMSE for the NR common Amp preds
-        nrAmpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        nrAmpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
         % Calculate the RMSE for the NR common Exp preds
-        nrExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrExp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        nrExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrExp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
         % Calculate the RMSE for the NR common Amp and Exp preds
-        nrAmpExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExp{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        nrAmpExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values)-heldOutBaselineShift(kk)).^2));
         
         % Calculate the RMSE for the NR common Amp and Exp preds
-        nrAmpExpSemiRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExpSemi{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        nrAmpExpSemiRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExpSemi{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
         % Calculate the RMSE for the qcm
-        qcmRMSE(kk,ii) = sqrt(mean((timeCoursePlot.qcm{kk}.values-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        qcmRMSE(kk,ii) = sqrt(mean((timeCoursePlot.qcm{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
     end
     
@@ -152,6 +164,9 @@ end
 
 
 %% Get the mean and SEM of the crossval
+
+meanMMRMSE = mean(meanModelRMSE(:));
+semMMRMSE  = std(meanModelRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
 meanNrRMSE = mean(nrRMSE(:));
 semNrRMSE = std(nrRMSE(:))./sqrt(size(heldOutRunOrder,2));
@@ -178,8 +193,8 @@ semQcmRMSE = std(qcmRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
 
 figure;hold on 
-plotnames = categorical({'meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','semNrAmpExpSemiRMSE','meanQcmRMSE'});
-barsForPlot = [meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE];
-errorForPlot = [semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE];
-bar(barsForPlot)
-errorbar(barsForPlot,errorForPlot)
+plotnames = categorical({'meanMMRMSE','meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','semNrAmpExpSemiRMSE','meanQcmRMSE'});
+barsForPlot = [meanMMRMSE, meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE];
+errorForPlot = [semMMRMSE, semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE];
+bar(plotnames,barsForPlot)
+errorbar(plotnames, barsForPlot,errorForPlot,'o')

@@ -2,7 +2,6 @@
 analysisParams = getSubjectParams('LZ23');
 
 % Clip fisrt 2 TRs from time series?
-% if no clipping then put 0;
 analysisParams.numClipFramesStart = 0;
 analysisParams.numClipFramesEnd   = 2;
 
@@ -152,7 +151,7 @@ timeCoursePlot.rawTC = rawTC;
 % %Plot the time course prediction for each run using the different fits to
 % %the crf
 
-plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift);
+plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
 
 
 % % Plot isoresponce contour

@@ -1,4 +1,4 @@
-function figHdl = plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
+function figHdl = plotTimeCourse(analysisParams,timeCoursePlot, baselineShift, numSubPlots)
 %Plots the predictions of each model for each run. 
 % 
 % Syntax:
@@ -17,6 +17,7 @@ function figHdl = plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
 %                         back to the time course predicitions. This should be a
 %                         matrix of size numSessions x numAcquisitions. If 
 %                         no baseline shisft have a matrix of all zeros 
+%   numSubPlots         - Number of subplots
 % Outputs:
 %   figHdl              - Figure handle  
 %
@@ -27,9 +28,9 @@ function figHdl = plotTimeCourse(analysisParams,timeCoursePlot, baselineShift)
 %   01/24/2019 MAB Wrote it. 
 
 % subplot size
-rws = ceil(sqrt(analysisParams.numSessions*analysisParams.numAcquisitions));
+rws = ceil(sqrt(numSubPlots));
 cols = rws-1;
-if rws*cols < analysisParams.numSessions*analysisParams.numAcquisitions
+if rws*cols < numSubPlots
     cols = rws;
 end
 
@@ -41,7 +42,7 @@ fields = fieldnames(timeCoursePlot);
 
 figHdl = figure; 
 
-for ii = 1:analysisParams.numSessions*analysisParams.numAcquisitions
+for ii = 1:numSubPlots
     
     for jj = 1:length(fields)
         
