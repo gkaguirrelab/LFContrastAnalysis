@@ -10,6 +10,9 @@ function [contrast, actualContrasts] = plotValidationsLMPlane(directedDirection,
 
 
 p = inputParser;
+p.addParameter('preCorValidIndx',[1,2,3,4,5],@isvector);
+p.addParameter('postCorValidIndx',[6,7,8,9,10],@isvector);
+p.addParameter('postExpValidIndx',[11,12,13,14,15],@isvector);
 p.addParameter('showVectors',true,@islogical);
 p.addParameter('showPreCorrections',true,@islogical);
 p.addParameter('showProjections',true,@islogical);
@@ -21,14 +24,8 @@ p.parse(varargin{:});
 options = p.Results;
 saveLocation = options.saveLocation;
 
-% clear screen
-clc
-
 % Loop over directions
 for ii = 1:length(directedDirection)
-    
-    % Presize contrast measurement matrix
-    actualContrasts  = zeros([size(directedDirection{ii}.describe.validation(1).contrastActual),length(directedDirection{ii}.describe.validation)]);
     
     % Get the desred contrast value for directrion
     desiredContrasts = directedDirection{ii}.describe.validation(1).contrastDesired;
@@ -44,6 +41,14 @@ for ii = 1:length(directedDirection)
     for jj = 1:length(directedDirection{ii}.describe.validation)
         actualContrasts(:,:,jj) = directedDirection{ii}.describe.validation(jj).contrastActual;
     end
+    
+    % Get the start and stops for indexing acutalContrasts  
+    preCorStrtIndx  = min(p.Results.preCorValidIndx);
+    preCorStopIndx  = max(p.Results.preCorValidIndx);
+    postCorStrtIndx = min(p.Results.postCorValidIndx);
+    postCorStopIndx = max(p.Results.postCorValidIndx);
+    postExpStrtIndx = min(p.Results.postExpValidIndx);
+    postExpStopIndx = max(p.Results.postExpValidIndx);
     
     %% Calculate stuff
     % pre corrections contrast
@@ -393,6 +398,24 @@ for ii = 1:length(directedDirection)
             sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos15Deg_contrast_total,contrast{ii}.postCorrections.neg15Deg_contrast_total), ...
             sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos15Deg_contrast_total,contrast{ii}.postExperiment.neg15Deg_contrast_total), ...
             sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total)};
+        % Show Text
+        text(xPos,yPos,textToShow)
+        
+        xPos = scaleVal.*[0.05];
+        yPos = scaleVal.*[-1.75];
+        
+        % Create text to display  MAKE THIS BE FOR 15 DEG.
+        textToShow = {  sprintf('*Stimulus Contrast*'), ...
+            sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos2Deg_contrast_total,contrast{ii}.desired.neg2Deg_contrast_total), ...
+            sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos2Deg_contrast_total,contrast{ii}.postCorrections.neg2Deg_contrast_total), ...
+            sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos2Deg_contrast_total,contrast{ii}.postExperiment.neg2Deg_contrast_total), ...
+            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos2Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg2Deg_contrast_total),...
+            sprintf('\n'),...
+            sprintf('*M Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(2,1), desiredContrasts(2,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(2,1),postCorrectionsContrast(2,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(2,1),postExperimentContrast(2,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(2,1),meanOfmedianExpContrast(2,2)) };
         % Show Text
         text(xPos,yPos,textToShow)
     end
