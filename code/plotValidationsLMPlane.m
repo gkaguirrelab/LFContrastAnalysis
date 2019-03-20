@@ -39,7 +39,7 @@ for ii = 1:length(directedDirection)
         actualContrasts(:,:,jj) = directedDirection{ii}.describe.validation(jj).contrastActual;
     end
     
-    % Get the start and stops for indexing acutalContrasts  
+    % Get the start and stops for indexing acutalContrasts
     preCorStrtIndx  = min(p.Results.preCorValidIndx);
     preCorStopIndx  = max(p.Results.preCorValidIndx);
     postCorStrtIndx = min(p.Results.postCorValidIndx);
@@ -198,7 +198,7 @@ for ii = 1:length(directedDirection)
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[-1.0];
-        yPos = scaleVal.*[-1.75];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {sprintf('*Stimulus Angle*'), ...
@@ -216,7 +216,7 @@ for ii = 1:length(directedDirection)
         text(xPos,yPos,textToShow)
         
         xPos = scaleVal.*[0.05];
-        yPos = scaleVal.*[-1.75];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {  sprintf('*Stimulus Contrast*'), ...
@@ -275,7 +275,7 @@ for ii = 1:length(directedDirection)
         fprintf('\n')
     end
     
-    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'northoutside')
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
     
@@ -373,53 +373,49 @@ for ii = 1:length(directedDirection)
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[-1.0];
-        yPos = scaleVal.*[-1.6];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {sprintf('*Stimulus Angle*'), ...
             sprintf('Desired Theta: pos %.2f, neg %.2f', anglesDesired_15Deg(1), anglesDesired_15Deg(2)),...
             sprintf('postCor Theta: pos %.2f, neg %.2f', anglesPostCor_15Deg(1), anglesPostCor_15Deg(2)),...
             sprintf('postExp Theta: pos %.2f, neg %.2f', anglesPostExp_15Deg(1), anglesPostExp_15Deg(2)),...
-            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_15Deg(1), anglesMean_15Deg(2))};
+            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_15Deg(1), anglesMean_15Deg(2)), ...
+            sprintf('\n'),...
+            sprintf('*L Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(4,1), desiredContrasts(4,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(4,1),postCorrectionsContrast(4,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(4,1),postExperimentContrast(4,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(4,2)) };
+        % Show Text
         % Show Text
         text(xPos,yPos,textToShow)
         
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[0.05];
-        yPos = scaleVal.*[-1.6];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {  sprintf('*Stimulus Contrast*'), ...
             sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos15Deg_contrast_total,contrast{ii}.desired.neg15Deg_contrast_total), ...
             sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos15Deg_contrast_total,contrast{ii}.postCorrections.neg15Deg_contrast_total), ...
             sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos15Deg_contrast_total,contrast{ii}.postExperiment.neg15Deg_contrast_total), ...
-            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total)};
-        % Show Text
-        text(xPos,yPos,textToShow)
-        
-        xPos = scaleVal.*[0.05];
-        yPos = scaleVal.*[-1.75];
-        
-        % Create text to display  MAKE THIS BE FOR 15 DEG.
-        textToShow = {  sprintf('*Stimulus Contrast*'), ...
-            sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos15Deg_contrast_total,contrast{ii}.desired.neg15Deg_contrast_total), ...
-            sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos15Deg_contrast_total,contrast{ii}.postCorrections.neg15Deg_contrast_total), ...
-            sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos15Deg_contrast_total,contrast{ii}.postExperiment.neg15Deg_contrast_total), ...
-            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total),...
+            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total), ...
             sprintf('\n'),...
             sprintf('*M Cone Contrast*'),...
-            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(2,1), desiredContrasts(2,2)),...
-            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(2,1),postCorrectionsContrast(2,2)),...
-            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(2,1),postExperimentContrast(2,2)),...
-            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(2,1),meanOfmedianExpContrast(2,2)) };
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(5,1), desiredContrasts(5,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(5,1),postCorrectionsContrast(5,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(5,1),postExperimentContrast(5,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(5,1),meanOfmedianExpContrast(5,2)) };
         % Show Text
         text(xPos,yPos,textToShow)
+      
     end
     
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
-    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'northoutside')
     
     % save out plots
     
