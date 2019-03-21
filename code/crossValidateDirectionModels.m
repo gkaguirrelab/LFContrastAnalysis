@@ -1,8 +1,9 @@
 % This is a script to cross validate the various models for LFContrast
+% using both the time course and the crf. 
 
 % Set the order of held out pairs of runs
 heldOutRunOrder = [5, 10, 3, 7, 2, 8, 6, 9, 4, 1; ...
-    10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
+                   10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('LZ23');
@@ -57,12 +58,14 @@ for ii = 1:size(heldOutRunOrder,2)
     cvTCPackets(1,:) = iampTimeCoursePacketPocket(1,logical(tmpMat(1,:)));
     cvTCPackets(2,:) = iampTimeCoursePacketPocket(2,logical(tmpMat(2,:)));
     
+    % get the mean of each run
     for pp = 1:size(cvTCPackets,1)
         for mm = 1:size(cvTCPackets,2)
             meanVal(pp,mm) =  mean(cvTCPackets{pp,mm}.response.values);
         end
     end
     
+    % Create the mean time course model from all runs not held out
     meanModel = ones(size(cvTCPackets{1}.response.values)).*mean(meanVal(:));
     
     % get fits
@@ -88,6 +91,7 @@ for ii = 1:size(heldOutRunOrder,2)
     % Concat held out params for RMSE of CRF
     [concatHeldOutParams{ii},concatHeldOutBaselineShift(:,jj)] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','makeBaselineZero');
     
+    % Make the mean IAMP CRF packet
     directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
     
     %% Fit the direction based models to the mean IAMP beta weights
@@ -120,14 +124,19 @@ for ii = 1:size(heldOutRunOrder,2)
     % Naka-Rushton with common offset
     nrCrfRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrObjFitResponses{1}.values).^2));
     
+    % Naka-Rushton with common offset, Amp
     nrCrfAmpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpObjFitResponses{1}.values).^2));
     
+    % Naka-Rushton with common offset, Exp
     nrCrfExpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrExpObjFitResponses{1}.values).^2));
     
+    % Naka-Rushton with common offset, Amp, Exp
     nrCrfAmpExpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpExpObjFitResponses{1}.values).^2));
    
+    % Naka-Rushton with common offset, Amp, Exp, Semi
     nrCrfAmpExpSemiRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpExpSemiObjFitResponses{1}.values).^2));
     
+    % QCM 
     qcmCrfRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-qcmObjFitResponses{1}.values).^2));
     
 
@@ -160,8 +169,11 @@ for ii = 1:size(heldOutRunOrder,2)
     plotTimeCourse(analysisParams, timeCoursePlot, heldOutBaselineShift,2);
     
     %% Calculate RMSE
+    %
+    % Loop over sessions
     for kk = 1:length(timeCoursePlot.heldOutRawTC)
         
+        % Calculate the RMSE for the mean model
         meanModelRMSE(kk,ii) = sqrt(mean((meanModel-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
         
         % Calculate the RMSE for the  NR preds
