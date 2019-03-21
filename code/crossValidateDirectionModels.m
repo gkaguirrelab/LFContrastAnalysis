@@ -1,6 +1,8 @@
-%crossValidateDirectionModels
+% This is a script to cross validate the various models for LFContrast
+
+% Set the order of held out pairs of runs
 heldOutRunOrder = [5, 10, 3, 7, 2, 8, 6, 9, 4, 1; ...
-                   10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
+    10, 3, 4, 8, 1, 6, 7, 9, 2, 5];
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('LZ23');
@@ -83,28 +85,52 @@ for ii = 1:size(heldOutRunOrder,2)
         [concatParams{ii},concatBaselineShift(:,jj)] = iampOBJ.concatenateParams(cvParams(:,jj),'baselineMethod','makeBaselineZero');
     end
     
+    % Concat held out params for RMSE of CRF
+    [concatHeldOutParams{ii},concatHeldOutBaselineShift(:,jj)] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','makeBaselineZero');
+    
     directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
     
     %% Fit the direction based models to the mean IAMP beta weights
     %
     % Fit the CRF with the NR -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
+    [nrCrfOBJ,nrCrfParams,nrObjFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
     
     % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+    [nrCrfOBJ,nrCrfParamsAmp, nrAmpObjFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
     
     % Fit the CRF with the NR common Exponent -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
+    [nrCrfOBJ,nrCrfParamsExp,nrExpObjFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
     
     % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
+    [nrCrfOBJ,nrCrfParamsAmpExp, nrAmpExpObjFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
     
-        % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParamsAmpExpSemi] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true, 'commonSemi', true);
+    % Fit the CRF with the NR common amplitude, exponent,  and semi   -- { } is because this expects a cell
+    [nrCrfOBJ,nrCrfParamsAmpExpSemi,nrAmpExpSemiObjFitResponses] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true, 'commonSemi', true);
     
     % Fit the CRF with the QCM -- { } is because this expects a cell
-    [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
+    [qcmCrfMeanOBJ,qcmCrfMeanParams, qcmObjFitResponses] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
     
+    
+    %% Calculate RMSE for the CRF
+    %
+    % mean model 
+    meanCrfResp = ones(size(directionCrfMeanPacket.response.values)).*mean(directionCrfMeanPacket.response.values);
+    mmCrfRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-meanCrfResp).^2));
+    
+    % Naka-Rushton with common offset
+    nrCrfRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrObjFitResponses{1}.values).^2));
+    
+    nrCrfAmpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpObjFitResponses{1}.values).^2));
+    
+    nrCrfExpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrExpObjFitResponses{1}.values).^2));
+    
+    nrCrfAmpExpRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpExpObjFitResponses{1}.values).^2));
+   
+    nrCrfAmpExpSemiRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-nrAmpExpSemiObjFitResponses{1}.values).^2));
+    
+    qcmCrfRMSE(ii) = sqrt(mean((concatHeldOutParams{ii}.paramMainMatrix-qcmObjFitResponses{1}.values).^2));
+    
+
     
     %% Get the time course predicitions of the CRF params
     %
@@ -161,7 +187,34 @@ for ii = 1:size(heldOutRunOrder,2)
     
 end
 
+%% Calc Mean and SEM for CRF RMSE
+meanMmCrfRMSE = mean(mmCrfRMSE(:));
+semMmCrfRMSE = std(mmCrfRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
+meanNrCrfRMSE = mean(nrCrfRMSE(:));
+semNrCrfRMSE = std(nrCrfRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+meanNrCrfAmpRMSE = mean(nrCrfAmpRMSE(:));
+semNrCrfAmpRMSE = std(nrCrfAmpRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+meanNrCrfExpRMSE = mean(nrCrfExpRMSE(:));
+semNrCrfExpRMSE = std(nrCrfExpRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+meanNrCrfAmpExpRMSE = mean(nrCrfAmpExpRMSE(:));
+semNrCrfAmpExpRMSE = std(nrCrfAmpExpRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+meanNrCrfAmpExpSemiRMSE = mean(nrCrfAmpExpSemiRMSE(:));
+semNrCrfAmpExpSemiRMSE = std(nrCrfAmpExpSemiRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+meanQcmCrfRMSE = mean(qcmCrfRMSE(:));
+semQcmCrfRMSE = std(qcmCrfRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+figure;hold on
+plotnames = categorical({'meanCrfMMRMSE','meanCrfNrRMSE','meanCrfNrAmpRMSE','meanCrfNrExpRMSE','meanCrfNrAmpExpRMSE','meanCrfNrAmpExpSemiRMSE','meanCrfQcmRMSE'});
+barsForPlotCRF = [meanMmCrfRMSE, meanNrCrfRMSE,meanNrCrfAmpRMSE,meanNrCrfExpRMSE,meanNrCrfAmpExpRMSE,meanNrCrfAmpExpSemiRMSE,meanQcmCrfRMSE];
+errorForPlotCRF = [semMmCrfRMSE, semNrCrfRMSE,semNrCrfAmpRMSE,semNrCrfExpRMSE,semNrCrfAmpExpRMSE,semNrCrfAmpExpSemiRMSE,semQcmCrfRMSE];
+bar(plotnames,barsForPlotCRF)
+errorbar(plotnames, barsForPlotCRF,errorForPlotCRF,'o')
 
 %% Get the mean and SEM of the crossval
 
@@ -192,8 +245,8 @@ meanQcmRMSE= mean(qcmRMSE(:));
 semQcmRMSE = std(qcmRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
 
-figure;hold on 
-plotnames = categorical({'meanMMRMSE','meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','semNrAmpExpSemiRMSE','meanQcmRMSE'});
+figure;hold on
+plotnames = categorical({'meanMMRMSE','meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','meanNrAmpExpSemiRMSE','meanQcmRMSE'});
 barsForPlot = [meanMMRMSE, meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE];
 errorForPlot = [semMMRMSE, semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE];
 bar(plotnames,barsForPlot)
