@@ -32,9 +32,6 @@ analysisParams.numSamples = 25;
 
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
-% create the random draws with replacement
-sampleMatrix = randi([1,10],length(analysisParams.sessionFolderName),analysisParams.numAcquisitions);
-
 for ii = 1:analysisParams.numAcquisitions
     [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
@@ -49,6 +46,8 @@ for ii = 1:size(heldOutRunOrder,2)
     
     % get held out params -- i am sure this is a bad way to code this but
     % it is late
+    %
+    % See setdiff() for slickness
     tmpMat = ones(size(iampParams));
     tmpMat(1,heldOutRunOrder(1,ii)) = 0;
     tmpMat(2,heldOutRunOrder(2,ii)) = 0;
@@ -83,9 +82,11 @@ for ii = 1:size(heldOutRunOrder,2)
     %
     % NOTE: This bit is very specific to the design of the experiment we are
     % currently analyzing, and has to do specifically with the way color
-    % directions were studied across acquisitions and sessions.
+    % directions were studied across acquisitions and sessions.\
+    %
+    % SHOULD THE FIRST INDEX BE jj NOT ii?
     for jj = 1:analysisParams.numAcquisitions-1
-        [concatParams{ii},concatBaselineShift(:,jj)] = iampOBJ.concatenateParams(cvParams(:,jj),'baselineMethod','makeBaselineZero');
+        [concatParams{jj},concatBaselineShift(:,jj)] = iampOBJ.concatenateParams(cvParams(:,jj),'baselineMethod','makeBaselineZero');
     end
     
     % Concat held out params for RMSE of CRF
