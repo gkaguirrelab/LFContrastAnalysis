@@ -32,8 +32,9 @@ analysisParams.numSamples = 25;
 
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
+% Use the below function to get  the baseline shifts for each aquisition 
 for ii = 1:analysisParams.numAcquisitions
-    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+    [~,concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
 
 % Cross validation folds
@@ -48,14 +49,14 @@ for ii = 1:size(heldOutRunOrder,2)
     % it is late
     %
     % See setdiff() for slickness
-    tmpMat = ones(size(iampParams));
-    tmpMat(1,heldOutRunOrder(1,ii)) = 0;
-    tmpMat(2,heldOutRunOrder(2,ii)) = 0;
-    cvParams(1,:) = iampParams(1,logical(tmpMat(1,:)));
-    cvParams(2,:) = iampParams(2,logical(tmpMat(2,:)));
+    indxMat = ones(size(iampParams));
+    indxMat(1,heldOutRunOrder(1,ii)) = 0;
+    indxMat(2,heldOutRunOrder(2,ii)) = 0;
+    cvParams(1,:) = iampParams(1,logical(indxMat(1,:)));
+    cvParams(2,:) = iampParams(2,logical(indxMat(2,:)));
     
-    cvTCPackets(1,:) = iampTimeCoursePacketPocket(1,logical(tmpMat(1,:)));
-    cvTCPackets(2,:) = iampTimeCoursePacketPocket(2,logical(tmpMat(2,:)));
+    cvTCPackets(1,:) = iampTimeCoursePacketPocket(1,logical(indxMat(1,:)));
+    cvTCPackets(2,:) = iampTimeCoursePacketPocket(2,logical(indxMat(2,:)));
     
     % get the mean of each run
     for pp = 1:size(cvTCPackets,1)
@@ -86,11 +87,11 @@ for ii = 1:size(heldOutRunOrder,2)
     %
     % SHOULD THE FIRST INDEX BE jj NOT ii?
     for jj = 1:analysisParams.numAcquisitions-1
-        [concatParams{jj},concatBaselineShift(:,jj)] = iampOBJ.concatenateParams(cvParams(:,jj),'baselineMethod','makeBaselineZero');
+        [concatParams{jj},~] = iampOBJ.concatenateParams(cvParams(:,jj),'baselineMethod','makeBaselineZero');
     end
     
     % Concat held out params for RMSE of CRF
-    [concatHeldOutParams{ii},concatHeldOutBaselineShift(:,jj)] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','makeBaselineZero');
+    [concatHeldOutParams{ii},~] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','makeBaselineZero');
     
     % Make the mean IAMP CRF packet
     directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
@@ -175,25 +176,25 @@ for ii = 1:size(heldOutRunOrder,2)
     for kk = 1:length(timeCoursePlot.heldOutRawTC)
         
         % Calculate the RMSE for the mean model
-        meanModelRMSE(kk,ii) = sqrt(mean((meanModel-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        meanModelRMSE(kk,ii) = sqrt(mean(((meanModel+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the  NR preds
-        nrRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nr{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        nrRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nr{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Amp preds
-        nrAmpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        nrAmpRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nrAmp{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Exp preds
-        nrExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrExp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        nrExpRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nrExp{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Amp and Exp preds
-        nrAmpExpRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExp{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values)-heldOutBaselineShift(kk)).^2));
+        nrAmpExpRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nrAmpExp{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the NR common Amp and Exp preds
-        nrAmpExpSemiRMSE(kk,ii) = sqrt(mean((timeCoursePlot.nrAmpExpSemi{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        nrAmpExpSemiRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nrAmpExpSemi{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the qcm
-        qcmRMSE(kk,ii) = sqrt(mean((timeCoursePlot.qcm{kk}.values-(timeCoursePlot.heldOutRawTC{kk}.values-heldOutBaselineShift(kk))).^2));
+        qcmRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.qcm{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
     end
     
