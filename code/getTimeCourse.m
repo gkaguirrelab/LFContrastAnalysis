@@ -45,7 +45,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     retinoPath     = fullfile(anatomyPath,'neuropythy');
     functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
     warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
-    trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
+    trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
     % Set up files.
     functionalRuns    = textFile2cell(funcTextFile);
@@ -170,7 +170,6 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 % TFE linear regression here
                 [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
                     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-                confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
                 % Linear detrending of the timecourse
                 cleanRunData(vxl,:,jj) = detrend(thePacket.response.values - iampResponses.values);
             end

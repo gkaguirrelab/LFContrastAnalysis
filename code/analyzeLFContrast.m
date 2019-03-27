@@ -1,9 +1,5 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('LZ23');
-
-% Clip fisrt 2 TRs from time series?
-analysisParams.numClipFramesStart = 0;
-analysisParams.numClipFramesEnd   = 2;
+analysisParams = getSubjectParams('KAS25_replication');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
