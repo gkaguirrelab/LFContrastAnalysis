@@ -45,7 +45,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     retinoPath     = fullfile(anatomyPath,'neuropythy');
     functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
     warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
-    trialOrderDir  = fullfile(getpref(analysisParams.projectName,'melaDataPath'), analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
+    trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
     % Set up files.
     functionalRuns    = textFile2cell(funcTextFile);
@@ -123,7 +123,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             warning('off','MATLAB:class:EnumerableClassNotFound')
             
             % Load and process the data param file
-            load(dataParamFile,'protocolParams');
+            load(dataParamFile);
             
             % restore warning state
             warning(warningState);
@@ -137,6 +137,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % get confound regressors
             confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
             
+            % get attention event regressor
+            responseStruct.timeStep = analysisParams.timeStep;
+            [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
+            
             %mean center the regressors
             confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
             confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
@@ -148,7 +152,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
-            thePacket.stimulus.values = confoundRegressors';
+            thePacket.stimulus.values = [confoundRegressors'; eventsRegressor];
             
             defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
             % get the data for all masked voxel in a run
@@ -157,18 +161,17 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % convert to percent signal change relative to the mean
             voxelMeanVec = mean(runData,2);
             PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
-
+            
             % loop over voxels --> returns a "cleaned" time series
             for vxl = 1:size(PSC,1)
                 % place time series from this voxel into the packet
                 thePacket.response.values = PSC(vxl,:);
                 
                 % TFE linear regression here
-                [paramsFit, ~, QCMResponses] = temporalFit.fitResponse(thePacket,...
+                [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
                     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-                confoundBetas(:,vxl) = paramsFit.paramMainMatrix;
-                % Linear detrending of the timecourse 
-                cleanRunData(vxl,:,jj) = detrend(thePacket.response.values - QCMResponses.values);
+                % Linear detrending of the timecourse
+                cleanRunData(vxl,:,jj) = detrend(thePacket.response.values - iampResponses.values);
             end
         end
         %% Save out the clean time series brick

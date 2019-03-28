@@ -6,10 +6,10 @@ function [contrast, actualContrasts] = plotValidationsLMPlane(directedDirection,
     [contrast, actualContrasts] = plotValidationsLMPlane(directedDirection);
 %}
 
-
-
-
 p = inputParser;
+p.addParameter('preCorValidIndx',[1,2,3,4,5],@isvector);
+p.addParameter('postCorValidIndx',[6,7,8,9,10],@isvector);
+p.addParameter('postExpValidIndx',[11,12,13,14,15],@isvector);
 p.addParameter('showVectors',true,@islogical);
 p.addParameter('showPreCorrections',true,@islogical);
 p.addParameter('showProjections',true,@islogical);
@@ -21,14 +21,8 @@ p.parse(varargin{:});
 options = p.Results;
 saveLocation = options.saveLocation;
 
-% clear screen
-clc
-
 % Loop over directions
 for ii = 1:length(directedDirection)
-    
-    % Presize contrast measurement matrix
-    actualContrasts  = zeros([size(directedDirection{ii}.describe.validation(1).contrastActual),length(directedDirection{ii}.describe.validation)]);
     
     % Get the desred contrast value for directrion
     desiredContrasts = directedDirection{ii}.describe.validation(1).contrastDesired;
@@ -45,9 +39,17 @@ for ii = 1:length(directedDirection)
         actualContrasts(:,:,jj) = directedDirection{ii}.describe.validation(jj).contrastActual;
     end
     
+    % Get the start and stops for indexing acutalContrasts
+    preCorStrtIndx  = min(p.Results.preCorValidIndx);
+    preCorStopIndx  = max(p.Results.preCorValidIndx);
+    postCorStrtIndx = min(p.Results.postCorValidIndx);
+    postCorStopIndx = max(p.Results.postCorValidIndx);
+    postExpStrtIndx = min(p.Results.postExpValidIndx);
+    postExpStopIndx = max(p.Results.postExpValidIndx);
+    
     %% Calculate stuff
     % pre corrections contrast
-    preCorrectionsContrast  = median(actualContrasts(:,:,1:5), 3);
+    preCorrectionsContrast  = median(actualContrasts(:,:,preCorStrtIndx:preCorStopIndx), 3);
     contrast{ii}.preCorrections.pos2Deg_contrast_total = sqrt(preCorrectionsContrast(1,1).^2 + preCorrectionsContrast(2,1).^2);
     contrast{ii}.preCorrections.neg2Deg_contrast_total = sqrt(preCorrectionsContrast(1,2).^2 + preCorrectionsContrast(2,2).^2);
     contrast{ii}.preCorrections.pos15Deg_contrast_total = sqrt(preCorrectionsContrast(4,1).^2 + preCorrectionsContrast(5,1).^2);
@@ -58,7 +60,7 @@ for ii = 1:length(directedDirection)
     contrast{ii}.preCorrections.pos15Deg_deltaM = abs(preCorrectionsContrast(5,1) - desiredContrasts(5,1));
     
     % post correction contrast
-    postCorrectionsContrast = median(actualContrasts(:,:,6:10), 3);
+    postCorrectionsContrast = median(actualContrasts(:,:,postCorStrtIndx:postCorStopIndx), 3);
     contrast{ii}.postCorrections.pos2Deg_contrast_total = sqrt(postCorrectionsContrast(1,1).^2 + postCorrectionsContrast(2,1).^2);
     contrast{ii}.postCorrections.pos15Deg_contrast_total = sqrt(postCorrectionsContrast(4,1).^2 + postCorrectionsContrast(5,1).^2);
     contrast{ii}.postCorrections.neg2Deg_contrast_total = sqrt(postCorrectionsContrast(1,2).^2 + postCorrectionsContrast(2,2).^2);
@@ -71,7 +73,7 @@ for ii = 1:length(directedDirection)
     [anglesPostCor_15Deg] = getAnglesFromContrastMeasurements(postCorrectionsContrast(4:5,1:2));
     
     % Post experiment contrast
-    postExperimentContrast  = median(actualContrasts(:,:,11:15),3);
+    postExperimentContrast  = median(actualContrasts(:,:,postExpStrtIndx:postExpStopIndx),3);
     contrast{ii}.postExperiment.pos2Deg_contrast_total = sqrt(postExperimentContrast(1,1).^2 + postExperimentContrast(2,1).^2);
     contrast{ii}.postExperiment.pos15Deg_contrast_total = sqrt(postExperimentContrast(4,1).^2 + postExperimentContrast(5,1).^2);
     contrast{ii}.postExperiment.neg2Deg_contrast_total = sqrt(postExperimentContrast(1,2).^2 + postExperimentContrast(2,2).^2);
@@ -158,16 +160,16 @@ for ii = 1:length(directedDirection)
     scatter(postCorrectionsContrast(1,2),postCorrectionsContrast(2,2),140,[0,0,1],'filled','d')
     
     % Plot each post corrections actual contrast
-    scatter(actualContrasts(1,1,6:10),actualContrasts(2,1,6:10),40,[0.2,0.7,1.0],'filled')
-    scatter(actualContrasts(1,2,6:10),actualContrasts(2,2,6:10),40,[0.2,0.7,1.0],'filled')
+    scatter(actualContrasts(1,1,postCorStrtIndx:postCorStopIndx),actualContrasts(2,1,postCorStrtIndx:postCorStopIndx),40,[0.2,0.7,1.0],'filled')
+    scatter(actualContrasts(1,2,postCorStrtIndx:postCorStopIndx),actualContrasts(2,2,postCorStrtIndx:postCorStopIndx),40,[0.2,0.7,1.0],'filled')
     
     % Plot the post experiment median actual contrast
     p3 = scatter(postExperimentContrast(1,1),postExperimentContrast(2,1),140,[0,1,0],'filled','d');
     scatter(postExperimentContrast(1,2),postExperimentContrast(2,2),140,[0,1,0],'filled','d')
     
     % Plot each post experiment actual contrast
-    scatter(actualContrasts(1,1,11:15),actualContrasts(2,1,11:15),40,[0,0.26,.15],'filled')
-    scatter(actualContrasts(1,2,11:15),actualContrasts(2,2,11:15),40,[0,0.26,.15],'filled')
+    scatter(actualContrasts(1,1,postExpStrtIndx:postExpStopIndx),actualContrasts(2,1,postExpStrtIndx:postExpStopIndx),40,[0,0.26,.15],'filled')
+    scatter(actualContrasts(1,2,postExpStrtIndx:postExpStopIndx),actualContrasts(2,2,postExpStrtIndx:postExpStopIndx),40,[0,0.26,.15],'filled')
     
     % Plot mean of the medians
     p4 = scatter(meanOfmedianExpContrast(1,1),meanOfmedianExpContrast(2,1),140,[1,0,0],'filled','d');
@@ -196,7 +198,7 @@ for ii = 1:length(directedDirection)
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[-1.0];
-        yPos = scaleVal.*[-1.75];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {sprintf('*Stimulus Angle*'), ...
@@ -214,7 +216,7 @@ for ii = 1:length(directedDirection)
         text(xPos,yPos,textToShow)
         
         xPos = scaleVal.*[0.05];
-        yPos = scaleVal.*[-1.75];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {  sprintf('*Stimulus Contrast*'), ...
@@ -273,7 +275,7 @@ for ii = 1:length(directedDirection)
         fprintf('\n')
     end
     
-    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'northoutside')
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
     
@@ -334,16 +336,16 @@ for ii = 1:length(directedDirection)
     scatter(postCorrectionsContrast(4,2),postCorrectionsContrast(5,2),100,[0,0,1],'filled','d')
     
     % Plot each post corrections actual contrast
-    scatter(actualContrasts(4,1,6:10),actualContrasts(5,1,6:10),40,[0.2,0.7,1.0],'filled')
-    scatter(actualContrasts(4,2,6:10),actualContrasts(5,2,6:10),40,[0.2,0.7,1.0],'filled')
+    scatter(actualContrasts(4,1,postCorStrtIndx:postCorStopIndx),actualContrasts(5,1,postCorStrtIndx:postCorStopIndx),40,[0.2,0.7,1.0],'filled')
+    scatter(actualContrasts(4,2,postCorStrtIndx:postCorStopIndx),actualContrasts(5,2,postCorStrtIndx:postCorStopIndx),40,[0.2,0.7,1.0],'filled')
     
     % Plot the post experiment median actual contrast
     p3 = scatter(postExperimentContrast(4,1),postExperimentContrast(5,1),100,[0,1,0],'filled','d');
     scatter(postExperimentContrast(4,2),postExperimentContrast(5,2),100,[0,1,0],'filled','d')
     
     % Plot each post experiment actual contrast
-    scatter(actualContrasts(4,1,11:15),actualContrasts(5,1,11:15),40,[0,0.26,.15],'filled')
-    scatter(actualContrasts(4,2,11:15),actualContrasts(5,2,11:15),40,[0,0.26,.15],'filled')
+    scatter(actualContrasts(4,1,postExpStrtIndx:postExpStopIndx),actualContrasts(5,1,postExpStrtIndx:postExpStopIndx),40,[0,0.26,.15],'filled')
+    scatter(actualContrasts(4,2,postExpStrtIndx:postExpStopIndx),actualContrasts(5,2,postExpStrtIndx:postExpStopIndx),40,[0,0.26,.15],'filled')
     
     % Plot mean of the medians
     p4 = scatter(meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(5,1),100,[1,0,0],'filled','d');
@@ -371,35 +373,49 @@ for ii = 1:length(directedDirection)
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[-1.0];
-        yPos = scaleVal.*[-1.6];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {sprintf('*Stimulus Angle*'), ...
             sprintf('Desired Theta: pos %.2f, neg %.2f', anglesDesired_15Deg(1), anglesDesired_15Deg(2)),...
             sprintf('postCor Theta: pos %.2f, neg %.2f', anglesPostCor_15Deg(1), anglesPostCor_15Deg(2)),...
             sprintf('postExp Theta: pos %.2f, neg %.2f', anglesPostExp_15Deg(1), anglesPostExp_15Deg(2)),...
-            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_15Deg(1), anglesMean_15Deg(2))};
+            sprintf('mean Theta   : pos %.2f, neg %.2f', anglesMean_15Deg(1), anglesMean_15Deg(2)), ...
+            sprintf('\n'),...
+            sprintf('*L Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(4,1), desiredContrasts(4,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(4,1),postCorrectionsContrast(4,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(4,1),postExperimentContrast(4,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(4,1),meanOfmedianExpContrast(4,2)) };
+        % Show Text
         % Show Text
         text(xPos,yPos,textToShow)
         
         % set coordinates for text to appear based on were data points are
         
         xPos = scaleVal.*[0.05];
-        yPos = scaleVal.*[-1.6];
+        yPos = scaleVal.*[-1.65];
         
         % Create text to display
         textToShow = {  sprintf('*Stimulus Contrast*'), ...
             sprintf('Desired = pos %.2f, neg %.2f',contrast{ii}.desired.pos15Deg_contrast_total,contrast{ii}.desired.neg15Deg_contrast_total), ...
             sprintf('postCor = pos %.2f, neg %.2f',contrast{ii}.postCorrections.pos15Deg_contrast_total,contrast{ii}.postCorrections.neg15Deg_contrast_total), ...
             sprintf('postExp = pos %.2f, neg %.2f',contrast{ii}.postExperiment.pos15Deg_contrast_total,contrast{ii}.postExperiment.neg15Deg_contrast_total), ...
-            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total)};
+            sprintf('mean    = pos %.2f, neg %.2f', contrast{ii}.meanOfmedianExpContrast.pos15Deg_contrast_total,contrast{ii}.meanOfmedianExpContrast.neg15Deg_contrast_total), ...
+            sprintf('\n'),...
+            sprintf('*M Cone Contrast*'),...
+            sprintf('\tDesired = pos %.2f, neg %.2f',desiredContrasts(5,1), desiredContrasts(5,2)),...
+            sprintf('\tpostCor = pos %.2f, neg %.2f',postCorrectionsContrast(5,1),postCorrectionsContrast(5,2)),...
+            sprintf('\tpostExp = pos %.2f, neg %.2f',postExperimentContrast(5,1),postExperimentContrast(5,2)),...
+            sprintf('\tmean    = pos %.2f, neg %.2f',meanOfmedianExpContrast(5,1),meanOfmedianExpContrast(5,2)) };
         % Show Text
         text(xPos,yPos,textToShow)
+      
     end
     
     xlim(scaleVal.*[-1,1])
     ylim(scaleVal.*[-1,1])
-    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'southoutside')
+    legend([p1, p2, p3, p4], {'Desired', 'Post Corrections', 'Post Experiemnt', 'Mean of Post Corr. and Post Exp.'}, 'Location', 'northoutside')
     
     % save out plots
     

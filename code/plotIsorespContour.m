@@ -34,7 +34,7 @@ if isempty(color)
 end
 
 %% Inerpolate the IAMP CRF using the  naka rushton fits to find the contrast value that corresponds with the threshold
-for ii = 1:size(nrParams,1)
+for ii = 1:size(nrParams{1},2)
     
     % Invert Naka-Rushton function to get the contrast value that
     %  Rmax  = params(1)
@@ -42,8 +42,8 @@ for ii = 1:size(nrParams,1)
     %  n     = params(3)
     maxConVal = analysisParams.maxContrastPerDir(ii);
     maxContrastSpacing = maxConVal.*analysisParams.contrastCoding;
-    if thresh <= nrParams(ii,1)
-        contrastsNR(ii) = InvertNakaRushton([nrParams(ii,1),nrParams(ii,2),nrParams(ii,3)],thresh);
+    if thresh <= nrParams{1}(ii).crfAmp
+        contrastsNR(ii) = InvertNakaRushton([nrParams{1}(ii).crfAmp,nrParams{1}(ii).crfSemi,nrParams{1}(ii).crfExponent],thresh);
         contrastsLI(ii) = interp1(IAMPBetas{ii},maxContrastSpacing',thresh,'pchip');
     else
         contrastsNR(ii) = NaN;
@@ -72,12 +72,12 @@ end
 %
 % Step 1. Invert Naka-Rushton to go from thresh back to
 % corresponding equivalent contrast.
-desiredEqContrast = InvertNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],thresh);
+desiredEqContrast = InvertNakaRushton([paramsQCM{1}.crfAmp,paramsQCM{1}.crfSemi,paramsQCM{1}.crfExponent],thresh);
 circlePoints = desiredEqContrast*UnitCircleGenerate(nQCMPoints);
 %circlePoints = desiredEqContrast*[0.70711 0.70711]';
-[~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM.Qvec],'dimension',2);
+[~,Ainv,Q] = EllipsoidMatricesGenerate([1 paramsQCM{1}.Qvec],'dimension',2);
 ellipsePoints = Ainv*circlePoints;
-checkThresh = ComputeNakaRushton([paramsQCM.crfAmp,paramsQCM.crfSemi,paramsQCM.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
+checkThresh = ComputeNakaRushton([paramsQCM{1}.crfAmp,paramsQCM{1}.crfSemi,paramsQCM{1}.crfExponent],diag(sqrt(ellipsePoints'*Q*ellipsePoints)));
 if (any(abs(checkThresh-thresh) > 1e-6))
     error('Did not invert QCM model correctly');
 end
@@ -85,7 +85,7 @@ end
 %% Compute points for each direction based on our invert function
 for ii = 1:length(directionCoding)
     theDirection = directionCoding{ii}';
-    [theInvertContrast(ii),theInvertTemp] = tfeQCMInvert(paramsQCM,theDirection,thresh);
+    [theInvertContrast(ii),theInvertTemp] = tfeQCMInvert(paramsQCM{1},theDirection,thresh);
     theInvertStim(:,ii) = theInvertTemp';
 end
 

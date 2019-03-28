@@ -30,7 +30,7 @@ for ii = 1:numDirections
     offset = 0;
     
     % response values
-    R  = nakaRushton(contrastLevels,sigma,n,Rmax, offset);
+    R  = tfeQCMComputeNakaRushton(contrastLevels,sigma,n,Rmax, offset);
     betas(ii,:) = R + rand(size(R)).*noiseLevel.*Rmax;
 end
 tmp = betas';

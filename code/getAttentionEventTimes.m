@@ -13,7 +13,7 @@ function [attentionEventTimes eventsRegressor] = getAttentionEventTimes(block, r
 %   block                 - block struct saved when running the
 %                           OLApproach_TrialSequenceMR which contains
 %                           attention event information 
-%   responseStruct        - responcestruct saved when running the
+%   responseStruct        - responseStruct saved when running the
 %                           OLApproach_TrialSequenceMR which contains
 %                           trial start information 
 %  
