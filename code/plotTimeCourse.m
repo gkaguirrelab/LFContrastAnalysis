@@ -65,6 +65,7 @@ end
 
 
 legend(p, fields)
+set(gcf, 'Position',  [0, 0, 1800, 1300])
 end
 
 

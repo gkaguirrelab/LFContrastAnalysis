@@ -73,5 +73,7 @@ ylabel('M Contrast')
 legend(hleglines,legendNames)
 title('Isoresponse Contour')
 axis square
+set(gcf, 'Position',  [0, 0, 900, 900])
+
 
 end

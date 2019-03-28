@@ -50,5 +50,18 @@
 		"type": "git",
 		"update": "",
 		"url": "https://github.com/gkaguirrelab/LFContrastAnalysis.git"
-	}	
+	},	
+    {
+        "flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "Configuration/BrainardLabToolboxLocalHookTemplate.m",
+		"name": "BrainardLabToolbox",
+		"pathPlacement": "append",
+		"subfolder": ["Plotting","Ellipsoids", "OneLiners"],
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/brainardlab/BrainardLabToolbox.git"
+	}
 ]

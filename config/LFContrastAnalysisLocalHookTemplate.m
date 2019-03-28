@@ -39,12 +39,14 @@ userID = strtrim(userID);
 switch userID
     case {'dhb'}
         melaMaterialsPath = ['/Users1/DropboxLab/MELA_materials'];
-        melaDatabasePath = ['/Users1/DropboxLab/MELA_data/'];
+        melaDatabasePath  = ['/Users1/DropboxLab/MELA_data/'];
         melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/' projectName];
+        figureSavePath    = fullfile(melaAnalysisPath,'Figures');
     otherwise
         melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
-        melaDatabasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaDatabasePath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
         melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/' projectName];
+        figureSavePath    = fullfile(melaAnalysisPath,'Figures');
 end
 
 %% Specify where output goes
@@ -55,12 +57,14 @@ if ismac
     setpref(projectName,'projectRootDir',fullfile('/Users/',userID,'/Documents/flywheel',projectName));
     setpref(projectName,'projectPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
+    setpref(projectName,'figureSavePath', figureSavePath);
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
     setpref(projectName,'projectRootDir',fullfile('/home/',userID,'/Documents/flywheel',projectName));
     setpref(projectName,'projectPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
+    setpref(projectName,'figureSavePath', figureSavePath);
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')

@@ -1,5 +1,5 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('KAS25_replication');
+analysisParams = getSubjectParams('AP26');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
@@ -119,8 +119,11 @@ crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
 iampPoints = iampOBJ.averageParams(concatParams);
-plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
- 
+crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
+figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+                                [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
+FigureSave(figNameCrf,crfHndl,'pdf');
+
 %% Get the time course predicitions of the CRF params
 %
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
@@ -147,11 +150,15 @@ timeCoursePlot.rawTC = rawTC;
 % %Plot the time course prediction for each run using the different fits to
 % %the crf
 
-plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
-
+tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
+figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+                                [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '.pdf']);
+FigureSave(figNameTc,tcHndl,'pdf');
 
 % % Plot isoresponce contour
 thresholds = [0.10, 0.2, 0.3];
 colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
-[hdl] = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
-
+qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
+figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+                                [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '.pdf']);
+FigureSave(figNameQcm,qcmHndl,'pdf');

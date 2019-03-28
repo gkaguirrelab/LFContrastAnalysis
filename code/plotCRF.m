@@ -74,8 +74,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
     end
 end
 
-
-legend([p, q1], fields, 'IAMP Points')
+fields{end+1}  = 'IAMP Points';
+legend([p, q1], fields, 'Location','NorthWest')
+set(gcf, 'Position',  [0, 0, 1800, 1300])
 end
 
 

@@ -12,6 +12,7 @@ switch subjID
         analysisParams.sessionFolderName = {'LZ23_2018-10-13','LZ23_2018-10-14'};
         analysisParams.sessionDate       = {'2018-10-13','2018-10-14'};
         analysisParams.sessionNumber     = {'session_1','session_1'};
+        analysisParams.sessionNickname   = 'Original';
         analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
         analysisParams.showPlots         = true;
         analysisParams.projectNickname   = 'MRContrastResponseFunction';
@@ -47,6 +48,7 @@ switch subjID
         analysisParams.sessionFolderName = {'KAS25_2018-10-13','KAS25_2018-10-20'};
         analysisParams.sessionDate       = {'2018-10-13','2018-10-20'};
         analysisParams.sessionNumber     = {'session_1','session_1'};
+        analysisParams.sessionNickname   = 'Original';
         analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
         analysisParams.showPlots         = true;
         analysisParams.projectNickname       = 'MRContrastResponseFunction';
@@ -80,6 +82,7 @@ switch subjID
         analysisParams.sessionFolderName = {'KAS25_2019-03-16','KAS25_2019-03-17'};
         analysisParams.sessionDate       = {'2019-03-16','2019-03-17'};
         analysisParams.sessionNumber     = {'session_1','session_1'};
+        analysisParams.sessionNickname   = 'Replication';
         analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
         analysisParams.showPlots         = true;
         analysisParams.projectNickname   = 'MRCRF';
@@ -113,6 +116,7 @@ switch subjID
         analysisParams.sessionFolderName = {'AP26_2018-10-27','AP26_2018-10-21'};
         analysisParams.sessionDate       = {'2018-10-27','2018-10-21'};
         analysisParams.sessionNumber     = {'session_1','session_1'};
+        analysisParams.sessionNickname   = 'Original';
         analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
         analysisParams.showPlots         = true;
         analysisParams.projectNickname   = 'MRContrastResponseFunction';
