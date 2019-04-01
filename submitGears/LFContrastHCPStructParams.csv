@@ -1,0 +1,8 @@
+projectLabel,LFContrast,gearName,hcp-struct,rootSession,T1,ConfigKeys,"{'Subject','RegName','StructuralUnwarpDirection'}",ConfigVals,"{subjectName,'FS','z'}"
+Inputs,GradientCoeff,FreeSurferLicense,T1,T2,analysisSubmissionTag,,,,
+DefaultLabel,,,T1w_MPR ,T2w_SPC,,,,,
+FileSuffix,grad,txt,nifti,nifti,,,,,
+ContainerType,project,project,acquisition,acquisition,,,,,
+ExactStringMatch,0,0,0,0,,,,,
+,,,,,,,,,
+LZ23,coeff.grad,freesurfer_license.txt,LZ23/Research^Aguirre1,LZ23/Research^Aguirre1,LZ23,,,,
