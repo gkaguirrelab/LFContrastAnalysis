@@ -1,5 +1,5 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('KAS25');
+analysisParams = getSubjectParams('KAS25_replication');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
@@ -126,8 +126,8 @@ crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsA
 crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
-iampPoints = iampOBJ.averageParams(concatParams);
-crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
+[iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
+crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
                                 [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');

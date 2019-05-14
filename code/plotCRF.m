@@ -1,4 +1,4 @@
-function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints)
+function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints, iampSEM)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
@@ -22,7 +22,7 @@ function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoi
 %    figHdl                    - Figure handle
 %
 % Optional key/value pairs:
-%    none
+%    iampSEM                   - Error bars for iampPoints
 
 % MAB 09/09/18
 
@@ -53,18 +53,26 @@ for ii = 1:size(analysisParams.directionCoding,2)
             crfValues = theModelResp.values(1:modelIndx);
             xAxisModels = contrastSpacing(1:modelIndx);
             iampVals = iampsPoints.paramMainMatrix(1:iampIndx)';
+            if exist('iampSEM','var')
+                errVals = iampSEM.paramMainMatrix(1:iampIndx)';
+            end
         else
             crfValues = theModelResp.values((ii-1)*modelIndx+1:ii*modelIndx);
             xAxisModels = contrastSpacing((ii-1)*modelIndx+1:ii*modelIndx);
             iampVals = iampsPoints.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
+            if exist('iampSEM','var')
+                errVals = iampSEM.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
+            end
         end
         
         xAxisIamp = maxConVal.*analysisParams.contrastCoding;
         %% Plot the stuff
         subplot(rws,cols,ii); hold on
         p(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
-        q1    = scatter(xAxisIamp,iampVals,'*k');
-        
+        q1    = scatter(xAxisIamp,iampVals,'ok');
+        if exist('iampSEM','var')
+            errorbar(xAxisIamp,iampVals, errVals, 'LineStyle','none');
+        end
         % put info 
         ylabel('Mean Beta Weight')
         xlabel('Contrast')
