@@ -14,7 +14,7 @@ clear; close all;
 %% Define which subject we'll run
 %
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('LZ23');
+analysisParams = getSubjectParams('KAS25');
    
 %% Set up cross-validation order
 %
@@ -96,7 +96,8 @@ for ii = 1:size(heldOutRunOrder,2)
     cvIampParams(2,:) = iampParams(2,logical(indxMat(2,:)));
     cvIampTimeCoursePacketPockets(1,:) = iampTimeCoursePacketPocket(1,logical(indxMat(1,:)));
     cvIampTimeCoursePacketPockets(2,:) = iampTimeCoursePacketPocket(2,logical(indxMat(2,:)));
-    
+    meanIampParams(1) = iampOBJ.averageParams(iampParams(1,:));
+    meanIampParams(2) = iampOBJ.averageParams(iampParams(2,:));
     %% Create the mean time course model from the cv runs. This just fits
     % all the runs with a constant (over time) response whose value is the
     % mean value across all the runs.  We had better do better than this
@@ -146,6 +147,10 @@ for ii = 1:size(heldOutRunOrder,2)
     % Fit the CRF with the QCM -- { } is because this expects a cell
     [qcmCrfMeanOBJ,qcmCrfMeanParams, qcmObjFitResponses] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
     
+    % create mean IAMP CRF model for the left in runs
+    [meanIampCrfParam, ~] = iampOBJ.concatenateParams({meanIampParams(1),meanIampParams(2)},'baselineMethod','makeBaselineZero');
+    
+    
     %% Calculate held out RMSE for the CRF, given CV fits above
     %
     % Concat IAMP params for held out data so we can compare to this.
@@ -173,6 +178,9 @@ for ii = 1:size(heldOutRunOrder,2)
     % QCM 
     qcmCrfRMSE(ii) = sqrt(mean((concatHeldOutIampParams{ii}.paramMainMatrix-qcmObjFitResponses{1}.values).^2));
     
+    % IAMP 
+    iampCrfRMSE(ii) = sqrt(mean((concatHeldOutIampParams{ii}.paramMainMatrix-meanIampCrfParam.paramMainMatrix).^2));
+    
     %% Get the time course predicitions of the CV fit CRF params to the held out data.
     %
     % First need to put the held out data into direction/contrast form.
@@ -198,8 +206,11 @@ for ii = 1:size(heldOutRunOrder,2)
     % Get the time course predicitions from the NR common amp, exponent and semi-saturation fit to the CRF
     timeCoursePlot.nrAmpExpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExpSemi{1}, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [0.3, .3, .1]);
     
-    % Get the time course predicitions fromt the QCM params fit to the CRF
+    % Get the time course predicitions from the QCM params fit to the CRF
     timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
+    
+    % Get the timecourse predictions from the mean IAMP params
+    timeCoursePlot.IAMP = responseFromPacket('IAMP', analysisParams, meanIampParams, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [.5, .5, .5]);
     
     % Add held out time course
     timeCoursePlot.heldOutRawTC = heldOutRawTC;
@@ -231,7 +242,16 @@ for ii = 1:size(heldOutRunOrder,2)
         nrAmpExpSemiRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.nrAmpExpSemi{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
         
         % Calculate the RMSE for the qcm
-        qcmRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.qcm{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));   
+        qcmRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.qcm{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
+        
+        %%%%%%%%
+        %
+        %CHECK IF THE BASELINE IS NEEDED AND CHECK IF THE QCM IS WORKING
+        %PROPERLY IN THIS 
+        %
+        %%%%%%%%
+        % Calculate the RMSE for the mean IAMP
+        iampRMSE(kk,ii) = sqrt(mean(((timeCoursePlot.IAMP{kk}.values+heldOutBaselineShift(kk))-timeCoursePlot.heldOutRawTC{kk}.values).^2));
     end   
 end
 
@@ -257,13 +277,18 @@ semNrCrfAmpExpSemiRMSE = std(nrCrfAmpExpSemiRMSE(:))./sqrt(size(heldOutRunOrder,
 meanQcmCrfRMSE = mean(qcmCrfRMSE(:));
 semQcmCrfRMSE = std(qcmCrfRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
+meanQcmCrfRMSE = mean(iampCrfRMSE(:));
+semQcmCrfRMSE = std(iampCrfRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
+
 %% Plot CV RMSE results for CRF
 figure;hold on
-plotnames = categorical({'meanCrfMMRMSE','meanCrfNrRMSE','meanCrfNrAmpRMSE','meanCrfNrExpRMSE','meanCrfNrAmpExpRMSE','meanCrfNrAmpExpSemiRMSE','meanCrfQcmRMSE'});
-barsForPlotCRF = [meanMmCrfRMSE, meanNrCrfRMSE,meanNrCrfAmpRMSE,meanNrCrfExpRMSE,meanNrCrfAmpExpRMSE,meanNrCrfAmpExpSemiRMSE,meanQcmCrfRMSE];
-errorForPlotCRF = [semMmCrfRMSE, semNrCrfRMSE,semNrCrfAmpRMSE,semNrCrfExpRMSE,semNrCrfAmpExpRMSE,semNrCrfAmpExpSemiRMSE,semQcmCrfRMSE];
+plotnames = categorical({'meanCrfMMRMSE','meanCrfNrRMSE','meanCrfNrAmpRMSE','meanCrfNrExpRMSE','meanCrfNrAmpExpRMSE','meanCrfNrAmpExpSemiRMSE','meanCrfQcmRMSE','meanCrfIampRMSE'});
+barsForPlotCRF = [meanMmCrfRMSE, meanNrCrfRMSE,meanNrCrfAmpRMSE,meanNrCrfExpRMSE,meanNrCrfAmpExpRMSE,meanNrCrfAmpExpSemiRMSE,meanQcmCrfRMSE,meanQcmCrfRMSE];
+errorForPlotCRF = [semMmCrfRMSE, semNrCrfRMSE,semNrCrfAmpRMSE,semNrCrfExpRMSE,semNrCrfAmpExpRMSE,semNrCrfAmpExpSemiRMSE,semQcmCrfRMSE,semQcmCrfRMSE];
 bar(plotnames,barsForPlotCRF)
 errorbar(plotnames, barsForPlotCRF,errorForPlotCRF,'o')
+ylim([0 1])
 
 %% Get the mean and SEM CV time course RMSE
 meanMMRMSE = mean(meanModelRMSE(:));
@@ -292,10 +317,15 @@ semNrAmpExpSemiRMSE = std(nrAmpExpSemiRMSE(:))./sqrt(size(heldOutRunOrder,2));
 meanQcmRMSE= mean(qcmRMSE(:));
 semQcmRMSE = std(qcmRMSE(:))./sqrt(size(heldOutRunOrder,2));
 
+% Calculate the RMSE for the IAMP
+meanQcmRMSE= mean(iampRMSE(:));
+semQcmRMSE = std(iampRMSE(:))./sqrt(size(heldOutRunOrder,2));
+
 %% Plot CV RMSE results for time course
 figure;hold on
-plotnames = categorical({'meanMMRMSE','meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','meanNrAmpExpSemiRMSE','meanQcmRMSE'});
-barsForPlot = [meanMMRMSE, meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE];
-errorForPlot = [semMMRMSE, semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE];
+plotnames = categorical({'meanMMRMSE','meanNrRMSE','meanNrAmpRMSE','meanNrExpRMSE','meanNrAmpExpRMSE','meanNrAmpExpSemiRMSE','meanQcmRMSE', 'meanIampRMSE'});
+barsForPlot = [meanMMRMSE, meanNrRMSE,meanNrAmpRMSE,meanNrExpRMSE,meanNrAmpExpRMSE,meanNrAmpExpSemiRMSE,meanQcmRMSE,meanQcmRMSE];
+errorForPlot = [semMMRMSE, semNrRMSE,semNrAmpRMSE,semNrExpRMSE,semNrAmpExpRMSE,semNrAmpExpSemiRMSE,semQcmRMSE,semQcmRMSE];
 bar(plotnames,barsForPlot)
 errorbar(plotnames, barsForPlot,errorForPlot,'o')
+ylim([0 1])

@@ -1,9 +1,9 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('KAS25_replication');
+analysisParams = getSubjectParams('AP26_replication');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
-analysisParams.eccenRange  = [0 20];
+analysisParams.eccenRange  = [1 20];
 
 % Define the TR
 analysisParams.TR = 0.800;
@@ -27,7 +27,7 @@ analysisParams.generateCrossValPlots = false;
 %     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
 %     iampOBJ - the tfe IAMP object
 %     iampParams - cell array of iampParams for each object
-%
+% 
 % NOTE: Each session gets its own row in the packet pocket.  May want to sweep
 % back at some point and match conventions in analysis params to this, for
 % example by making the various cell arrays columns rather than rows to

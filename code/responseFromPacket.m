@@ -49,9 +49,9 @@ for ii = 1:size(packetPocket,1)
         case 'IAMP'
             fitOBJ = tfeIAMP('verbosity','none');
             if ii <=10
-                params = fitParams.sessionOne;
+                params = fitParams(1);
             else
-                params = fitParams.sessionTwo;
+                params = fitParams(2);
             end
         otherwise
             error('Model not known');

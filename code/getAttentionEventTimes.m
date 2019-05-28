@@ -74,7 +74,7 @@ for ii = 1:length(responseStruct.events)
 end
 
 % convert to ms
-attentionEventTimes = attentionEventTimes*1000;
+ attentionEventTimes = attentionEventTimes*1000;
 
 % create regressor if timebase is provided
 eventsRegressor = zeros(size(p.Results.timebase));
