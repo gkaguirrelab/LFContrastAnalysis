@@ -1,5 +1,5 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('AP26_replication');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
@@ -27,7 +27,7 @@ analysisParams.generateCrossValPlots = false;
 %     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
 %     iampOBJ - the tfe IAMP object
 %     iampParams - cell array of iampParams for each object
-%
+% 
 % NOTE: Each session gets its own row in the packet pocket.  May want to sweep
 % back at some point and match conventions in analysis params to this, for
 % example by making the various cell arrays columns rather than rows to
@@ -58,6 +58,10 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 
 %% Fit the direction based models to the mean IAMP beta weights 
 %
+
+% Fit the CRF -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
+
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
@@ -77,6 +81,10 @@ crfStimulus = upsampleCRF(analysisParams);
 
 %% Predict CRF from direction model fits
 %
+% Predict the responses for CRF with params from NR common Amp.
+crfPlot.respNrCrf = nrCrfOBJ.computeResponse(nrCrfParams{1},crfStimulus,[]);
+crfPlot.respNrCrf.color = [.5, .3, .8];
+
 % Predict the responses for CRF with params from NR common Amp.
 crfPlot.respNrCrfAmp = nrCrfOBJ.computeResponse(nrCrfParamsAmp{1},crfStimulus,[]);
 crfPlot.respNrCrfAmp.color = [0, 0, 1];
@@ -118,8 +126,8 @@ crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsA
 crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
-iampPoints = iampOBJ.averageParams(concatParams);
-crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints);
+[iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
+crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
                                 [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
@@ -142,6 +150,12 @@ timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanPar
 % the CRF, based on QCM fit.
 timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
+% Get the time course prediction from the avarage IAMP params
+iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
+iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
+%iampParamsTC.baselineOne = 
+%iampParamsTC.baselineOne =
+timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
 % Add clean time 
 timeCoursePlot.rawTC = rawTC;
