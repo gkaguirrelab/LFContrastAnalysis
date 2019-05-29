@@ -45,6 +45,14 @@ for ii = 1:size(packetPocket,1)
         case 'qcmPred'
             fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
             params = fitParams;
+            
+        case 'IAMP'
+            fitOBJ = tfeIAMP('verbosity','none');
+            if ii <=10
+                params = fitParams(1);
+            else
+                params = fitParams(2);
+            end
         otherwise
             error('Model not known');
     end
