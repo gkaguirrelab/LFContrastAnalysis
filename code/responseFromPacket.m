@@ -59,7 +59,24 @@ for ii = 1:size(packetPocket,1)
     
     for jj = 1:size(packetPocket,2)
         
-        theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+        switch predictionsType
+            case 'IAMP'
+ 
+                if ii == 1
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+                elseif ii == 2
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionTwo,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);    
+                else
+                    display('WARNING: More than 2 sessions detected. responseFromPacket.m must be updated to reflect this')
+                end
+                
+                theModelPreds{ii,jj}.values = theModelPreds{ii,jj}.values + params.baseline(ii,jj);
+                
+            otherwise
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+
+        end
+        
         theModelPreds{ii,jj}.plotColor   = p.Results.plotColor;
         
     end

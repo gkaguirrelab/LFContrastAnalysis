@@ -134,6 +134,7 @@ for sessionNum = 1:analysisParams.numSessions
         iampParams{sessionNum,jj} = paramsFit;
         iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
         iampResponses{sessionNum,jj} = IAMPResponses;
+        iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
     end
     
 end

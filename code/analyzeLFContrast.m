@@ -153,8 +153,7 @@ timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, 
 % Get the time course prediction from the avarage IAMP params
 iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
 iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
-%iampParamsTC.baselineOne = 
-%iampParamsTC.baselineOne =
+iampParamsTC.baseline = concatBaselineShift;
 timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
 % Add clean time 
