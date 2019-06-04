@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData)
+function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData, varargin)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -28,6 +28,15 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
+
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('analysisParams',@isstruct);
+p.addRequired('fullCleanData',@isnumeric);
+p.addParameter('stimDesignMatrix',[],@ismatrix);
+
+p.parse(analysisParams,fullCleanData,varargin{:});
+
+stimDesignMatrix = p.Results.stimDesignMatrix;
 
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
 
@@ -88,7 +97,11 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-        stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        if isempty(stimDesignMatrix)
+            stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        else 
+            stimulusStruct.values = stimDesignMatrix;
+        end
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
