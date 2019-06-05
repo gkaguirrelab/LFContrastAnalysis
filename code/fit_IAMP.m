@@ -32,11 +32,11 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('fullCleanData',@isnumeric);
-p.addParameter('stimDesignMatrix',[],@ismatrix);
+p.addParameter('modelOnOff',false,@islogical);
 
 p.parse(analysisParams,fullCleanData,varargin{:});
 
-stimDesignMatrix = p.Results.stimDesignMatrix;
+modelOnOff = p.Results.modelOnOff;
 
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
 
@@ -97,10 +97,11 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-        if isempty(stimDesignMatrix)
-            stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
-        else 
-            stimulusStruct.values = stimDesignMatrix;
+        
+        stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        
+        if modelOnOff
+            stimulusStruct.values = convertBlockToOnsetOffset(stimulusStruct.values,21);
         end
         
         % make stimulus values for QCM

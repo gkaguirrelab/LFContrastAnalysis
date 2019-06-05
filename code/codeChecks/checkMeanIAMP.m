@@ -26,7 +26,7 @@ analysisParams.generateCrossValPlots = false;
 
 
 %% Fit the IAMP to each run
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);%,'stimDesignMatrix',[3,2;2,3]);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
 
 % Get the offset
 for ii = 1:analysisParams.numAcquisitions
