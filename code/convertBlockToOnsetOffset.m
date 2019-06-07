@@ -76,10 +76,26 @@ end
 startPos = find(baseOnOff == 1);
 stopPos  = find(baseOnOff == -1);
 
+% Check for back to back baseline blocks
+
+durations = stopPos - startPos;
+
+% find the double block if present account for some blocks showing at 1 less
+% TR
+doubleBlockIndx = find(durations./min(durations) >= 2)
+
+if ~isempty(doubleBlockIndx)
+    for jj = 1:length(doubleBlockIndx)
+        splitBlockTime = (stopPos(doubleBlockIndx(jj)) - startPos(doubleBlockIndx(jj)))./2;
+        startPos = [startPos(1:doubleBlockIndx(jj)), startPos(doubleBlockIndx(jj))+splitBlockTime, startPos(doubleBlockIndx(jj)+1:end)];
+        stopPos = [stopPos(1:doubleBlockIndx(jj)-1) , stopPos(doubleBlockIndx(jj))-splitBlockTime, stopPos(doubleBlockIndx(jj):end)];
+    end
+end
+
 baseOnOffMat = zeros(length(startPos),size(blockDesign,2));
 
-for jj = 1:length(startPos)
-    baseOnOffMat(jj,startPos(jj):stopPos(jj)) = 1;
+for kk = 1:length(startPos)
+    baseOnOffMat(kk,startPos(kk):stopPos(kk)) = 1;
 end
 
 onOffMat = [onOffMat;baseOnOffMat];
