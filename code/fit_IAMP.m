@@ -24,8 +24,10 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    iampResponses              - Model response to each run
 %    rawTC                      - meadaind time course for each run
 % Optional key/value pairs:
-%    modelOnOff                 - 
-%    plotColor                  - 
+%    modelOnOff                 - Convert the stim design matrix to a stim
+%                                 onset and offset matrix and use this for
+%                                 the regression model for the GLM
+%    plotColor                  - vector for plot color
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -34,7 +36,7 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('fullCleanData',@isnumeric);
 p.addParameter('modelOnOff',false,@islogical);
-p.addParameter('modelOnOff',[],@isvec);
+p.addParameter('plotColor',[],@isvector);
 
 p.parse(analysisParams,fullCleanData,varargin{:});
 
@@ -127,6 +129,7 @@ for sessionNum = 1:analysisParams.numSessions
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
         rawTC{sessionNum,jj}.plotColor = [0,0,0];
         
+        
         %%  Make the IAMP packet
         % the response
         thePacket.response.values   = rawTC{sessionNum,jj}.values;
@@ -150,7 +153,13 @@ for sessionNum = 1:analysisParams.numSessions
         iampParams{sessionNum,jj} = paramsFit;
         iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
         iampResponses{sessionNum,jj} = IAMPResponses;
-        iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
+        
+        if isempty(p.Results.plotColor)
+            iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
+        else
+            iampResponses{sessionNum,jj}.plotColor = p.Results.plotColor;
+        end
+       
     end
     
 end

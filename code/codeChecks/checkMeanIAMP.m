@@ -26,12 +26,16 @@ analysisParams.generateCrossValPlots = false;
 
 
 %% Fit the IAMP to each run
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
-%% Fit the IAMP to each run
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
-%% Fit the IAMP to each run
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampRegFitResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff', false, 'plotColor', [.8,.4,.1]);
 
+
+% Concatenate the runs and the stim design matrix 
+%% Fit the IAMP to each run
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff', true, 'plotColor', [.3,.7,.4]);
+
+
+
+% 
 % Get the offset
 for ii = 1:analysisParams.numAcquisitions
     [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
@@ -40,6 +44,7 @@ end
 
 %% Plotting
 iampPlot.timeCourse = rawTC;
-iampPlot.iampFit    = iampResponses;
+iampPlot.iampFit    = iampRespiampRegFitResponsesonses;
+
 tcHndl = plotTimeCourse(analysisParams, iampPlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
 
