@@ -24,7 +24,8 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    iampResponses              - Model response to each run
 %    rawTC                      - meadaind time course for each run
 % Optional key/value pairs:
-%    none
+%    modelOnOff                 - 
+%    plotColor                  - 
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -33,6 +34,7 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('fullCleanData',@isnumeric);
 p.addParameter('modelOnOff',false,@islogical);
+p.addParameter('modelOnOff',[],@isvec);
 
 p.parse(analysisParams,fullCleanData,varargin{:});
 

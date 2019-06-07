@@ -27,6 +27,10 @@ analysisParams.generateCrossValPlots = false;
 
 %% Fit the IAMP to each run
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
+%% Fit the IAMP to each run
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
+%% Fit the IAMP to each run
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'modelOnOff',true);
 
 % Get the offset
 for ii = 1:analysisParams.numAcquisitions

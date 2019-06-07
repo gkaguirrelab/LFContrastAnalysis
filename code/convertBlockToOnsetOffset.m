@@ -82,13 +82,13 @@ durations = stopPos - startPos;
 
 % find the double block if present account for some blocks showing at 1 less
 % TR
-doubleBlockIndx = find(durations./min(durations) >= 2)
+doubleBlockIndx = find(durations./min(durations) >= 1.9);
 
 if ~isempty(doubleBlockIndx)
     for jj = 1:length(doubleBlockIndx)
         splitBlockTime = (stopPos(doubleBlockIndx(jj)) - startPos(doubleBlockIndx(jj)))./2;
-        startPos = [startPos(1:doubleBlockIndx(jj)), startPos(doubleBlockIndx(jj))+splitBlockTime, startPos(doubleBlockIndx(jj)+1:end)];
-        stopPos = [stopPos(1:doubleBlockIndx(jj)-1) , stopPos(doubleBlockIndx(jj))-splitBlockTime, stopPos(doubleBlockIndx(jj):end)];
+        startPos = round([startPos(1:doubleBlockIndx(jj)), startPos(doubleBlockIndx(jj))+splitBlockTime, startPos(doubleBlockIndx(jj)+1:end)]);
+        stopPos = round([stopPos(1:doubleBlockIndx(jj)-1) , stopPos(doubleBlockIndx(jj))-splitBlockTime, stopPos(doubleBlockIndx(jj):end)]);
     end
 end
 
