@@ -28,6 +28,7 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %                                 onset and offset matrix and use this for
 %                                 the regression model for the GLM
 %    plotColor                  - vector for plot color
+%    concatAndFit               - Concatenate the runs and stim and fit
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -36,13 +37,31 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('fullCleanData',@isnumeric);
 p.addParameter('modelOnOff',false,@islogical);
+p.addParameter('concatAndFit',false,@islogical);
 p.addParameter('plotColor',[],@isvector);
 
 p.parse(analysisParams,fullCleanData,varargin{:});
 
 modelOnOff = p.Results.modelOnOff;
+concatAndFit =  p.Results.concatAndFit;
 
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
+
+
+% create empty packet for concat option
+if concatAndFit
+    thePacket.response.values   = [];
+    thePacket.response.timebase = [];
+    % the stimulus
+    thePacket.stimulus.timebase = [];
+    thePacket.stimulus.values   = [];
+    % the kernel
+    thePacket.kernel = [];
+    % the meta data (this is the constrast and directions)
+    thePacket.metaData.stimDirections = [];
+    thePacket.metaData.stimContrasts  = [];
+    thePacket.metaData.lmsContrast    = [];
+end
 
 for sessionNum = 1:analysisParams.numSessions
     
@@ -120,10 +139,7 @@ for sessionNum = 1:analysisParams.numSessions
         % Set the number of instances.
         clear defaultParamsInfo
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
-        
-        % Get the kernel
-        kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
-        
+          
         % Take the median across voxels
         rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
@@ -132,17 +148,56 @@ for sessionNum = 1:analysisParams.numSessions
         
         %%  Make the IAMP packet
         % the response
-        thePacket.response.values   = rawTC{sessionNum,jj}.values;
-        thePacket.response.timebase = stimulusStruct.timebase;
-        % the stimulus
-        thePacket.stimulus.timebase = stimulusStruct.timebase;
-        thePacket.stimulus.values   = stimulusStruct.values;
-        % the kernel
-        thePacket.kernel = kernelStruct;
-        % the meta data (this is the constrast and directions)
-        thePacket.metaData.stimDirections = stimDirections;
-        thePacket.metaData.stimContrasts  = stimContrasts;
-        thePacket.metaData.lmsContrast    = LMSContrastMat;
+        if ~ concatAndFit
+            thePacket.response.values   = rawTC{sessionNum,jj}.values;
+            thePacket.response.timebase = stimulusStruct.timebase;
+            % the stimulus
+            thePacket.stimulus.timebase = stimulusStruct.timebase;
+            thePacket.stimulus.values   = stimulusStruct.values;
+            % the kernel
+            thePacket.kernel = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+            % the meta data (this is the constrast and directions)
+            thePacket.metaData.stimDirections = stimDirections;
+            thePacket.metaData.stimContrasts  = stimContrasts;
+            thePacket.metaData.lmsContrast    = LMSContrastMat;
+            
+            % Perform the fit
+            [paramsFit,fVal,IAMPResponses] = ...
+                iampOBJ.fitResponse(thePacket,...
+                'defaultParamsInfo', defaultParamsInfo, ...
+                'searchMethod','linearRegression');
+            
+            iampParams{sessionNum,jj} = paramsFit;
+            iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
+            iampResponses{sessionNum,jj} = IAMPResponses;
+            
+            if isempty(p.Results.plotColor)
+                iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
+            else
+                iampResponses{sessionNum,jj}.plotColor = p.Results.plotColor;
+            end
+            
+        else
+            thePacket.response.values   = [thePacket.response.values rawTC{sessionNum,jj}.values];
+            % the stimulus
+            thePacket.stimulus.values   = [thePacket.stimulus.values stimulusStruct.values];
+            % the meta data (this is the constrast and directions)
+            thePacket.metaData.stimDirections = [thePacket.metaData.stimDirections stimDirections];
+            thePacket.metaData.stimContrasts  = [thePacket.metaData.stimContrasts  stimContrasts];
+            thePacket.metaData.lmsContrast    = [thePacket.metaData.lmsContrast LMSContrastMat];
+            
+        end
+        
+        
+    end
+    
+    if concatAndFit
+        
+        deltaT = median(diff(stimulusStruct.timebase));
+        concatTimebase= deltaT:deltaT:deltaT*length(thePacket.response.values);
+        thePacket.response.timebase = concatTimebase;
+        thePacket.stimulus.timebase = concatTimebase;
+        thePacket.kernel = generateHRFKernel(6,12,10,concatTimebase);
         
         % Perform the fit
         [paramsFit,fVal,IAMPResponses] = ...
@@ -150,16 +205,15 @@ for sessionNum = 1:analysisParams.numSessions
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
         
-        iampParams{sessionNum,jj} = paramsFit;
-        iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
-        iampResponses{sessionNum,jj} = IAMPResponses;
+        iampParams{sessionNum} = paramsFit;
+        iampTimeCoursePacketPocket{sessionNum} = thePacket;
+        iampResponses{sessionNum} = IAMPResponses;
         
         if isempty(p.Results.plotColor)
-            iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
+            iampResponses{sessionNum,1}.plotColor = [.4,.7,.2];
         else
-            iampResponses{sessionNum,jj}.plotColor = p.Results.plotColor;
+            iampResponses{sessionNum,1}.plotColor = p.Results.plotColor;
         end
-       
     end
     
 end
