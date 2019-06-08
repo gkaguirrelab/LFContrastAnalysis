@@ -47,23 +47,26 @@ concatAndFit =  p.Results.concatAndFit;
 
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
 
-
-% create empty packet for concat option
-if concatAndFit
-    thePacket.response.values   = [];
-    thePacket.response.timebase = [];
-    % the stimulus
-    thePacket.stimulus.timebase = [];
-    thePacket.stimulus.values   = [];
-    % the kernel
-    thePacket.kernel = [];
-    % the meta data (this is the constrast and directions)
-    thePacket.metaData.stimDirections = [];
-    thePacket.metaData.stimContrasts  = [];
-    thePacket.metaData.lmsContrast    = [];
-end
+tempTC = [];
 
 for sessionNum = 1:analysisParams.numSessions
+    
+    
+    % create empty packet for concat option
+    if concatAndFit
+        thePacket.response.values   = [];
+        thePacket.response.timebase = [];
+        % the stimulus
+        thePacket.stimulus.timebase = [];
+        thePacket.stimulus.values   = [];
+        % the kernel
+        thePacket.kernel = [];
+        % the meta data (this is the constrast and directions)
+        thePacket.metaData.stimDirections = [];
+        thePacket.metaData.stimContrasts  = [];
+        thePacket.metaData.lmsContrast    = [];
+        
+    end
     
     % Gets the path to a text file that contains the mat file names needed
     % to get the trail order information for each run.
@@ -139,7 +142,7 @@ for sessionNum = 1:analysisParams.numSessions
         % Set the number of instances.
         clear defaultParamsInfo
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
-          
+        
         % Take the median across voxels
         rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
@@ -199,15 +202,19 @@ for sessionNum = 1:analysisParams.numSessions
         thePacket.stimulus.timebase = concatTimebase;
         thePacket.kernel = generateHRFKernel(6,12,10,concatTimebase);
         
+        tempTC{sessionNum, 1}.values = thePacket.response.values;
+        tempTC{sessionNum, 1}.timebase = concatTimebase;
+        tempTC{sessionNum, 1}.plotColor = [0,0,0];
+        
         % Perform the fit
         [paramsFit,fVal,IAMPResponses] = ...
             iampOBJ.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
         
-        iampParams{sessionNum} = paramsFit;
-        iampTimeCoursePacketPocket{sessionNum} = thePacket;
-        iampResponses{sessionNum} = IAMPResponses;
+        iampParams{sessionNum,1} = paramsFit;
+        iampTimeCoursePacketPocket{sessionNum,1} = thePacket;
+        iampResponses{sessionNum,1} = IAMPResponses;
         
         if isempty(p.Results.plotColor)
             iampResponses{sessionNum,1}.plotColor = [.4,.7,.2];
@@ -217,7 +224,9 @@ for sessionNum = 1:analysisParams.numSessions
     end
     
 end
-
+if concatAndFit
+    rawTC = tempTC;
+end
 end
 
 
