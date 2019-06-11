@@ -20,9 +20,8 @@ end
 
 avgIampParams = iampOBJ.averageParams(paramsFit);
 
-
 %% Concat and fit
-concatPacket = iampOBJ.concatenatePackets(thePackets);
+concatPacket = iampOBJ.joinPackets(thePackets);
 clear defaultParamsInfo
 defaultParamsInfo.nInstances = size(concatPacket.stimulus.values,1);
 
@@ -35,3 +34,4 @@ defaultParamsInfo.nInstances = size(concatPacket.stimulus.values,1);
 figure; hold on
 plot(betaWeights,'r')
 plot(avgIampParams.paramMainMatrix,'b--')
+plot(paramsFitConcat.paramMainMatrix,'g*')
