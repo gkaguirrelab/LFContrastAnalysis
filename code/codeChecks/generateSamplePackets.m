@@ -1,14 +1,12 @@
-function thePackets = generateSamplePackets(betaWeights,numDirections,numContrast,numPackets)
+function thePackets = generateSamplePackets(betaWeights,numDirections,numContrast,numPackets, varargin)
 % Generates simulated packets for the IAMP fitting routine for LFContrast
 %
 % Syntax:
 %    thePackets = generateSamplePackets(betaWeights,numDirections,numContrast,numPackets)
 %
 % Description:
-%    This function takes in the clean time series data and the analysis params
-%    and fits the IMAP model. This function builds a stimulus design matirx
-%    based on the analysisParams (from each run of the experiemnt) and run the
-%    IAMP model on the cleaned and trial sorted data.
+%    This function takes in a vector of beta weights (one for each
+%    regressor) and returns a random time course repsonse packet. 
 %
 % Inputs:
 %    betaWeights               - Beta weight values for each condtion 
@@ -35,7 +33,7 @@ p.addParameter('blockLength',15,@isnumeric);
 p.addParameter('deltaT',800,@isnumeric);
 p.addParameter('baselineCondNum',6,@isnumeric);
 
-p.parse(analysisParams,fullCleanData,varargin{:});
+p.parse(betaWeights,numDirections,numContrast,numPackets,varargin{:});
 
 blockLength = p.Results.blockLength;
 deltaT      = p.Results.deltaT;
@@ -80,10 +78,12 @@ for ii = 1:numPackets
     % the stimulus
     thePackets{ii}.stimulus.timebase = stimulusStruct.timebase;
     thePackets{ii}.stimulus.values   = stimulusStruct.values;
+    thePackets{ii}.stimulus.metaData = [];
     % the kernel
     thePackets{ii}.kernel = kernelStruct;
     % the meta data (this is the constrast and directions)
     thePackets{ii}.metaData.stimDirections = [];
     thePackets{ii}.metaData.stimContrasts  = [];
     thePackets{ii}.metaData.lmsContrast    = [];
+    
 end
