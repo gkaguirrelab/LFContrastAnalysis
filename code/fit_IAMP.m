@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData, varargin)
+function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC, fVal] = fit_IAMP(analysisParams, fullCleanData, varargin)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -22,7 +22,7 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    iampOBJ                    - The IAMP object
 %    iampParams                 - Cell array of IAMP parameter fits for each run
 %    iampResponses              - Model response to each run
-%    rawTC                      - meadaind time course for each run
+%    rawTC                      - Median time course for each run
 % Optional key/value pairs:
 %    modelOnOff                 - Convert the stim design matrix to a stim
 %                                 onset and offset matrix and use this for
@@ -165,7 +165,7 @@ for sessionNum = 1:analysisParams.numSessions
             thePacket.metaData.lmsContrast    = LMSContrastMat;
             
             % Perform the fit
-            [paramsFit,fVal,IAMPResponses] = ...
+            [paramsFit,fVal(sessionNum,jj),IAMPResponses] = ...
                 iampOBJ.fitResponse(thePacket,...
                 'defaultParamsInfo', defaultParamsInfo, ...
                 'searchMethod','linearRegression');
@@ -207,7 +207,7 @@ for sessionNum = 1:analysisParams.numSessions
         tempTC{sessionNum, 1}.plotColor = [0,0,0];
         
         % Perform the fit
-        [paramsFit,fVal,IAMPResponses] = ...
+        [paramsFit,fVal(sessionNum),IAMPResponses] = ...
             iampOBJ.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');

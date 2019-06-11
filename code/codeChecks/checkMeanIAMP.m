@@ -30,10 +30,10 @@ analysisParams.generateCrossValPlots = false;
 
 % Concatenate the runs and the stim design matrix 
 %% Fit the IAMP to each run
-[analysisParams, iampTimeCoursePacketPocket, ~, iampParams, iampResponses, ~] = fit_IAMP(analysisParams,fullCleanData, 'concatAndFit', false, 'plotColor', [.3,.7,.4]);
+[analysisParams, iampTimeCoursePacketPocket, ~, iampParams, iampResponses, ~, fVal] = fit_IAMP(analysisParams,fullCleanData, 'concatAndFit', false, 'plotColor', [.3,.7,.4]);
 
 
-[analysisParams, iampTimeCoursePacketPocketConcat, iampOBJ, iampParamsConcat, iampResponsesConcat, rawTC] = fit_IAMP(analysisParams,fullCleanData, 'concatAndFit', true, 'plotColor', [.7,.2,.4]);
+[analysisParams, iampTimeCoursePacketPocketConcat, iampOBJ, iampParamsConcat, iampResponsesConcat, rawTC, fValConcat] = fit_IAMP(analysisParams,fullCleanData, 'concatAndFit', true, 'plotColor', [.7,.2,.4]);
 
 
 % 
