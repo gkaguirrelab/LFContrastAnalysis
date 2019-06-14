@@ -20,6 +20,7 @@ analysisParams.numSamples = 25;
 % Number of acquisitions
 analysisParams.numAcquisitions = 10;
 analysisParams.numSessions = 2;
+
 %% Generate the data to be fit
 % set the beta weights
 betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
@@ -45,7 +46,10 @@ for sessionNum = 1:analysisParams.numSessions
         expParams = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
         
         [params{counter}, data] = generateSampleVoxels(betaWeights,numDirections,numContrast,numVoxels, 'realExpParams',expParams);
-        fullCleanData(:,:,counter) = detrend(data')';
+        
+        %fullCleanData(:,:,counter) = detrend(data')';
+        fullCleanData(:,:,counter) = data - 0.5;
+        
         counter = counter+1;
     end
 end
