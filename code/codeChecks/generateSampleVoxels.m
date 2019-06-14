@@ -22,6 +22,7 @@ function [params theVoxels] = generateSampleVoxels(betaWeights,numDirections,num
 %                                the baseline blocks
 %    noiseLevel                - The percent of white noise to be added, 0
 %                                = no noise added (default = 0)
+%    realExpParams             -
 
 % MAB 06/10/19
 
@@ -35,6 +36,7 @@ p.addParameter('blockLength',15,@isnumeric);
 p.addParameter('deltaT',800,@isnumeric);
 p.addParameter('baselineCondNum',6,@isnumeric);
 p.addParameter('noiseLevel',0,@isnumeric);
+p.addParameter('realExpParams',[],@ismatrix);
 
 p.parse(betaWeights,numDirections,numContrast,numVoxels,varargin{:});
 
@@ -54,7 +56,11 @@ randDirContrast = dirContrast(:,randIndx);
 start = 1:blockLength:length(contrastCond)*blockLength;
 stop = blockLength:blockLength:length(contrastCond)*blockLength;
 
-expParams = [start;stop;randDirContrast]';
+if isempty(p.Results.realExpParams)
+    expParams = [start;stop;randDirContrast]';
+else
+    expParams = p.Results.realExpParams;
+end
 
 stimRegressor =  createRegressors(expParams,baselineCondNum,deltaT*stop(end),deltaT);
 

@@ -1,7 +1,7 @@
 % Check analysis code with generated data.
 
 %% Get the analysis params
-analysisParams = getSubjectParams('AP26_replication');
+analysisParams = getSubjectParams('AP26');
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
@@ -18,11 +18,11 @@ analysisParams.generateCrossValPlots = false;
 analysisParams.numSamples = 25;
 
 % Number of acquisitions
-analysisParams.numAcquisitions = 20;
-
+analysisParams.numAcquisitions = 10;
+analysisParams.numSessions = 2;
 %% Generate the data to be fit
 % set the beta weights
-betaWeights = [repmat(5:-1:1,1,4), 0]';
+betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
 
 % number of directions
 numDirections = 4;
@@ -33,10 +33,22 @@ numContrast = 6;
 % number of pakets to generate
 numVoxels = 400;
 
-for ii = 1:analysisParams.numAcquisitions
-    [params{ii} fullCleanData(:,:,ii)] = generateSampleVoxels(betaWeights,numDirections,numContrast,numVoxels);
+counter = 1;
+for sessionNum = 1:analysisParams.numSessions
+    trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    trialOrderFiles = textFile2cell(trialOrderFile);
+    
+    
+    for jj = 1:analysisParams.numAcquisitions
+        dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
+        expParams = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
+        
+        [params{counter} fullCleanData(:,:,counter)] = generateSampleVoxels(betaWeights,numDirections,numContrast,numVoxels, 'realExpParams',expParams);
+        
+       counter = counter+1;
+    end
 end
-
 %% Run the IAMP/QCM models
 %
 % Fit IAMP
