@@ -44,11 +44,13 @@ for sessionNum = 1:analysisParams.numSessions
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
         expParams = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
         
-        [params{counter} fullCleanData(:,:,counter)] = generateSampleVoxels(betaWeights,numDirections,numContrast,numVoxels, 'realExpParams',expParams);
-        
-       counter = counter+1;
+        [params{counter}, data] = generateSampleVoxels(betaWeights,numDirections,numContrast,numVoxels, 'realExpParams',expParams);
+        fullCleanData(:,:,counter) = detrend(data')';
+        counter = counter+1;
     end
 end
+
+
 %% Run the IAMP/QCM models
 %
 % Fit IAMP
