@@ -75,8 +75,10 @@ params.noiseSd = 0;
 %% Step 2: Generate Response
 stimulusStruct.values = stimRegressor;
 stimulusStruct.timebase = deltaT:deltaT:deltaT*stop(end);
-kernelStruct.timebase = deltaT:deltaT:5000;
-kernelStruct = generateHRFKernel(6,12,10,kernelStruct.timebase);
+%kernelStruct.timebase = deltaT:deltaT:5000;
+kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+
+
 
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');

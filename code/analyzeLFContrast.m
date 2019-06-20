@@ -163,11 +163,11 @@ timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanPar
 % the CRF, based on QCM fit.
 timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
-% % Get the time course prediction from the avarage IAMP params
-% iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
-% iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
-% iampParamsTC.baseline = concatBaselineShift;
-% timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
+% Get the time course prediction from the avarage IAMP params
+iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
+iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
+iampParamsTC.baseline = concatBaselineShift;
+timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParams, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
 % Add clean time
 timeCoursePlot.timecourse = rawTC;
