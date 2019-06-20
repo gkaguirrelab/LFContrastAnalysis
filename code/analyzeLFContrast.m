@@ -26,7 +26,7 @@ if analysisParams.analysisSimulate
     numDirections = 4;
     numContrast = 6; 
     numVoxels = 400;
-    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels);
+    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', true);
 else
     [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 end
@@ -163,14 +163,14 @@ timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanPar
 % the CRF, based on QCM fit.
 timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
-% Get the time course prediction from the avarage IAMP params
-iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
-iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
-iampParamsTC.baseline = concatBaselineShift;
-timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
+% % Get the time course prediction from the avarage IAMP params
+% iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
+% iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
+% iampParamsTC.baseline = concatBaselineShift;
+% timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
 % Add clean time
-timeCoursePlot.rawTC = rawTC;
+timeCoursePlot.timecourse = rawTC;
 
 
 % %Plot the time course prediction for each run using the different fits to
