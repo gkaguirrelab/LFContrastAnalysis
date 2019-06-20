@@ -1,6 +1,9 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('AP26_replication');
 
+% SIMULATE MODE
+analysisParams.analysisSimulate = true;
+
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
 analysisParams.eccenRange  = [1 20];
@@ -13,21 +16,31 @@ analysisParams.generateIAMPPlots = false;
 analysisParams.generateCrossValPlots = false;
 
 % Plotting params
- analysisParams.numSamples = 25;
+analysisParams.numSamples = 25;
 
 % Get the cleaned time series
-[fullCleanData, analysisParams] = getTimeCourse(analysisParams);
+if analysisParams.analysisSimulate
+    analysisParams.numAcquisitions = 10;
+    analysisParams.numSessions = 2;
+    betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
+    numDirections = 4;
+    numContrast = 6; 
+    numVoxels = 400;
+    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels);
+else
+    [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
+end
 
 %% Run the IAMP/QCM models
 %
-% Fit IAMP 
-% 
+% Fit IAMP
+%
 % Fit IAMP to each constructed packet and create packetPocket cell array of
 % all the fit packets.
 %     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
 %     iampOBJ - the tfe IAMP object
 %     iampParams - cell array of iampParams for each object
-% 
+%
 % NOTE: Each session gets its own row in the packet pocket.  May want to sweep
 % back at some point and match conventions in analysis params to this, for
 % example by making the various cell arrays columns rather than rows to
@@ -56,7 +69,7 @@ end
 
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
 
-%% Fit the direction based models to the mean IAMP beta weights 
+%% Fit the direction based models to the mean IAMP beta weights
 %
 
 % Fit the CRF -- { } is because this expects a cell
@@ -76,7 +89,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 
 %% Do some plotting of these fits
 %
-% Upsample the NR repsonses 
+% Upsample the NR repsonses
 crfStimulus = upsampleCRF(analysisParams);
 
 %% Predict CRF from direction model fits
@@ -99,7 +112,7 @@ crfPlot.respNrCrfAmpExp.color = [0, .66, 1];
 
 % Predict the responses for CRF with params from QCM
 crfPlot.respQCMCrf = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},crfStimulus,[]);
-crfPlot.respQCMCrf.color = [0, 1, 0]; 
+crfPlot.respQCMCrf.color = [0, 1, 0];
 
 %% Now use the QCM to get NR parameters that can be applied to crfStimulus using the
 % Naka-Rushton objects.
@@ -129,7 +142,7 @@ crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
 crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-                                [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
 
 %% Get the time course predicitions of the CRF params
@@ -156,7 +169,7 @@ iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
 iampParamsTC.baseline = concatBaselineShift;
 timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
-% Add clean time 
+% Add clean time
 timeCoursePlot.rawTC = rawTC;
 
 
@@ -165,7 +178,7 @@ timeCoursePlot.rawTC = rawTC;
 
 tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
 figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-                                [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameTc,tcHndl,'pdf');
 
 % % Plot isoresponce contour
@@ -173,5 +186,5 @@ thresholds = [0.10, 0.2, 0.3];
 colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
 qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
 figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-                                [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameQcm,qcmHndl,'pdf');
