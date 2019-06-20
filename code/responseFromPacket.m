@@ -25,7 +25,7 @@ function [theModelPreds] =  responseFromPacket(predictionsType, analysisParams, 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('predictionsType',@ischar);
 p.addRequired('analysisParams',@isstruct);
-p.addRequired('params',@iscell);
+p.addRequired('params',@isstruct);
 p.addRequired('packetPocket',@iscell);
 p.addParameter('plotColor',[1 , 1, 1],@isvector);
 p.parse(predictionsType, analysisParams, fitParams, packetPocket, varargin{:});
@@ -60,16 +60,16 @@ for ii = 1:size(packetPocket,1)
             case 'IAMP'
                 
                 
-                  theModelPreds{ii,jj} = fitOBJ.computeResponse(params{ii,jj},packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+%                 theModelPreds{ii,jj} = fitOBJ.computeResponse(params{ii,jj},packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
  
-%                 if ii == 1
-%                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
-%                 elseif ii == 2
-%                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionTwo,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);    
-%                 else
-%                     display('WARNING: More than 2 sessions detected. responseFromPacket.m must be updated to reflect this')
-%                 end
-%                 
+                if ii == 1
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+                elseif ii == 2
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionTwo,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);    
+                else
+                    display('WARNING: More than 2 sessions detected. responseFromPacket.m must be updated to reflect this')
+                end
+                
                 theModelPreds{ii,jj}.values = theModelPreds{ii,jj}.values;% + params.baseline(ii,jj);
                 
             otherwise

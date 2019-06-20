@@ -74,7 +74,7 @@ params.noiseSd = 0;
 
 %% Step 2: Generate Response
 stimulusStruct.values = stimRegressor;
-stimulusStruct.timebase = deltaT:deltaT:deltaT*stop(end);
+stimulusStruct.timebase = 0:deltaT:deltaT*stop(end)-deltaT;
 %kernelStruct.timebase = deltaT:deltaT:5000;
 kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
 

@@ -1,3 +1,6 @@
+% Initialize
+clear; close all;
+
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('AP26_replication');
 
@@ -26,7 +29,7 @@ if analysisParams.analysisSimulate
     numDirections = 4;
     numContrast = 6; 
     numVoxels = 400;
-    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', true);
+    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', false);
 else
     [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
 end
@@ -167,7 +170,7 @@ timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, 
 iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
 iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
 iampParamsTC.baseline = concatBaselineShift;
-timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParams, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
+timeCoursePlot.iamp = responseFromPacket('IAMP', analysisParams, iampParamsTC, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
 
 % Add clean time
 timeCoursePlot.timecourse = rawTC;
