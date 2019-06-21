@@ -49,7 +49,10 @@ for ii = 1:size(packetPocket,1)
         case 'IAMP'
             fitOBJ = tfeIAMP('verbosity','none');
             params = fitParams;
-           
+        case 'meanIAMP'
+            fitOBJ = tfeIAMP('verbosity','none');
+            params = fitParams;
+            
         otherwise
             error('Model not known');
     end
@@ -58,26 +61,24 @@ for ii = 1:size(packetPocket,1)
         
         switch predictionsType
             case 'IAMP'
+                theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
+                theModelPreds.plotColor   = p.Results.plotColor;
+            case 'meanIAMP'
+                if ii == 1
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+                elseif ii == 2
+                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionTwo,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+                else
+                    display('WARNING: More than 2 sessions detected. responseFromPacket.m must be updated to reflect this')
+                end
                 
-                
-                  theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
- 
-%                 if ii == 1
-%                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
-%                 elseif ii == 2
-%                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionTwo,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);    
-%                 else
-%                     display('WARNING: More than 2 sessions detected. responseFromPacket.m must be updated to reflect this')
-%                 end
-                
-                % theModelPreds{ii,jj}.values = theModelPreds{ii,jj}.values;% + params.baseline(ii,jj);
+                theModelPreds{ii,jj}.values = theModelPreds{ii,jj}.values;% + params.baseline(ii,jj);
+                theModelPreds{ii,jj}.plotColor   = p.Results.plotColor;
                 
             otherwise
-                    theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
-
+                theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
+                theModelPreds{ii,jj}.plotColor   = p.Results.plotColor;
         end
-        
-        theModelPreds.plotColor   = p.Results.plotColor;
-        
+
     end
 end
