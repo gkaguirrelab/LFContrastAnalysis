@@ -5,7 +5,7 @@ clear;
 analysisParams = getSubjectParams('AP26_replication');
 
 % SIMULATE MODE
-analysisParams.analysisSimulate = true;
+analysisParams.analysisSimulate = false;
 
 % Make mask from the area and eccentricity maps
 analysisParams.areaNum     = 1;
@@ -66,6 +66,11 @@ directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCo
 % NOTE: This bit is very specific to the design of the experiment we are
 % currently analyzing, and has to do specifically with the way color
 % directions were studied across acquisitions and sessions.
+
+
+% ###### FIX ###################
+% remove subraction of the baseline
+% ##############################
 for ii = 1:analysisParams.numAcquisitions
     [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
@@ -91,6 +96,11 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.ave
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
 % Do some plotting of these fits
+
+%######### FIX ###################
+% make a function that subtracts the baseline for generating the crf plots
+%################################
+
 
 % Upsample the NR repsonses
 crfStimulus = upsampleCRF(analysisParams);
