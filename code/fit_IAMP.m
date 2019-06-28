@@ -127,6 +127,7 @@ for sessionNum = 1:analysisParams.numSessions
         stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
         
         if modelOnOff
+            onOffMat = convertBlockToOnsetOffset(expParams,21,totalTime,deltaT)
             stimulusStruct.values = convertBlockToOnsetOffset(stimulusStruct.values,21);
         end
         
@@ -197,7 +198,7 @@ for sessionNum = 1:analysisParams.numSessions
     if concatAndFit
         
         deltaT = median(diff(stimulusStruct.timebase));
-        concatTimebase= deltaT:deltaT:deltaT*length(thePacket.response.values);
+        concatTimebase= 0:deltaT:deltaT*length(thePacket.response.values)-1;
         thePacket.response.timebase = concatTimebase;
         thePacket.stimulus.timebase = concatTimebase;
         thePacket.kernel = generateHRFKernel(6,12,10,concatTimebase);

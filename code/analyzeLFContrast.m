@@ -49,7 +49,7 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData, modelOnOff');
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -72,10 +72,13 @@ directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCo
 % remove subraction of the baseline
 % ##############################
 for ii = 1:analysisParams.numAcquisitions
-    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
+    %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
 
-directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampOBJ.averageParams(concatParams));
+averageIampParams = iampOBJ.averageParams(concatParams);
+
+directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
 
 %% Fit the direction based models to the mean IAMP beta weights
 %
@@ -158,23 +161,23 @@ figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),anal
     [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
 
-% Get the time course predicitions of the CRF params
-
-% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
-
-% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
-
-% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
-
-% Get the time course predicitions fromt the QCM params fit to the CRF
-timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
-
-% Get the time course predicitions from the NR common Amp and Semi fit to
-% the CRF, based on QCM fit.
-timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
+% % Get the time course predicitions of the CRF params
+% 
+% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+% timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
+% 
+% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+% timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
+% 
+% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+% timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
+% 
+% % Get the time course predicitions fromt the QCM params fit to the CRF
+% timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
+% 
+% % Get the time course predicitions from the NR common Amp and Semi fit to
+% % the CRF, based on QCM fit.
+% timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
 % Get the predictions from individual IAMP params 
 for ii = 1:size(iampParams,1)
@@ -188,7 +191,7 @@ end
 iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
 iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
 iampParamsTC.baseline = concatBaselineShift;
-timeCoursePlot.meanIamp = responseFromPacket('meanIAMP', analysisParams, iampParamsTC, iampTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0]);
+timeCoursePlot.meanIamp = responseFromPacket('meanIAMP', analysisParams, iampParamsTC, iampTimeCoursePacketPocket, 'plotColor', [0.0 0.2 0.6]);
 
 % Add clean time
 timeCoursePlot.timecourse = rawTC;

@@ -1,4 +1,4 @@
-function [onOffMat] = convertBlockToOnsetOffset(blockDesign,baselineRowNum)
+function [onOffMat] = convertBlockToOnsetOffset(expParams,baselineCondNum,totalTime,deltaT,varargin)
 % Convert a block design stimulus design matix to a maxtix that models the
 % onset and offset of each block as seperate regressors.
 %
@@ -25,79 +25,41 @@ function [onOffMat] = convertBlockToOnsetOffset(blockDesign,baselineRowNum)
 
 % MAB 06/04/19 wrote it.
 
-for ii = 1:size(blockDesign,1)
-    
-    if ii ~= baselineRowNum % exclude baseline condition
-        
-        % Find where onsets and offsets occur
-        diffVec = diff(blockDesign(ii,:));
-        
-        if blockDesign(ii,1) == 1
-            diffVec = [1 diffVec];
-        else
-            diffVec = [0 diffVec];
-        end
-        
-        onVec = double(diffVec == 1);
-        offVec = double(diffVec == -1);
-        
-        onOffMat((2*ii-1),:) = onVec;
-        onOffMat((2*ii),:) = offVec;
-        
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('expParams',@ismatrix);
+p.addRequired('baselineCondNum',@isnumeric);
+p.addRequired('totalTime',@isnumeric);
+p.addRequired('deltaT',@isnumeric);
+p.addParameter('onset',true,@islogical);
+p.addParameter('midpoint',true,@islogical);
+p.addParameter('offset',true,@islogical);
+
+p.parse(expParams,baselineCondNum,totalTime,deltaT,varargin{:})
+condRegMat = zeros(length(unique(expParams(:,3)))-length(baselineCondNum),totalTime/deltaT,length(unique(expParams(:,4))));
+baselineRegVec = zeros(1,totalTime/deltaT);
+
+for kk = 1:size(expParams,1)
+    if expParams(kk,3) ~= baselineCondNum
+        condRegMat(expParams(kk,3),expParams(kk,1):expParams(kk,2),expParams(kk,4)) = 1;
     end
     
-end
+    if p.Results.onset
 
-% add last trial offset
-% find the empty regressor and and a one to the last postition
-
-onOffMatSum = sum(onOffMat,2);
-
-onOffMat(find(onOffMatSum == 0),end) = 1;
-
-% Add the baseline as seperate blocks
-
-% pull out  the baseline regressor
-baselineCond = blockDesign(baselineRowNum,:);
-
-% Get onset and offset postitions
-baseOnOff = diff(baselineCond);
-if baselineCond(1) == 1
-    baseOnOff = [1 baseOnOff];
-else
-    baseOnOff = [0 baseOnOff];
-end
-
-if baselineCond(end) == 1
-    baseOnOff(end) =-1;
-end
-
-% find the start of each baseline block
-startPos = find(baseOnOff == 1);
-stopPos  = find(baseOnOff == -1);
-
-% Check for back to back baseline blocks
-
-durations = stopPos - startPos;
-
-% find the double block if present account for some blocks showing at 1 less
-% TR
-doubleBlockIndx = find(durations./min(durations) >= 1.9);
-
-if ~isempty(doubleBlockIndx)
-    for jj = 1:length(doubleBlockIndx)
-        splitBlockTime = (stopPos(doubleBlockIndx(jj)) - startPos(doubleBlockIndx(jj)))./2;
-        startPos = round([startPos(1:doubleBlockIndx(jj)), startPos(doubleBlockIndx(jj))+splitBlockTime, startPos(doubleBlockIndx(jj)+1:end)]);
-        stopPos = round([stopPos(1:doubleBlockIndx(jj)-1) , stopPos(doubleBlockIndx(jj))-splitBlockTime, stopPos(doubleBlockIndx(jj):end)]);
+    end
+    
+    if p.Results.midpoint
+    
+    end
+    
+    if p.Results.offset
+    
     end
 end
-
-baseOnOffMat = zeros(length(startPos),size(blockDesign,2));
-
-for kk = 1:length(startPos)
-    baseOnOffMat(kk,startPos(kk):stopPos(kk)) = 1;
+stimulusStruct.values = [];
+for ii = 1:length(unique(expParams(:,4)))
+    stimulusStruct.values = vertcat(stimulusStruct.values,condRegMat(:,:,ii));
 end
 
-onOffMat = [onOffMat;baseOnOffMat];
+onOffMat = vertcat(stimulusStruct.values,baselineRegVec);
 
-
+end
