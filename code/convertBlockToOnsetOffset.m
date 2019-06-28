@@ -38,28 +38,71 @@ p.parse(expParams,baselineCondNum,totalTime,deltaT,varargin{:})
 condRegMat = zeros(length(unique(expParams(:,3)))-length(baselineCondNum),totalTime/deltaT,length(unique(expParams(:,4))));
 baselineRegVec = zeros(1,totalTime/deltaT);
 
+numPoints = 0;
+if p.Results.onset
+    numPoints = numPoints + 1;
+end
+if p.Results.midpoint
+    numPoints = numPoints +1;
+end
+if p.Results.offset
+    numPoints = numPoints +1;
+end
+
+
 for kk = 1:size(expParams,1)
     if expParams(kk,3) ~= baselineCondNum
-        condRegMat(expParams(kk,3),expParams(kk,1):expParams(kk,2),expParams(kk,4)) = 1;
-    end
-    
-    if p.Results.onset
-
-    end
-    
-    if p.Results.midpoint
-    
-    end
-    
-    if p.Results.offset
-    
+        
+        if p.Results.onset
+            condRegMat(expParams(kk,3),expParams(kk,1),expParams(kk,4)) = 1;
+        end
+        
+        if p.Results.midpoint
+            condRegMat(expParams(kk,3),ceil((expParams(kk,1)+expParams(kk,2))./2),expParams(kk,4)) = 1;
+        end
+        
+        if p.Results.offset
+            condRegMat(expParams(kk,3),expParams(kk,2),expParams(kk,4)) = 1;
+        end
+        
+    elseif expParams(kk,3) == baselineCondNum
+        if p.Results.onset
+            baselineRegVec(1,expParams(kk,1)) = 1;
+        end
+        
+        if p.Results.midpoint
+            baselineRegVec(1,ceil((expParams(kk,1)+expParams(kk,2))./2)) = 1;
+        end
+        
+        if p.Results.offset
+            baselineRegVec(1,expParams(kk,2)) = 1;
+        end
+        
     end
 end
-stimulusStruct.values = [];
+
+blockMatrix = [];
 for ii = 1:length(unique(expParams(:,4)))
-    stimulusStruct.values = vertcat(stimulusStruct.values,condRegMat(:,:,ii));
+    blockMatrix = vertcat(blockMatrix,condRegMat(:,:,ii));
 end
 
-onOffMat = vertcat(stimulusStruct.values,baselineRegVec);
+counter = 1;
+expandedMatrix = zeros(size(blockMatrix,1)*numPoints,size(blockMatrix,2));
+for jj = 1:size(blockMatrix,1)
+    pos = find(blockMatrix(jj,:));
+    for pp = 1:length(pos)
+        expandedMatrix(counter,pos(pp)) = 1;
+        counter=counter+1;
+    end
+end
+
+% split up the baseline
+bPos = find(baselineRegVec);
+fullBaselineMatrix = zeros(numPoints,size(expandedMatrix,2));
+for hh = 1:size(fullBaselineMatrix,1)
+    fullBaselineMatrix(hh,bPos(hh:numPoints:end)) = 1;
+end
+
+onOffMat = vertcat(expandedMatrix,fullBaselineMatrix);
 
 end

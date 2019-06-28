@@ -2,7 +2,7 @@
 clear; 
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26_replication');
+analysisParams = getSubjectParams('KAS25');
 
 % SIMULATE MODE
 analysisParams.analysisSimulate = false;
@@ -49,7 +49,7 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData, modelOnOff');
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -156,28 +156,28 @@ crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
 [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
-crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM);
+crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
     [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
 
 % % Get the time course predicitions of the CRF params
 % 
-% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-% timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
-% 
-% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-% timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
-% 
-% % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-% timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
-% 
-% % Get the time course predicitions fromt the QCM params fit to the CRF
-% timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
-% 
-% % Get the time course predicitions from the NR common Amp and Semi fit to
-% % the CRF, based on QCM fit.
-% timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
+
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
+
+% Get the time course predicitions from the NR common Amp and Semi fit to the CRF
+timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
+
+% Get the time course predicitions fromt the QCM params fit to the CRF
+timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
+
+% Get the time course predicitions from the NR common Amp and Semi fit to
+% the CRF, based on QCM fit.
+timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
 % Get the predictions from individual IAMP params 
 for ii = 1:size(iampParams,1)

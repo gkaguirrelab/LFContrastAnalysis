@@ -28,6 +28,12 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %                                 onset and offset matrix and use this for
 %                                 the regression model for the GLM
 %    plotColor                  - vector for plot color
+%    onset                      - Model the onset of a block as a delta
+%                                 function in modelOnsetOffset case
+%    midpoint                   - Model the midpoint of a block as a delta
+%                                 function in modelOnsetOffset case
+%    offset                     - Model the offset of a block as a delta
+%                                 function in modelOnsetOffset case
 %    concatAndFit               - Concatenate the runs and stim and fit
 
 % MAB 09/09/18
@@ -38,6 +44,9 @@ p.addRequired('analysisParams',@isstruct);
 p.addRequired('fullCleanData',@isnumeric);
 p.addParameter('modelOnOff',false,@islogical);
 p.addParameter('concatAndFit',false,@islogical);
+p.addParameter('onset',true,@islogical);
+p.addParameter('midpoint',true,@islogical);
+p.addParameter('offset',true,@islogical);
 p.addParameter('plotColor',[],@isvector);
 
 p.parse(analysisParams,fullCleanData,varargin{:});
@@ -124,11 +133,10 @@ for sessionNum = 1:analysisParams.numSessions
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
         
-        stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
-        
         if modelOnOff
-            onOffMat = convertBlockToOnsetOffset(expParams,21,totalTime,deltaT)
-            stimulusStruct.values = convertBlockToOnsetOffset(stimulusStruct.values,21);
+            stimulusStruct.values = convertBlockToOnsetOffset(expParams,analysisParams.baselineCondNum,totalTime,deltaT, 'onset', p.Results.onset,'midpoint',p.Results.midpoint,'offset',p.Results.offset);
+        else
+            stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
         end
         
         % make stimulus values for QCM

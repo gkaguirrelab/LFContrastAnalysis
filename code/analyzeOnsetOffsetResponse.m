@@ -49,15 +49,16 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData, 'modelOnOff', true, 'concatAndFit', true);
 
-% Get directon/contrast form of time course and IAMP crf packet pockets.
-%
-% This conversion is possible because the IAMP packet pocket has meta data
-% that we put there to allow exactly this conversion.  That meta data
-% encapsulates the key things we need to know about the stimulus obtained
-% from the analysis parameters.
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+%IAMP -- Onset Midoint Offset
+[analysisParams, iampOnMidOffPacketPocket, iampOBJ, iampOnMidOffParams, iampOnMidOffResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData, 'modelOnOff', true, 'concatAndFit', true);
+
+%IAMP -- Onset Offset
+[~, iampOnOffPacketPocket, ~, iampOnOffParams, iampOnOffResponses, ~] = fit_IAMP(analysisParams,fullCleanData, 'modelOnOff', true, 'concatAndFit', true, 'midpoint', false);
+
+%IAMP -- Block
+[~, iampBlockPacketPocket, ~, iampBlockParams, iampBlockResponses, ~] = fit_IAMP(analysisParams,fullCleanData, 'modelOnOff', false, 'concatAndFit', true);
+
 
 % This puts together pairs of acquistions from the two sessions, so that
 % we have one IAMP fit for each pair.  We do this because to fit the
@@ -67,34 +68,32 @@ directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCo
 % currently analyzing, and has to do specifically with the way color
 % directions were studied across acquisitions and sessions.
 
-
-% ###### FIX ###################
-% remove subraction of the baseline
-% ##############################
-for ii = 1:size(iampParams,2)
-    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
-    %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+for ii = 1:size(iampOnMidOffParams,2)
+    [concatParams{ii},concatBaselineShiftOnMidOff(:,ii)] = iampOBJ.concatenateParams(iampOnMidOffParams(:,ii),'baselineMethod','averageBaseline');
+    [concatParams{ii},concatBaselineShiftOnOff(:,ii)] = iampOBJ.concatenateParams(iampOnOffParams(:,ii),'baselineMethod','averageBaseline');
+    [concatParams{ii},concatBaselineShiftBlock(:,ii)] = iampOBJ.concatenateParams(iampBlockParams(:,ii),'baselineMethod','averageBaseline');
 end
 
 averageIampParams = iampOBJ.averageParams(concatParams);
 
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
 
+% Get the time course prediction from the avarage IAMP params`
+iampTCOnMidOff.sessionOne  = iampOBJ.averageParams(iampOnMidOffParams(1,:));
+iampTCOnMidOff.sessionTwo  = iampOBJ.averageParams(iampOnMidOffParams(2,:));
+iampTCOnMidOff.baseline = concatBaselineShiftOnMidOff;
+timeCoursePlot.concatIampOnMidOff = responseFromPacket('meanIAMP', analysisParams, iampTCOnMidOff, iampOnMidOffPacketPocket, 'plotColor', [1 0.0 0.0]);
 
-% Get the predictions from individual IAMP params 
-for ii = 1:size(iampParams,1)
-    for jj = 1:size(iampParams,2)
-        timeCoursePlot.iamp{ii,jj} = responseFromPacket('IAMP', analysisParams, iampParams{ii,jj}, iampTimeCoursePacketPocket{ii,jj}, 'plotColor', [0.5 0.2 0]);
-    end
-end
 
-%% FIX THIS
-% Get the time course prediction from the avarage IAMP params
-iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
-iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
-iampParamsTC.baseline = concatBaselineShift;
-timeCoursePlot.meanIamp = responseFromPacket('meanIAMP', analysisParams, iampParamsTC, iampTimeCoursePacketPocket, 'plotColor', [0.0 0.2 0.6]);
+iampTCOnOff.sessionOne  = iampOBJ.averageParams(iampOnOffParams(1,:));
+iampTCOnOff.sessionTwo  = iampOBJ.averageParams(iampOnOffParams(2,:));
+iampTCOnOff.baseline = concatBaselineShiftOnOff;
+timeCoursePlot.concatIampOnOff = responseFromPacket('meanIAMP', analysisParams, iampTCOnOff, iampOnOffPacketPocket, 'plotColor', [0.0 1.0 0.0]);
 
+iampTCblock.sessionOne  = iampOBJ.averageParams(iampBlockParams(1,:));
+iampTCblock.sessionTwo  = iampOBJ.averageParams(iampBlockParams(2,:));
+iampTCblock.baseline = concatBaselineShiftBlock;
+timeCoursePlot.concatIampBlock = responseFromPacket('meanIAMP', analysisParams, iampTCblock, iampBlockPacketPocket, 'plotColor', [0.0 0.0 1.0]);
 % Add clean time
 timeCoursePlot.timecourse = rawTC;
 
@@ -102,8 +101,8 @@ timeCoursePlot.timecourse = rawTC;
 %Plot the time course prediction for each run using the different fits to
 %the crf
 
-tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions);
+tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShiftOnMidOff, analysisParams.numSessions);
 figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_OnOffTimeCourse_' analysisParams.sessionNickname '.pdf']);
 FigureSave(figNameTc,tcHndl,'pdf');
 
