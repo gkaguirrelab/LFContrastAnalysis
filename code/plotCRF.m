@@ -79,8 +79,10 @@ for ii = 1:size(analysisParams.directionCoding,2)
             end
         end
         if p.Results.subtractBaseline
-            crfValues = crfValues - crfValues(end);
-            iampVals = iampVals 
+            %offestVal = crfValues(end);
+            offestVal = iampPoints.paramMainMatrix(end);
+            crfValues = crfValues - offestVal;
+            iampVals = iampVals - offestVal;
         end
         xAxisIamp = maxConVal.*analysisParams.contrastCoding;
         %% Plot the stuff

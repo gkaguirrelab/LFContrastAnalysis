@@ -23,7 +23,7 @@ analysisParams.numSessions = 2;
 
 %% Generate the data to be fit
 % set the beta weights
-betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
+betaWeights = [repmat(rand(5,1),[4,1])',0]';
 
 % number of directions
 numDirections = 4;

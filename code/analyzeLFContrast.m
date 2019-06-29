@@ -2,7 +2,7 @@
 clear; 
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('KAS25');
+analysisParams = getSubjectParams('AP26_replication');
 
 % SIMULATE MODE
 analysisParams.analysisSimulate = false;
