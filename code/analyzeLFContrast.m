@@ -4,6 +4,9 @@ clear;
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('AP26_replication');
 
+% set the preprocessing method that was used to ananlyze the data.
+analysisParams.preproc = 'hcp';
+
 % SIMULATE MODE
 analysisParams.analysisSimulate = false;
 
@@ -31,7 +34,14 @@ if analysisParams.analysisSimulate
     numVoxels = 400;
     [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', false);
 else
-    [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
+    switch analysisParams.preproc
+        case 'fmriprep'
+            [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
+        case 'hcp'
+            [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);            
+        otherwise
+            error('Preprocessing method unknown')
+    end
 end
 
 %% Run the IAMP/QCM models

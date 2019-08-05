@@ -1,4 +1,4 @@
-function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse(analysisParams)
+function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams)
 % Takes in the analysis params struct and returns a voxel by timepoint by
 % aquisistion matrix for all the runs found fro the specicied session(s)
 %
@@ -38,9 +38,11 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Set up Paths
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
-    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','functionalRuns.txt');
-    confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
-    functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
+    %confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
+    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'hcp','functionalRuns.txt');
+    functionalPath = fullfile(sessionDir, 'hcp_func', analysisParams.sessionFolderName{sessionNum});
+    
+    
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     anatomyPath    = fullfile(sessionDir,'anatomy');
     retinoPath     = fullfile(anatomyPath,'neuropythy');
@@ -49,10 +51,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Set up files.
     functionalRuns    = textFile2cell(funcTextFile);
-    confoundFiles     = textFile2cell(confTexFile);
+    % confoundFiles     = textFile2cell(confTexFile);
     trialOrderFiles   = textFile2cell(trialOrderFile);
-    fullFileConfounds = fullfile(functionalPath,confoundFiles);
     functionalRuns    = fullfile(functionalPath,functionalRuns);
+    % fullFileConfounds = fullfile(functionalPath,confoundFiles);
     refFile           = fullfile(functionalPath,analysisParams.refFileName);
     warpFile          = fullfile(warpFilePath,analysisParams.warpFileName);
     
@@ -60,7 +62,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     analysisParams.numAcquisitions = length(functionalRuns);
     
     % Save vars name
-    saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'.mat'];
+    saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
     savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,saveName);
     
@@ -70,28 +72,27 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         load(saveFullFile)
     else
         %% Create restricted V1 mask
+        areaNum = 1;
+        eccenRange = [0 90];
+        anglesRange = [0 180];
+        hemisphere = 'combined';
+        threshold = 0.9;
         
-        % load ecc nifti file
-        eccenPos       = find(~cellfun(@isempty,strfind(analysisParams.retinoFiles,'eccen')));
-        [~,tempName,~] = fileparts(analysisParams.retinoFiles{eccenPos});
-        [~,outName,~]  = fileparts(tempName);
-        eccenFileName  = fullfile(retinoPath,[outName '.nii.gz']);
-        eccen          = MRIread(eccenFileName);
         
-        % load areas nifti file
-        areasPos       = find(~cellfun(@isempty,strfind(analysisParams.retinoFiles,'areas')));
-        [~,tempName,~] = fileparts(analysisParams.retinoFiles{areasPos});
-        [~,outName,~]  = fileparts(tempName);
-        areasFileName  = fullfile(retinoPath,[outName,'.nii.gz']);
-        areas          = MRIread(areasFileName);
+        saveName = ['mask_area_V', num2str(areaNum), '_ecc_', num2str(eccenRange(1)), '_to_', num2str(eccenRange(2)), '.nii.gz'];
+        maskFullFile = fullfile(savePath,saveName);
+        saveName = fullfile('/Users', userID, 'Desktop/lh.V1.dscalar.nii');
         
-        % make mask from the area and eccentricity maps
-        [~,maskSaveName] = makeMaskFromRetino(eccen,areas,analysisParams.areaNum,analysisParams.eccenRange,retinoPath);
-        files2warp = {'HERO_gka1_T1.nii.gz',maskSaveName};
         
-        %% Apply the warp to the mask and T1 files using ANTs
-        inFiles = fullfile(retinoPath,files2warp);
-        applyANTsWarpToData(inFiles, warpFile, refFile);
+        %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
+        pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
+        pathToBensonMappingFile = fullfile(pathToBensonMasks,'indexMapping.mat');
+        pathToTemplateFile = fullfile(pathToBensonMasks,'template.dscalar.nii');
+        
+        [ maskMatrix ] = makeMaskFromRetinoCIFTI(areaNum, eccenRange, anglesRange, hemisphere, 'saveName', saveName, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, 'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', threshold);
+        
+        
+        
         
         %% Extract Signal from voxels
         maskPos         = find(~cellfun(@isempty,strfind(files2warp,'mask')));
