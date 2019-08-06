@@ -2,7 +2,7 @@
 clear; 
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26_replication');
+analysisParams = getSubjectParams('AP26');
 
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';

@@ -78,30 +78,25 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         maskFullFile = fullfile(savePathROI,saveName);
         
         if exist(maskFullFile)
-            [ CIFTIMatrix ] = loadCIFTI(maskFullFile)
+            [ maskMatrix ] = loadCIFTI(maskFullFile);
         else
             %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
             pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
             pathToBensonMappingFile = fullfile(pathToBensonMasks,'indexMapping.mat');
             pathToTemplateFile = fullfile(pathToBensonMasks,'template.dscalar.nii');
-
+            
             maskMatrix = makeMaskFromRetinoCIFTI(analysisParams.areaNum, analysisParams.eccenRange, analysisParams.anglesRange, analysisParams.hemisphere, ...
-                                                'saveName', maskFullFile, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, ...
-                                                'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', analysisParams.threshold); 
+                'saveName', maskFullFile, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, ...
+                'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', analysisParams.threshold);
         end
-
+        
         %% Extract Signal from voxels
-        maskPos         = find(~cellfun(@isempty,strfind(files2warp,'mask')));
-        [~,tempName,~]  = fileparts(files2warp{maskPos});
-        [~,tmpName,~]   = fileparts(maskSaveName);
-        [~,outName,~]   = fileparts(tmpName);
-        maskOutFileName = fullfile(retinoPath,[outName '_MNI_resampled.nii.gz']);
-        mask            = MRIread(maskOutFileName);
-        maskVol         = mask.vol;
-        
-        % extract the mean signal from voxels
-        [voxelTimeSeries, voxelIndex] = extractTimeSeriesFromMask(functionalRuns,maskVol,'threshold', 0.5);
-        
+        for ii = 1:length(functionalRuns)
+            % load nifti for functional run
+            cifti = loadCIFTI(functionalRuns{ii});
+            voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
+        end
+                
         % Clip initial frames if specified
         voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
         
