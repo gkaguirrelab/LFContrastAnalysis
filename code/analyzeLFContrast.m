@@ -10,9 +10,12 @@ analysisParams.preproc = 'hcp';
 % SIMULATE MODE
 analysisParams.analysisSimulate = false;
 
-% Make mask from the area and eccentricity maps
+% Info needed to make the V1 mask  from benson maps
 analysisParams.areaNum     = 1;
-analysisParams.eccenRange  = [1 20];
+analysisParams.eccenRange  = [0 20];
+analysisParams.anglesRange  = [0 180];
+analysisParams.hemisphere   = 'combined';
+analysisParams.threshold    = 0.9;
 
 % Define the TR
 analysisParams.TR = 0.800;

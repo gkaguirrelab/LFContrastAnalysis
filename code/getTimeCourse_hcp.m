@@ -39,11 +39,11 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     % Set up Paths
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
     %confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
-    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'hcp','functionalRuns.txt');
+    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'hcp','functionalRuns.txt');
     functionalPath = fullfile(sessionDir, 'hcp_func', analysisParams.sessionFolderName{sessionNum});
     
     
-    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     anatomyPath    = fullfile(sessionDir,'anatomy');
     retinoPath     = fullfile(anatomyPath,'neuropythy');
     warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
@@ -71,29 +71,25 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         disp('cleaned time series file found')
         load(saveFullFile)
     else
+        
         %% Create restricted V1 mask
-        areaNum = 1;
-        eccenRange = [0 90];
-        anglesRange = [0 180];
-        hemisphere = 'combined';
-        threshold = 0.9;
+        savePathROI  = fullfile(getpref(analysisParams.projectName,'projectRootDir'),'MNI','ROIs');
+        saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
+        maskFullFile = fullfile(savePathROI,saveName);
         
-        
-        saveName = ['mask_area_V', num2str(areaNum), '_ecc_', num2str(eccenRange(1)), '_to_', num2str(eccenRange(2)), '.nii.gz'];
-        maskFullFile = fullfile(savePath,saveName);
-        saveName = fullfile('/Users', userID, 'Desktop/lh.V1.dscalar.nii');
-        
-        
-        %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
-        pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
-        pathToBensonMappingFile = fullfile(pathToBensonMasks,'indexMapping.mat');
-        pathToTemplateFile = fullfile(pathToBensonMasks,'template.dscalar.nii');
-        
-        [ maskMatrix ] = makeMaskFromRetinoCIFTI(areaNum, eccenRange, anglesRange, hemisphere, 'saveName', saveName, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, 'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', threshold);
-        
-        
-        
-        
+        if exist(maskFullFile)
+            [ CIFTIMatrix ] = loadCIFTI(maskFullFile)
+        else
+            %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
+            pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
+            pathToBensonMappingFile = fullfile(pathToBensonMasks,'indexMapping.mat');
+            pathToTemplateFile = fullfile(pathToBensonMasks,'template.dscalar.nii');
+
+            maskMatrix = makeMaskFromRetinoCIFTI(analysisParams.areaNum, analysisParams.eccenRange, analysisParams.anglesRange, analysisParams.hemisphere, ...
+                                                'saveName', maskFullFile, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, ...
+                                                'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', analysisParams.threshold); 
+        end
+
         %% Extract Signal from voxels
         maskPos         = find(~cellfun(@isempty,strfind(files2warp,'mask')));
         [~,tempName,~]  = fileparts(files2warp{maskPos});
