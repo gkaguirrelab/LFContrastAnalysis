@@ -38,32 +38,28 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Set up Paths
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
-    %confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
+    confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'hcp','confounds.txt');
     funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'hcp','functionalRuns.txt');
     functionalPath = fullfile(sessionDir, 'hcp_func', analysisParams.sessionFolderName{sessionNum});
     
     
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     anatomyPath    = fullfile(sessionDir,'anatomy');
-    retinoPath     = fullfile(anatomyPath,'neuropythy');
-    warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
     % Set up files.
     functionalRuns    = textFile2cell(funcTextFile);
-    % confoundFiles     = textFile2cell(confTexFile);
+    confoundFiles     = textFile2cell(confTexFile);
     trialOrderFiles   = textFile2cell(trialOrderFile);
     functionalRuns    = fullfile(functionalPath,functionalRuns);
-    % fullFileConfounds = fullfile(functionalPath,confoundFiles);
-    refFile           = fullfile(functionalPath,analysisParams.refFileName);
-    warpFile          = fullfile(warpFilePath,analysisParams.warpFileName);
+    fullFileConfounds = fullfile(functionalPath,confoundFiles);
     
     % Number of acquisitions
     analysisParams.numAcquisitions = length(functionalRuns);
     
     % Save vars name
     saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
-    savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
+    savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,saveName);
     
     % Load existing cleaned data
@@ -91,13 +87,22 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         
         %% Extract Signal from voxels
-        for ii = 1:length(functionalRuns)
-            % load nifti for functional run
-            cifti = loadCIFTI(functionalRuns{ii});
-            voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
-        end
+        saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns','voxelTimeSeries.mat');
+        if exist(saveVoxelTimeSeriesName)
+            theVars = load(saveVoxelTimeSeriesName);
+            voxelTimeSeries = theVars.voxelTimeSeries;
+        else
+            for ii = 1:length(functionalRuns)
+                % load nifti for functional run
+                cifti = loadCIFTI(functionalRuns{ii});
+                voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
                 
+            end
+            save(saveVoxelTimeSeriesName,'voxelTimeSeries')  
+        end
+        
         % Clip initial frames if specified
+        numTimePoints = size(voxelTimeSeries,2);
         voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
         
         %% Construct the model object
@@ -127,24 +132,38 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             thePacket.response.timebase = thePacket.stimulus.timebase;
             
             % get confound regressors
-            confoundRegressors = getConfoundRegressors(fullFileConfounds{jj});
+            %Movement_Regressors.txt
+            fields_per_line = 12;
+            matSize = [numTimePoints, fields_per_line];
+            fileID = fopen(fullFileConfounds{jj},'r');
+            formatSpec = '%f';
+            textVector = fscanf(fileID,formatSpec);
+            fclose(fileID);
             
+            confoundRegressorsFull = reshape(textVector,[12,362])';
+ 
             % get attention event regressor
             responseStruct.timeStep = analysisParams.timeStep;
             [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
             
             %mean center the regressors
-            confoundRegressors = confoundRegressors - nanmean(confoundRegressors);
-            confoundRegressors = confoundRegressors ./ nanstd(confoundRegressors);
+            confoundRegressorsFull = confoundRegressorsFull - nanmean(confoundRegressorsFull);
+            confoundRegressorsFull = confoundRegressorsFull ./ nanstd(confoundRegressorsFull);
             
-            if size(confoundRegressors,1) > length(thePacket.stimulus.timebase)
-                confoundRegressors = confoundRegressors(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
+            if size(confoundRegressorsFull,1) > length(thePacket.stimulus.timebase)
+                confoundRegressors = confoundRegressorsFull(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:)';
+            else
+                confoundRegressors =confoundRegressorsFull';
             end
             
             % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
-            thePacket.stimulus.values = [confoundRegressors'; eventsRegressor];
+            if unique(eventsRegressor) == 0 
+                thePacket.stimulus.values = [confoundRegressors];
+            else
+                thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
+            end
             
             defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
             % get the data for all masked voxel in a run
@@ -167,8 +186,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             end
         end
         %% Save out the clean time series brick
-        save(saveFullFile,'cleanRunData','voxelIndex');
-        
+        save(saveFullFile,'cleanRunData','maskMatrix');
+        clear voxelTimeSeries
     end
     
     % Concatenate clean data across sessions.
