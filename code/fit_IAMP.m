@@ -80,7 +80,7 @@ for sessionNum = 1:analysisParams.numSessions
     % Gets the path to a text file that contains the mat file names needed
     % to get the trail order information for each run.
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
-    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
     
     % Get the Directions of each session. This requires analysisParams.directionCoding to be organized

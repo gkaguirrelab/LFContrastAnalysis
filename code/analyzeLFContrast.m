@@ -2,7 +2,7 @@
 clear; 
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('KAS25');
 
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
@@ -171,7 +171,7 @@ crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
 crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_hcp.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
 
 % % Get the time course predicitions of the CRF params
@@ -215,7 +215,7 @@ timeCoursePlot.timecourse = rawTC;
 
 tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
 figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_hcp.pdf']);
 FigureSave(figNameTc,tcHndl,'pdf');
 
 % % Plot isoresponce contour
@@ -223,5 +223,5 @@ thresholds = [0.10, 0.2, 0.3];
 colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
 qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
 figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '.pdf']);
+    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_hcp.pdf']);
 FigureSave(figNameQcm,qcmHndl,'pdf');

@@ -32,7 +32,7 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysi
 
 % Initialize for output of various sessions.
 fullCleanData = [];
-
+format long g
 % Loop over sessions
 for sessionNum = 1:length(analysisParams.sessionFolderName)
     
@@ -134,26 +134,33 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % get confound regressors
             %Movement_Regressors.txt
             fields_per_line = 12;
-            matSize = [numTimePoints, fields_per_line];
             fileID = fopen(fullFileConfounds{jj},'r');
             formatSpec = '%f';
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
-            
-            confoundRegressorsFull = reshape(textVector,[12,362])';
+            movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
+            relativeMovementRegressors = movementRegressorsFull(:,7:12);
  
             % get attention event regressor
             responseStruct.timeStep = analysisParams.timeStep;
             [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
             
             %mean center the regressors
-            confoundRegressorsFull = confoundRegressorsFull - nanmean(confoundRegressorsFull);
-            confoundRegressorsFull = confoundRegressorsFull ./ nanstd(confoundRegressorsFull);
+            relativeMovementRegressors = relativeMovementRegressors - nanmean(relativeMovementRegressors);
+            relativeMovementRegressors = relativeMovementRegressors ./ nanstd(relativeMovementRegressors);
             
-            if size(confoundRegressorsFull,1) > length(thePacket.stimulus.timebase)
-                confoundRegressors = confoundRegressorsFull(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:)';
+            %check for nans
+            nanCol = find(all(isnan(relativeMovementRegressors),1))
+            
+            if ~isempty(nanCol)
+                relativeMovementRegressors(:,nanCol) = []; 
+            end
+            
+            
+            if size(relativeMovementRegressors,1) > length(thePacket.stimulus.timebase)
+                confoundRegressors = relativeMovementRegressors(analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:)';
             else
-                confoundRegressors =confoundRegressorsFull';
+                confoundRegressors =relativeMovementRegressors';
             end
             
             % Set up packet
@@ -173,12 +180,15 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             voxelMeanVec = mean(runData,2);
             PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
             
+            sprintf('session %s, run %s', num2str(sessionNum), num2str(jj))
+            
             % loop over voxels --> returns a "cleaned" time series
             for vxl = 1:size(PSC,1)
                 % place time series from this voxel into the packet
                 thePacket.response.values = PSC(vxl,:);
                 
                 % TFE linear regression here
+                
                 [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
                     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
                 % Linear detrending of the timecourse
