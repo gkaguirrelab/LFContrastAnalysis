@@ -98,13 +98,16 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
                 
             end
-            save(saveVoxelTimeSeriesName,'voxelTimeSeries')  
+            save(saveVoxelTimeSeriesName,'voxelTimeSeries')
         end
         
         % Clip initial frames if specified
         numTimePoints = size(voxelTimeSeries,2);
-        voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
         
+        
+        if numTimePoints > 360
+            voxelTimeSeries = voxelTimeSeries(:,analysisParams.numClipFramesStart+1:end-analysisParams.numClipFramesEnd,:);
+        end
         %% Construct the model object
         temporalFit = tfeIAMP('verbosity','none');
         
@@ -140,7 +143,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
- 
+            
             % get attention event regressor
             responseStruct.timeStep = analysisParams.timeStep;
             [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
@@ -153,7 +156,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             nanCol = find(all(isnan(relativeMovementRegressors),1))
             
             if ~isempty(nanCol)
-                relativeMovementRegressors(:,nanCol) = []; 
+                relativeMovementRegressors(:,nanCol) = [];
             end
             
             
@@ -166,7 +169,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
-            if unique(eventsRegressor) == 0 
+            if unique(eventsRegressor) == 0
                 thePacket.stimulus.values = [confoundRegressors];
             else
                 thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
