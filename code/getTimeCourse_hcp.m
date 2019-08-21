@@ -142,7 +142,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
-            [cPoints{jj}, percentCensored] = censorTimePoints(movementRegressorsFull,'plotMotion',flase, 'distMetric', 'l2');
+            [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(movementRegressorsFull,'plotMotion',flase, 'distMetric', 'l2');
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
             
             % get attention event regressor
@@ -190,7 +190,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             for vxl = 1:size(PSC,1)
                 % place time series from this voxel into the packet
                 thePacket.response.values = PSC(vxl,:);
-                
+                cSeries =  censorFrames(cPoints,timeSeries)
                 % TFE linear regression here
                 
                 [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
