@@ -142,6 +142,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
+            [cPoints{jj}, percentCensored] = censorTimePoints(movementRegressorsFull,'plotMotion',flase, 'distMetric', 'l2');
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
             
             % get attention event regressor

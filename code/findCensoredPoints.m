@@ -1,4 +1,4 @@
-function [cPoints, percentCensored] = censorTimePoints(motionEstimates,varargin)
+function [cPoints, percentCensored] = findCensoredPoints(motionEstimates,varargin)
 % Returns the time points that need to be censored for a given set of motion
 % estimates.
 %
