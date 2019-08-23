@@ -32,7 +32,6 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysi
 
 % Initialize for output of various sessions.
 fullCleanData = [];
-format long g
 % Loop over sessions
 for sessionNum = 1:length(analysisParams.sessionFolderName)
     
@@ -131,8 +130,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % make stimulus timebase
             totalTime = protocolParams.nTrials * protocolParams.trialDuration * 1000;
             deltaT = analysisParams.TR*1000;
-            thePacket.stimulus.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
-            thePacket.response.timebase = thePacket.stimulus.timebase;
+            timeBase = linspace(0,totalTime-deltaT,totalTime/deltaT);
+            
+            thePacket.stimulus.timebase = timeBase;
+            thePacket.response.timebase = timeBase;
             
             % get confound regressors
             %Movement_Regressors.txt
@@ -142,7 +143,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
-            [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(movementRegressorsFull,'plotMotion',flase, 'distMetric', 'l2');
+            [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(movementRegressorsFull,'plotMotion',false, 'distMetric', 'l2');
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
             
             % get attention event regressor
@@ -187,17 +188,37 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             sprintf('session %s, run %s', num2str(sessionNum), num2str(jj))
             
             % loop over voxels --> returns a "cleaned" time series
+            thePacket.stimulus.values(:,cPoints{sessionNum,jj}) = [];
+            thePacket.stimulus.timebase(cPoints{sessionNum,jj}) = [];
+            thePacket.response.timebase(cPoints{sessionNum,jj}) = [];
             for vxl = 1:size(PSC,1)
                 % place time series from this voxel into the packet
                 thePacket.response.values = PSC(vxl,:);
-                cSeries =  censorFrames(cPoints,timeSeries)
-                % TFE linear regression here
+                cTimeSeries =  censorFrames(cPoints{sessionNum,jj},thePacket.response.values);
                 
-                [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
-                    'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+                % Remove censor Points for regression
+                thePacket.response.values(cPoints{sessionNum,jj}) =[];
+
+                % TFE linear regression here
+                if any(isnan(thePacket.response.values))
+                    [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
+                        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','fmincon');
+                else
+                    [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
+                        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+                end
+                % add back NaNs where censored points were removed
+                nanVec = nan(size(timeBase));
+                tmp = ones(size(timeBase));
+                tmp(cPoints{sessionNum,jj}) = 0;
+                nanVec(tmp==1) = iampResponses.values;
+                
                 % Linear detrending of the timecourse
-                cleanRunData(vxl,:,jj) = detrend(thePacket.response.values - iampResponses.values);
+                S = cTimeSeries - nanVec;
+                f = fit(timeBase',S','poly1', 'Exclude', find(isnan(cTimeSeries)));
+                cleanRunData(vxl,:,jj) = S - f(timeBase)';
             end
+            clear thePacket
         end
         %% Save out the clean time series brick
         save(saveFullFile,'cleanRunData','maskMatrix');

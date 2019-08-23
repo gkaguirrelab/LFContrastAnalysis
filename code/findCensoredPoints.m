@@ -35,7 +35,11 @@ function [cPoints, percentCensored] = findCensoredPoints(motionEstimates,varargi
 %                           motion etimates. Either 'deg' or 'rad'.
 %                           fMRIprep is in radians and HCP is in degrees.
 %                           Default is degrees. (string)
-
+%   addBuffer             - Number of frames to censor before and after
+%                           censor point. Input is in the form of [A B]
+%                           where A = number of frames prior to censor and
+%                           B =  the number of frames after to censor.
+%                           Default [0 0]. 
 % MAB 08/10/2019 -- wrote it.
 
 %% Input Parser
@@ -46,6 +50,7 @@ p.addParameter('distMetric','l2', @isstr);
 p.addParameter('sphereSize',50.0, @isnumeric);
 p.addParameter('threshold',0.5, @isnumeric);
 p.addParameter('rotUnits','deg', @isstr);
+p.addParameter('addBuffer',[0 0], @isvector);
 p.parse(motionEstimates, varargin{:})
 
 %% Unpack the parser
@@ -80,6 +85,9 @@ end
 cPoints    = find(fwd > threshold);
 numCPoints = length(cPoints);
 percentCensored = numCPoints./length(fwd);
+
+%% Buffer censor points
+
 
 
 %% Plot
