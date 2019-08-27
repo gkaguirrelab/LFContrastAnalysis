@@ -62,9 +62,13 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     saveFullFile = fullfile(savePath,saveName);
     
     % Load existing cleaned data
+    saveFileStatus = 0;
     if exist(saveFullFile)
+        saveFileStatus = 1;
         disp('cleaned time series file found')
         load(saveFullFile)
+        censorPoints{sessionNum,:} = saveCPoints;
+        
     else
         
         %% Create restricted V1 mask
@@ -198,7 +202,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 
                 % Remove censor Points for regression
                 thePacket.response.values(cPoints{sessionNum,jj}) =[];
-
+                
                 % TFE linear regression here
                 if any(isnan(thePacket.response.values))
                     [paramsFit, ~, iampResponses] = temporalFit.fitResponse(thePacket,...
@@ -221,7 +225,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             clear thePacket
         end
         %% Save out the clean time series brick
-        save(saveFullFile,'cleanRunData','maskMatrix');
+        saveCPoints = cPoints(sessionNum,:);
+        save(saveFullFile,'cleanRunData','maskMatrix','saveCPoints');
         clear voxelTimeSeries
     end
     
@@ -230,5 +235,12 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
 end
 
-
+if saveFileStatus == 0
+    analysisParams.censorPoints = cPoints;
+else
+    analysisParams.censorPoints = censorPoints{1,:};
+    for ll = 2:length(analysisParams.sessionFolderName)
+        analysisParams.censorPoints = [analysisParams.censorPoints;censorPoints{ll,:}];
+    end
+end
 
