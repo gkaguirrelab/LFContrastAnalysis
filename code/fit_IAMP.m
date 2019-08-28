@@ -180,6 +180,8 @@ for sessionNum = 1:analysisParams.numSessions
             regressionMatrixStruct = iampOBJ.resampleTimebase(regressionMatrixStruct,thePacket.response.timebase);
             y=thePacket.response.values';
             X=regressionMatrixStruct.values';
+            numTimePoints = length(y);
+            numNanPoints = sum(isnan(y));
             if any(isnan(y))
                 validIdx = ~isnan(y);
                 y = y(validIdx);
@@ -195,8 +197,13 @@ for sessionNum = 1:analysisParams.numSessions
                 'searchMethod','linearRegression');
             
             if ~isempty(dropBlocIndx)
-                paramsFit(dropBlocIndx) = nan;
+                paramsFit.paramMainMatrix(dropBlocIndx) = nan;
             end
+            
+            if numNanPoints > numTimePoints.*0.5
+                paramsFit.paramMainMatrix = nan(size(paramsFit.paramMainMatrix));
+            end
+            
             
             iampParams{sessionNum,jj} = paramsFit;
             iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;

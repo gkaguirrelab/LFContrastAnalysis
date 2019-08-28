@@ -61,8 +61,14 @@ for ii = 1:size(packetPocket,1)
         
         switch predictionsType
             case 'IAMP'
-                theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
-                theModelPreds.plotColor   = p.Results.plotColor;
+                if ~all(isnan(params.paramMainMatrix))
+                    theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
+                    theModelPreds.plotColor   = p.Results.plotColor;
+                else
+                    theModelPreds.values = nan(size(packetPocket.response.timebase));
+                    theModelPreds.timebase = packetPocket.response.timebase;
+                    theModelPreds.plotColor   = p.Results.plotColor;
+                end
             case 'meanIAMP'
                 if ii == 1
                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
@@ -79,6 +85,6 @@ for ii = 1:size(packetPocket,1)
                 theModelPreds{ii,jj} = fitOBJ.computeResponse(params,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);
                 theModelPreds{ii,jj}.plotColor   = p.Results.plotColor;
         end
-
+        
     end
 end

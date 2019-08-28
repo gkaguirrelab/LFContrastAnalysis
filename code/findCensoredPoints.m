@@ -39,7 +39,7 @@ function [cPoints, percentCensored] = findCensoredPoints(motionEstimates,varargi
 %                           censor point. Input is in the form of [A B]
 %                           where A = number of frames prior to censor and
 %                           B =  the number of frames after to censor.
-%                           Default [0 0]. 
+%                           Default [0 0].
 % MAB 08/10/2019 -- wrote it.
 
 %% Input Parser
@@ -50,7 +50,7 @@ p.addParameter('distMetric','l2', @isstr);
 p.addParameter('sphereSize',50.0, @isnumeric);
 p.addParameter('threshold',0.5, @isnumeric);
 p.addParameter('rotUnits','deg', @isstr);
-p.addParameter('addBuffer',[], @isvector);
+p.addParameter('addBuffer',[0 0], @isvector);
 p.parse(motionEstimates, varargin{:})
 
 %% Unpack the parser
@@ -87,41 +87,55 @@ numCPoints = length(cPoints);
 percentCensored = numCPoints./length(fwd);
 
 %% Buffer censor points
-if ~isempty(p.Results.add
-
+if ~isempty(cPoints)
+    if any(p.Results.addBuffer ~= 0)
+        for ll = 1:numCPoints
+            tmpC = cPoints(ll);
+            tmpMat(ll,:) = [tmpC-p.Results.addBuffer(1):1:tmpC, tmpC:1:tmpC+p.Results.addBuffer(2)];
+        end
+        
+        if any(tmpMat(:) <= 0) || any(tmpMat(:) > length(fwd))
+            tmpMat(tmpMat <= 0) = 1;
+            tmpMat(tmpMat > length(fwd)) = length(fwd);
+        end
+        
+        cPoints = unique(tmpMat);
+        
+    end
+end
 
 %% Plot
 if p.Results.plotMotion
-yVals = fwd(cPoints);
-figure; hold
-fig1 = plot(fwd,'k');
-fig1 = plot(cPoints,yVals,'b*');
-fig1 = line([0,length(fwd)],[threshold,threshold],'Color','red','LineStyle','--')
-legend('Framewise Displacement', 'Censored Points', 'Threshold');
-
-set(fig1, 'LineWidth', 1);
-
-hTitle  = title ('Framewise Displacement w/ Censroed Points');
-hXLabel = xlabel('Frames'  );
-hYLabel = ylabel('Framewise Displacment (mm)');
-
-
-set([hTitle, hXLabel, hYLabel],'FontName', 'Helvetica');
-set([hXLabel, hYLabel,],'FontSize', 14);
-set( hTitle, 'FontSize', 14,'FontWeight' , 'bold');
-
-set(gca, ...
-  'Box'         , 'off'     , ...
-  'TickDir'     , 'out'     , ...
-  'TickLength'  , [.02 .02] , ...
-  'XMinorTick'  , 'on'      , ...
-  'YMinorTick'  , 'on'      , ...
-  'YGrid'       , 'on'      , ...
-  'XColor'      , [.3 .3 .3], ...
-  'YColor'      , [.3 .3 .3], ...
-  'YTick'       , 0:.25:max(fwd)+0.1*max(fwd) , ...
-  'LineWidth'   , 2         , ...
-  'ActivePositionProperty', 'OuterPosition');
-
-set(gcf, 'Color', 'white' );
+    yVals = fwd(cPoints);
+    figure; hold
+    fig1 = plot(fwd,'k');
+    fig1 = plot(cPoints,yVals,'b*');
+    fig1 = line([0,length(fwd)],[threshold,threshold],'Color','red','LineStyle','--')
+    legend('Framewise Displacement', 'Censored Points', 'Threshold');
+    
+    set(fig1, 'LineWidth', 1);
+    
+    hTitle  = title ('Framewise Displacement w/ Censroed Points');
+    hXLabel = xlabel('Frames'  );
+    hYLabel = ylabel('Framewise Displacment (mm)');
+    
+    
+    set([hTitle, hXLabel, hYLabel],'FontName', 'Helvetica');
+    set([hXLabel, hYLabel,],'FontSize', 14);
+    set( hTitle, 'FontSize', 14,'FontWeight' , 'bold');
+    
+    set(gca, ...
+        'Box'         , 'off'     , ...
+        'TickDir'     , 'out'     , ...
+        'TickLength'  , [.02 .02] , ...
+        'XMinorTick'  , 'on'      , ...
+        'YMinorTick'  , 'on'      , ...
+        'YGrid'       , 'on'      , ...
+        'XColor'      , [.3 .3 .3], ...
+        'YColor'      , [.3 .3 .3], ...
+        'YTick'       , 0:.25:max(fwd)+0.1*max(fwd) , ...
+        'LineWidth'   , 2         , ...
+        'ActivePositionProperty', 'OuterPosition');
+    
+    set(gcf, 'Color', 'white' );
 end
