@@ -50,7 +50,7 @@ p.addParameter('distMetric','l2', @isstr);
 p.addParameter('sphereSize',50.0, @isnumeric);
 p.addParameter('threshold',0.5, @isnumeric);
 p.addParameter('rotUnits','deg', @isstr);
-p.addParameter('addBuffer',[0 0], @isvector);
+p.addParameter('addBuffer',[], @isvector);
 p.parse(motionEstimates, varargin{:})
 
 %% Unpack the parser
@@ -87,7 +87,7 @@ numCPoints = length(cPoints);
 percentCensored = numCPoints./length(fwd);
 
 %% Buffer censor points
-
+if ~isempty(p.Results.add
 
 
 %% Plot

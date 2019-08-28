@@ -159,6 +159,8 @@ for sessionNum = 1:analysisParams.numSessions
         
         
         %%  Make the IAMP packet
+        
+        
         % the response
         if ~ concatAndFit
             thePacket.response.values   = rawTC{sessionNum,jj}.values;
@@ -173,11 +175,28 @@ for sessionNum = 1:analysisParams.numSessions
             thePacket.metaData.stimContrasts  = stimContrasts;
             thePacket.metaData.lmsContrast    = LMSContrastMat;
             
+            regressionMatrixStruct=thePacket.stimulus;
+            regressionMatrixStruct = iampOBJ.applyKernel(regressionMatrixStruct,thePacket.kernel);
+            regressionMatrixStruct = iampOBJ.resampleTimebase(regressionMatrixStruct,thePacket.response.timebase);
+            y=thePacket.response.values';
+            X=regressionMatrixStruct.values';
+            if any(isnan(y))
+                validIdx = ~isnan(y);
+                y = y(validIdx);
+                X = X(validIdx,:);
+            end
+            
+            dropBlocIndx =  find((std(regressionMatrixStruct.values').*.2) > std(X));
+            
             % Perform the fit
             [paramsFit,fVal(sessionNum,jj),IAMPResponses] = ...
                 iampOBJ.fitResponse(thePacket,...
                 'defaultParamsInfo', defaultParamsInfo, ...
                 'searchMethod','linearRegression');
+            
+            if ~isempty(dropBlocIndx)
+                paramsFit(dropBlocIndx) = nan;
+            end
             
             iampParams{sessionNum,jj} = paramsFit;
             iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
