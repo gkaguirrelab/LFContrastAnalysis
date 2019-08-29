@@ -62,8 +62,14 @@ for ii = 1:size(packetPocket,1)
         switch predictionsType
             case 'IAMP'
                 if ~all(isnan(params.paramMainMatrix))
+                    nanBlockStatus = false;
+                    if any(isnan(params.paramMainMatrix))
+                      
+                        params.paramMainMatrix(find(isnan(params.paramMainMatrix))) = 0;
+                    end
                     theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
                     theModelPreds.plotColor   = p.Results.plotColor;
+                    
                 else
                     theModelPreds.values = nan(size(packetPocket.response.timebase));
                     theModelPreds.timebase = packetPocket.response.timebase;

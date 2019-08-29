@@ -22,7 +22,9 @@ analysisParams.TR = 0.800;
 analysisParams.baselineCondNum = 6;
 analysisParams.timeStep = 1/100;
 analysisParams.generateIAMPPlots = false;
-analysisParams.generateCrossValPlots = false;
+analysisParams.generateCrossValPlots = false; 
+analysisParams.blockDuration = 12; %seconds
+analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDuration;
 
 % Plotting params
 analysisParams.numSamples = 25;
