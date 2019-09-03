@@ -36,6 +36,7 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 2;
+        analysisParams.expLengthTR        = 360;
         
     case 'LZ23_replication'
         % Convenience variables
@@ -47,7 +48,7 @@ switch subjID
         analysisParams.sessionFolderName = {'LZ23_2019-03-10','LZ23_2019-03-09'};
         analysisParams.sessionDate       = {'2019-03-10','2019-03-09'};
         analysisParams.sessionNumber     = {'session_1','session_1'};
-        analysisParams.sessionNickname   = 'Original';
+        analysisParams.sessionNickname   = 'Replication';
         analysisParams.sessionDir        = fullfile(getpref('LFContrastAnalysis','projectRootDir'),analysisParams.sessionFolderName);
         analysisParams.showPlots         = true;
         analysisParams.projectNickname   = 'MRCRF';
@@ -71,6 +72,7 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 2;
+        analysisParams.expLengthTR        = 360;
         
     case 'KAS25'
         % Convenience variables
@@ -105,6 +107,7 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 2;
+        analysisParams.expLengthTR        = 360;
         
     case 'KAS25_replication'
         % Convenience variables
@@ -139,6 +142,7 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 0;
+        analysisParams.expLengthTR        = 360;
         
     case 'AP26'
         % Convenience variables
@@ -173,6 +177,7 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 2;
+        analysisParams.expLengthTR        = 360;
         
     case 'AP26_replication'
         % Convenience variables
@@ -207,5 +212,6 @@ switch subjID
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
         analysisParams.numClipFramesEnd   = 0;
+        analysisParams.expLengthTR        = 360;
         
 end

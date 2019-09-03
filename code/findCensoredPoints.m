@@ -1,4 +1,4 @@
-function [cPoints, percentCensored] = findCensoredPoints(motionEstimates,varargin)
+function [cPoints, percentCensored] = findCensoredPoints(analysisParams, motionEstimates, varargin)
 % Returns the time points that need to be censored for a given set of motion
 % estimates.
 %
@@ -11,6 +11,7 @@ function [cPoints, percentCensored] = findCensoredPoints(motionEstimates,varargi
 %   censored within a given functional time series.
 %
 % Inputs:
+%   analysisParams        - Struct of useful experimental parameters 
 %   motionEstimates       - Matrix (time x directions) of motion estimates.
 %                           direction convention is x y z yaw pitch roll.
 %
@@ -96,7 +97,7 @@ if ~isempty(cPoints)
         
         if any(tmpMat(:) <= 0) || any(tmpMat(:) > length(fwd))
             tmpMat(tmpMat <= 0) = 1;
-            tmpMat(tmpMat > length(fwd)) = length(fwd);
+            tmpMat(tmpMat > length(fwd)) = analysisParams.expLengthTR;
         end
         
         cPoints = unique(tmpMat);
