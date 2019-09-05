@@ -32,6 +32,8 @@ p.addParameter('crfSemi',0.9,@isnumeric);
 p.addParameter('expFalloff',5,@isnumeric);
 p.addParameter('crfOffset',-.02,@isnumeric);
 p.addParameter('numVoxels',900,@isnumeric);
+p.addParameter('addNoise',true,@islogical);
+p.addParameter('noiseLevel',0.2,@isnumeric);
 
 p.parse(analysisParams, angle, minorAxisRatio, varargin{:});
 
@@ -98,9 +100,16 @@ for sessionNum = 1:analysisParams.numSessions
         % Generate time course prediction
         modelPreds = fitOBJ.computeResponse(params,stimulusStruct,theKernel);
         
+        
         voxelTimeSeries(:,:,jj + analysisParams.numAcquisitions*(sessionNum-1)) = repmat(modelPreds.values,[p.Results.numVoxels,1]);
         
         
+    end
+    if p.Results.addNoise
+        maxSignal = max(voxelTimeSeries(:));
+        minSignal = min(voxelTimeSeries(:));
+        theNoise  = p.Results.noiseLevel .* (minSignal + (maxSignal-minSignal).*rand(size(voxelTimeSeries)));
+        voxelTimeSeries = voxelTimeSeries + theNoise;
     end
 end
 

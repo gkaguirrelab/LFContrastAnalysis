@@ -44,7 +44,8 @@ if analysisParams.analysisSimulate
         case 'QCM'
             angle = -45;
             minorAxisRatio = 0.19;
-            fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio,'numVoxels',30);
+            fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio,'numVoxels',850,...
+                            'crfOffset', 0,'noiseLevel',.5);
     end
 else
     switch analysisParams.preproc
