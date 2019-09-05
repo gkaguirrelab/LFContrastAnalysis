@@ -98,7 +98,7 @@ for sessionNum = 1:analysisParams.numSessions
         % Generate time course prediction
         modelPreds = fitOBJ.computeResponse(params,stimulusStruct,theKernel);
         
-        voxelTimeSeries(:,:,jj + analysisParams.numAcquisitions*(analysisParams.numSessions-1)) = repmat(modelPreds.values,[p.Results.numVoxels,1]);
+        voxelTimeSeries(:,:,jj + analysisParams.numAcquisitions*(sessionNum-1)) = repmat(modelPreds.values,[p.Results.numVoxels,1]);
         
         
     end

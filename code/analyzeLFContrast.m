@@ -42,9 +42,9 @@ if analysisParams.analysisSimulate
             numVoxels = 400;
             [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', false);
         case 'QCM'
-            angle = 45;
+            angle = -45;
             minorAxisRatio = 0.19;
-            fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio);
+            fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio,'numVoxels',30);
     end
 else
     switch analysisParams.preproc
