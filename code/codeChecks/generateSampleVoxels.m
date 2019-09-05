@@ -22,7 +22,7 @@ function [params theVoxels] = generateSampleVoxels(betaWeights,numDirections,num
 %                                the baseline blocks
 %    noiseLevel                - The percent of white noise to be added, 0
 %                                = no noise added (default = 0)
-%    realExpParams             - BLock timing based on a real experimental
+%    realExpParams             - Block timing based on a real experimental
 %                                run
  
 % MAB 06/10/19

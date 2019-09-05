@@ -36,7 +36,7 @@ p.parse(analysisParams, betaWeights,numDirections,numContrast,numVoxels,varargin
 counter = 1;
 for sessionNum = 1:analysisParams.numSessions
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
-    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
     
     

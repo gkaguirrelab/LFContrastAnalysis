@@ -1,5 +1,5 @@
 % Initialize
-clear; 
+clear;
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('LZ23');
@@ -8,7 +8,8 @@ analysisParams = getSubjectParams('LZ23');
 analysisParams.preproc = 'hcp';
 
 % SIMULATE MODE
-analysisParams.analysisSimulate = false;
+analysisParams.analysisSimulate = true;
+analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
 % Info needed to make the V1 mask  from benson maps
 analysisParams.areaNum     = 1;
@@ -22,7 +23,7 @@ analysisParams.TR = 0.800;
 analysisParams.baselineCondNum = 6;
 analysisParams.timeStep = 1/100;
 analysisParams.generateIAMPPlots = false;
-analysisParams.generateCrossValPlots = false; 
+analysisParams.generateCrossValPlots = false;
 analysisParams.blockDuration = 12; %seconds
 analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDuration;
 
@@ -33,17 +34,24 @@ analysisParams.numSamples = 25;
 if analysisParams.analysisSimulate
     analysisParams.numAcquisitions = 10;
     analysisParams.numSessions = 2;
-    betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
-    numDirections = 4;
-    numContrast = 6; 
-    numVoxels = 400;
-    [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', false);
+    switch analysisParams.simulationMethod
+        case 'IAMP'
+            betaWeights = [repmat(1:-1/5:1/5,1,4), 0]';
+            numDirections = 4;
+            numContrast = 6;
+            numVoxels = 400;
+            [params,fullCleanData] = simulateDataFromExpParams(analysisParams,betaWeights,numDirections,numContrast,numVoxels, 'linDetrending', false);
+        case 'QCM'
+            angle = 45;
+            minorAxisRatio = 0.19;
+            fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio);
+    end
 else
     switch analysisParams.preproc
         case 'fmriprep'
             [fullCleanData, analysisParams] = getTimeCourse(analysisParams);
         case 'hcp'
-            [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);            
+            [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
         otherwise
             error('Preprocessing method unknown')
     end
@@ -177,7 +185,7 @@ figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),anal
 FigureSave(figNameCrf,crfHndl,'pdf');
 
 % % Get the time course predicitions of the CRF params
-% 
+%
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
 timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
 
@@ -194,7 +202,7 @@ timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanPar
 % the CRF, based on QCM fit.
 timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
 
-% Get the predictions from individual IAMP params 
+% Get the predictions from individual IAMP params
 for ii = 1:size(iampParams,1)
     for jj = 1:size(iampParams,2)
         timeCoursePlot.iamp{ii,jj} = responseFromPacket('IAMP', analysisParams, iampParams{ii,jj}, iampTimeCoursePacketPocket{ii,jj}, 'plotColor', [0.5 0.2 0]);
