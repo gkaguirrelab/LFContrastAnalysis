@@ -51,6 +51,7 @@ p.parse(block,responseStruct, varargin{:})
 expStartTime = responseStruct.tBlockStart;
 
 % loop over the trials
+attentionEventTimes = [];
 count = 1;
 for ii = 1:length(responseStruct.events)
     

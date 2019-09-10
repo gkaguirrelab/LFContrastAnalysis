@@ -64,7 +64,7 @@ analysisParams.numSamples = 25;
 % baseline response (response to no stimulus) to zero.  This allows us
 % to concatenate data across sessions in a sensible manner below.
 for ii = 1:analysisParams.numAcquisitions
-    [~,concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+    [~,concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
 end
 
 %% Cross validation folds
@@ -96,8 +96,8 @@ for ii = 1:size(heldOutRunOrder,2)
     cvIampParams(2,:) = iampParams(2,logical(indxMat(2,:)));
     cvIampTimeCoursePacketPockets(1,:) = iampTimeCoursePacketPocket(1,logical(indxMat(1,:)));
     cvIampTimeCoursePacketPockets(2,:) = iampTimeCoursePacketPocket(2,logical(indxMat(2,:)));
-    meanIampParams(1) = iampOBJ.averageParams(iampParams(1,:));
-    meanIampParams(2) = iampOBJ.averageParams(iampParams(2,:));
+    meanIampParams.sessionOne = iampOBJ.averageParams(iampParams(1,:));
+    meanIampParams.sessionTwo = iampOBJ.averageParams(iampParams(2,:));
     %% Create the mean time course model from the cv runs. This just fits
     % all the runs with a constant (over time) response whose value is the
     % mean value across all the runs.  We had better do better than this
@@ -119,7 +119,7 @@ for ii = 1:size(heldOutRunOrder,2)
     % currently analyzing, and has to do specifically with the way color
     % directions were studied across acquisitions and sessions.
     for jj = 1:analysisParams.numAcquisitions-1
-        [concatCvIampParams{jj},~] = iampOBJ.concatenateParams(cvIampParams(:,jj),'baselineMethod','makeBaselineZero');
+        [concatCvIampParams{jj},~] = iampOBJ.concatenateParams(cvIampParams(:,jj),'baselineMethod','averageBaseline');
     end
     
     % Make the mean IAMP CRF packet by averaging the IAMP parameters over
@@ -148,13 +148,13 @@ for ii = 1:size(heldOutRunOrder,2)
     [qcmCrfMeanOBJ,qcmCrfMeanParams, qcmObjFitResponses] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
     
     % create mean IAMP CRF model for the left in runs
-    [meanIampCrfParam, ~] = iampOBJ.concatenateParams({meanIampParams(1),meanIampParams(2)},'baselineMethod','makeBaselineZero');
+    [meanIampCrfParam, ~] = iampOBJ.concatenateParams({meanIampParams.sessionOne,meanIampParams.sessionTwo},'baselineMethod','averageBaseline');
     
     
     %% Calculate held out RMSE for the CRF, given CV fits above
     %
     % Concat IAMP params for held out data so we can compare to this.
-    [concatHeldOutIampParams{ii},~] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','makeBaselineZero');
+    [concatHeldOutIampParams{ii},~] = iampOBJ.concatenateParams(heldOutParams,'baselineMethod','averageBaseline');
     
     % Mean model 
     meanCrfResp = ones(size(directionCrfMeanPacket.response.values)).*mean(directionCrfMeanPacket.response.values);
@@ -210,7 +210,7 @@ for ii = 1:size(heldOutRunOrder,2)
     timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
     
     % Get the timecourse predictions from the mean IAMP params
-    timeCoursePlot.IAMP = responseFromPacket('IAMP', analysisParams, meanIampParams, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [.5, .5, .5]);
+    timeCoursePlot.IAMP = responseFromPacket('meanIAMP', analysisParams, meanIampParams, heldOutDirectionTimeCoursePacketPocket, 'plotColor', [.5, .5, .5]);
     
     % Add held out time course
     timeCoursePlot.heldOutRawTC = heldOutRawTC;

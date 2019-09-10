@@ -40,13 +40,18 @@ switch userID
     case {'dhb'}
         melaMaterialsPath = ['/Users1/DropboxLab/MELA_materials'];
         melaDatabasePath  = ['/Users1/DropboxLab/MELA_data/'];
-        melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/' projectName];
-        figureSavePath    = fullfile(melaAnalysisPath,'Figures');
+        melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/'];
+        figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
+    case {'michael'}
+        melaMaterialsPath = ['/Users/' userID '/labDropbox/MELA_materials'];
+        melaDatabasePath  = ['/Users/' userID '/labDropbox/MELA_data/'];
+        melaAnalysisPath  = ['/Users/' userID '/labDropbox/MELA_analysis/'];
+        figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
     otherwise
         melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         melaDatabasePath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
-        melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/' projectName];
-        figureSavePath    = fullfile(melaAnalysisPath,'Figures');
+        melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+        figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
 end
 
 %% Specify where output goes

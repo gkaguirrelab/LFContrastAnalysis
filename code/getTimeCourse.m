@@ -38,12 +38,12 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Set up Paths
     sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
-    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','functionalRuns.txt');
-    confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
-    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    funcTextFile   = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'fmriprep','functionalRuns.txt');
+    confTexFile    = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'fmriprep','confounds.txt');
+    functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     anatomyPath    = fullfile(sessionDir,'anatomy');
     retinoPath     = fullfile(anatomyPath,'neuropythy');
-    functionalPath = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum}, 'fmriprep',  analysisParams.subjID, analysisParams.session{sessionNum}, 'func');
     warpFilePath   = fullfile(sessionDir, 'fmriprep', analysisParams.sessionFolderName{sessionNum},'fmriprep', analysisParams.subjID, 'anat');
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     
@@ -61,7 +61,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Save vars name
     saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'.mat'];
-    savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
+    savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,saveName);
     
     % Load existing cleaned data

@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams, fullCleanData)
+function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC, fVal] = fit_IAMP(analysisParams, fullCleanData, varargin)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -22,21 +22,65 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    iampOBJ                    - The IAMP object
 %    iampParams                 - Cell array of IAMP parameter fits for each run
 %    iampResponses              - Model response to each run
-%    rawTC                      - meadaind time course for each run
+%    rawTC                      - Median time course for each run
 % Optional key/value pairs:
-%    none
+%    modelOnOff                 - Convert the stim design matrix to a stim
+%                                 onset and offset matrix and use this for
+%                                 the regression model for the GLM
+%    plotColor                  - vector for plot color
+%    onset                      - Model the onset of a block as a delta
+%                                 function in modelOnsetOffset case
+%    midpoint                   - Model the midpoint of a block as a delta
+%                                 function in modelOnsetOffset case
+%    offset                     - Model the offset of a block as a delta
+%                                 function in modelOnsetOffset case
+%    concatAndFit               - Concatenate the runs and stim and fit
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
 
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('analysisParams',@isstruct);
+p.addRequired('fullCleanData',@isnumeric);
+p.addParameter('modelOnOff',false,@islogical);
+p.addParameter('concatAndFit',false,@islogical);
+p.addParameter('onset',true,@islogical);
+p.addParameter('midpoint',true,@islogical);
+p.addParameter('offset',true,@islogical);
+p.addParameter('plotColor',[],@isvector);
+
+p.parse(analysisParams,fullCleanData,varargin{:});
+
+modelOnOff = p.Results.modelOnOff;
+concatAndFit =  p.Results.concatAndFit;
+
 analysisParams.numSessions = length(analysisParams.sessionFolderName);
 
+tempTC = [];
+
 for sessionNum = 1:analysisParams.numSessions
+    
+    
+    % create empty packet for concat option
+    if concatAndFit
+        thePacket.response.values   = [];
+        thePacket.response.timebase = [];
+        % the stimulus
+        thePacket.stimulus.timebase = [];
+        thePacket.stimulus.values   = [];
+        % the kernel
+        thePacket.kernel = [];
+        % the meta data (this is the constrast and directions)
+        thePacket.metaData.stimDirections = [];
+        thePacket.metaData.stimContrasts  = [];
+        thePacket.metaData.lmsContrast    = [];
+        
+    end
     
     % Gets the path to a text file that contains the mat file names needed
     % to get the trail order information for each run.
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
-    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
+    trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
     
     % Get the Directions of each session. This requires analysisParams.directionCoding to be organized
@@ -88,7 +132,12 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-        stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        
+        if modelOnOff
+            stimulusStruct.values = convertBlockToOnsetOffset(expParams,analysisParams.baselineCondNum,totalTime,deltaT, 'onset', p.Results.onset,'midpoint',p.Results.midpoint,'offset',p.Results.offset);
+        else
+            stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        end
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
@@ -103,41 +152,116 @@ for sessionNum = 1:analysisParams.numSessions
         clear defaultParamsInfo
         defaultParamsInfo.nInstances = size(stimulusStruct.values,1);
         
-        % Get the kernel
-        kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
-        
         % Take the median across voxels
         rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
         rawTC{sessionNum,jj}.plotColor = [0,0,0];
         
+        
         %%  Make the IAMP packet
+        
+        
         % the response
-        thePacket.response.values   = rawTC{sessionNum,jj}.values;
-        thePacket.response.timebase = stimulusStruct.timebase;
-        % the stimulus
-        thePacket.stimulus.timebase = stimulusStruct.timebase;
-        thePacket.stimulus.values   = stimulusStruct.values;
-        % the kernel
-        thePacket.kernel = kernelStruct;
-        % the meta data (this is the constrast and directions)
-        thePacket.metaData.stimDirections = stimDirections;
-        thePacket.metaData.stimContrasts  = stimContrasts;
-        thePacket.metaData.lmsContrast    = LMSContrastMat;
+        if ~ concatAndFit
+            thePacket.response.values   = rawTC{sessionNum,jj}.values;
+            thePacket.response.timebase = stimulusStruct.timebase;
+            % the stimulus
+            thePacket.stimulus.timebase = stimulusStruct.timebase;
+            thePacket.stimulus.values   = stimulusStruct.values;
+            % the kernel
+            thePacket.kernel = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+            % the meta data (this is the constrast and directions)
+            thePacket.metaData.stimDirections = stimDirections;
+            thePacket.metaData.stimContrasts  = stimContrasts;
+            thePacket.metaData.lmsContrast    = LMSContrastMat;
+            
+            regressionMatrixStruct=thePacket.stimulus;
+            regressionMatrixStruct = iampOBJ.applyKernel(regressionMatrixStruct,thePacket.kernel);
+            regressionMatrixStruct = iampOBJ.resampleTimebase(regressionMatrixStruct,thePacket.response.timebase);
+            y=thePacket.response.values';
+            X=regressionMatrixStruct.values';
+            numTimePoints = length(y);
+            numNanPoints = sum(isnan(y));
+            if any(isnan(y))
+                validIdx = ~isnan(y);
+                y = y(validIdx);
+                X = X(validIdx,:);
+            end
+            
+            dropBlocIndx =  find((std(regressionMatrixStruct.values').*.2) > std(X));
+            
+            % Perform the fit
+            [paramsFit,fVal(sessionNum,jj),IAMPResponses] = ...
+                iampOBJ.fitResponse(thePacket,...
+                'defaultParamsInfo', defaultParamsInfo, ...
+                'searchMethod','linearRegression');
+            
+            if ~isempty(dropBlocIndx)
+                paramsFit.paramMainMatrix(dropBlocIndx) = nan;
+            end
+            
+            if numNanPoints > numTimePoints.*0.5
+                paramsFit.paramMainMatrix = nan(size(paramsFit.paramMainMatrix));
+            end
+            
+            
+            iampParams{sessionNum,jj} = paramsFit;
+            iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
+            iampResponses{sessionNum,jj} = IAMPResponses;
+            
+            if isempty(p.Results.plotColor)
+                iampResponses{sessionNum,jj}.plotColor = [.4,.7,.2];
+            else
+                iampResponses{sessionNum,jj}.plotColor = p.Results.plotColor;
+            end
+            
+        else
+            thePacket.response.values   = [thePacket.response.values rawTC{sessionNum,jj}.values];
+            % the stimulus
+            thePacket.stimulus.values   = [thePacket.stimulus.values stimulusStruct.values];
+            % the meta data (this is the constrast and directions)
+            thePacket.metaData.stimDirections = [thePacket.metaData.stimDirections stimDirections];
+            thePacket.metaData.stimContrasts  = [thePacket.metaData.stimContrasts  stimContrasts];
+            thePacket.metaData.lmsContrast    = [thePacket.metaData.lmsContrast LMSContrastMat];
+            
+        end
+        
+        
+    end
+    
+    if concatAndFit
+        
+        deltaT = median(diff(stimulusStruct.timebase));
+        concatTimebase= 0:deltaT:deltaT*length(thePacket.response.values)-1;
+        thePacket.response.timebase = concatTimebase;
+        thePacket.stimulus.timebase = concatTimebase;
+        thePacket.kernel = generateHRFKernel(6,12,10,concatTimebase);
+        
+        tempTC{sessionNum, 1}.values = thePacket.response.values;
+        tempTC{sessionNum, 1}.timebase = concatTimebase;
+        tempTC{sessionNum, 1}.plotColor = [0,0,0];
         
         % Perform the fit
-        [paramsFit,fVal,IAMPResponses] = ...
+        [paramsFit,fVal(sessionNum),IAMPResponses] = ...
             iampOBJ.fitResponse(thePacket,...
             'defaultParamsInfo', defaultParamsInfo, ...
             'searchMethod','linearRegression');
         
-        iampParams{sessionNum,jj} = paramsFit;
-        iampTimeCoursePacketPocket{sessionNum,jj} = thePacket;
-        iampResponses{sessionNum,jj} = IAMPResponses;
+        iampParams{sessionNum,1} = paramsFit;
+        iampTimeCoursePacketPocket{sessionNum,1} = thePacket;
+        iampResponses{sessionNum,1} = IAMPResponses;
+        
+        if isempty(p.Results.plotColor)
+            iampResponses{sessionNum,1}.plotColor = [.4,.7,.2];
+        else
+            iampResponses{sessionNum,1}.plotColor = p.Results.plotColor;
+        end
     end
     
 end
-
+if concatAndFit
+    rawTC = tempTC;
+end
 end
 
 
