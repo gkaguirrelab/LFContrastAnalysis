@@ -33,7 +33,8 @@ p.addParameter('expFalloff',5,@isnumeric);
 p.addParameter('crfOffset',-.02,@isnumeric);
 p.addParameter('numVoxels',900,@isnumeric);
 p.addParameter('addNoise',true,@islogical);
-p.addParameter('noiseLevel',0.2,@isnumeric);
+p.addParameter('noiseSD',0.2,@isnumeric);
+p.addParameter('noiseInverseFrequencyPower',0.2,@isnumeric);
 
 p.parse(analysisParams, angle, minorAxisRatio, varargin{:});
 
@@ -47,6 +48,8 @@ params.crfExponent = p.Results.crfExponent;
 params.crfSemi     = p.Results.crfSemi;
 params.expFalloff  = p.Results.expFalloff;
 params.crfOffset   = p.Results.crfOffset;
+params.noiseSd     = p.Results.noiseSD;
+params.noiseInverseFrequencyPower = p.Results.noiseInverseFrequencyPower;
 
 for sessionNum = 1:analysisParams.numSessions
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
@@ -98,19 +101,19 @@ for sessionNum = 1:analysisParams.numSessions
         stimulusStruct.timebase = timebase;
         
         % Generate time course prediction
-        modelPreds = fitOBJ.computeResponse(params,stimulusStruct,theKernel);
+        modelPreds = fitOBJ.computeResponse(params,stimulusStruct,theKernel,'addNoise',true);
         
         
         voxelTimeSeries(:,:,jj + analysisParams.numAcquisitions*(sessionNum-1)) = repmat(modelPreds.values,[p.Results.numVoxels,1]);
         
         
     end
-    if p.Results.addNoise
-        maxSignal = max(voxelTimeSeries(:));
-        minSignal = min(voxelTimeSeries(:));
-        theNoise  = p.Results.noiseLevel .* (minSignal + (maxSignal-minSignal).*rand(size(voxelTimeSeries)));
-        voxelTimeSeries = voxelTimeSeries + theNoise;
-    end
+%     if p.Results.addNoise
+%         maxSignal = max(voxelTimeSeries(:));
+%         minSignal = min(voxelTimeSeries(:));
+%         theNoise  = p.Results.noiseLevel .* (minSignal + (maxSignal-minSignal).*rand(size(voxelTimeSeries)));
+%         voxelTimeSeries = voxelTimeSeries + theNoise;
+%     end
 end
 
 

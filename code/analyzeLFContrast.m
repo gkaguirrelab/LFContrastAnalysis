@@ -2,13 +2,13 @@
 clear;
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('LZ23');
+analysisParams = getSubjectParams('KAS25');
 
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
 
 % SIMULATE MODE
-analysisParams.analysisSimulate = true;
+analysisParams.analysisSimulate = false;
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
 % Info needed to make the V1 mask  from benson maps
@@ -45,7 +45,7 @@ if analysisParams.analysisSimulate
             angle = -45;
             minorAxisRatio = 0.19;
             fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio,'numVoxels',850,...
-                            'crfOffset', 0,'noiseLevel',.5);
+                            'crfOffset', 0,'noiseSD',2, 'noiseInverseFrequencyPower', .1);
     end
 else
     switch analysisParams.preproc
@@ -113,7 +113,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
 [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
 
-% Fit the CRF with the NR common Exponent -- { } is because this expects a cell
+% Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
 [nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
 
 % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
@@ -123,7 +123,8 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
 % Do some plotting of these fits
-
+[nrVals] = plotNakaRushtonFromParams(qcmCrfMeanParams{1}.crfAmp ,qcmCrfMeanParams{1}.crfExponent,qcmCrfMeanParams{1}.crfSemi,...
+                                     'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
 %######### FIX ###################
 % make a function that subtracts the baseline for generating the crf plots
 %################################
@@ -182,7 +183,7 @@ crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
 crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
 figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_hcp.pdf']);
+    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
 FigureSave(figNameCrf,crfHndl,'pdf');
 
 % % Get the time course predicitions of the CRF params
@@ -226,7 +227,7 @@ timeCoursePlot.timecourse = rawTC;
 
 tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
 figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_hcp.pdf']);
+    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
 FigureSave(figNameTc,tcHndl,'pdf');
 
 % % Plot isoresponce contour
@@ -234,5 +235,5 @@ thresholds = [0.10, 0.2, 0.3];
 colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
 qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
 figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_hcp.pdf']);
+    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
 FigureSave(figNameQcm,qcmHndl,'pdf');
