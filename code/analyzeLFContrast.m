@@ -7,6 +7,8 @@ analysisParams = getSubjectParams('KAS25');
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
 
+analysisParams.showPlots = true;
+
 % SIMULATE MODE
 analysisParams.analysisSimulate = false;
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
@@ -74,6 +76,8 @@ end
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
+
+iampParamsMatrix = cell2mat(cellfun(@(x) x.paramMainMatrix, iampParams(:), 'UniformOutput', false)');
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
