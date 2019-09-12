@@ -47,7 +47,7 @@ if analysisParams.analysisSimulate
             angle = -45;
             minorAxisRatio = 0.19;
             fullCleanData = simulateDataFromEllipseParams(analysisParams,angle,minorAxisRatio,'numVoxels',850,...
-                            'crfOffset', 0,'noiseSD',2, 'noiseInverseFrequencyPower', .1);
+                'crfOffset', 0,'noiseSD',2, 'noiseInverseFrequencyPower', .1);
     end
 else
     switch analysisParams.preproc
@@ -77,7 +77,7 @@ end
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
-iampParamsMatrix = cell2mat(cellfun(@(x) x.paramMainMatrix, iampParams(:), 'UniformOutput', false)');
+
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -127,8 +127,10 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
 
 % Do some plotting of these fits
-[nrVals] = plotNakaRushtonFromParams(qcmCrfMeanParams{1}.crfAmp ,qcmCrfMeanParams{1}.crfExponent,qcmCrfMeanParams{1}.crfSemi,...
-                                     'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+if analysisParams.showPlots
+    [nrVals] = plotNakaRushtonFromParams(qcmCrfMeanParams{1}.crfAmp ,qcmCrfMeanParams{1}.crfExponent,qcmCrfMeanParams{1}.crfSemi,...
+        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+end
 %######### FIX ###################
 % make a function that subtracts the baseline for generating the crf plots
 %################################
@@ -184,11 +186,13 @@ crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsA
 crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 %% Plot the CRF from the IAMP, QCM, and  fits
-[iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
-crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
-figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-FigureSave(figNameCrf,crfHndl,'pdf');
+if analysisParams.showPlots
+    [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
+    figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameCrf,crfHndl,'pdf');
+end
 
 % % Get the time course predicitions of the CRF params
 %
@@ -228,16 +232,19 @@ timeCoursePlot.timecourse = rawTC;
 
 %Plot the time course prediction for each run using the different fits to
 %the crf
-
-tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
-figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-FigureSave(figNameTc,tcHndl,'pdf');
+if analysisParams.showPlots
+    tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
+    figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameTc,tcHndl,'pdf');
+end
 
 % % Plot isoresponce contour
-thresholds = [0.10, 0.2, 0.3];
-colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
-qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
-figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-FigureSave(figNameQcm,qcmHndl,'pdf');
+if analysisParams.showPlots
+    thresholds = [0.10, 0.2, 0.3];
+    colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
+    qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
+    figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameQcm,qcmHndl,'pdf');
+end
