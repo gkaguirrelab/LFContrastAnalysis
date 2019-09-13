@@ -1,4 +1,4 @@
-function [qcmCrfMeanParams,nrVals] = fitbootstrapQCM(analysisParams,iampParams,numIterations)
+function [paramFitsBootstrap,nrVals] = fitbootstrapQCM(analysisParams,iampParams,numIterations)
 
 iampOBJ = tfeIAMP('verbosity','none');
 iampParamsMatrix = cell2mat(cellfun(@(x) x.paramMainMatrix, iampParams(:), 'UniformOutput', false)');
@@ -39,11 +39,11 @@ for iter = 1:numIterations
     %[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
     
     % Fit the CRF with the QCM -- { } is because this expects a cell
-    [qcmCrfMeanOBJ,qcmCrfMeanParams{iter}] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
-    
+    [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
+     paramFitsBootstrap(:,iter) = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
+
     % Do some plotting of these fits
-    tmpQCMParams = qcmCrfMeanParams{iter};
-    [nrVals{iter}] = plotNakaRushtonFromParams(tmpQCMParams{1}.crfAmp ,tmpQCMParams{1}.crfExponent,tmpQCMParams{1}.crfSemi,...
+    nrVals(iter,:)= plotNakaRushtonFromParams(qcmCrfMeanParams{1}.crfAmp ,qcmCrfMeanParams{1}.crfExponent,qcmCrfMeanParams{1}.crfSemi,...
         'analysisParams',analysisParams,'plotFunction',false,'savePlot',false);
     
 end
