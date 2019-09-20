@@ -44,7 +44,7 @@ for iter = 1:numIterations
     %[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
     
     % Fit the CRF with the QCM -- { } is because this expects a cell
-    [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket});
+    [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'talkToMe',false);
     paramFitsBootstrap(:,iter) = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
     
     % Do some plotting of these fits

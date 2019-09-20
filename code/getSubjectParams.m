@@ -215,3 +215,35 @@ switch subjID
         analysisParams.expLengthTR        = 360;
         
 end
+
+
+%% Add common params
+
+% set the preprocessing method that was used to ananlyze the data.
+analysisParams.preproc = 'hcp';
+
+analysisParams.showPlots = true;
+
+% SIMULATE MODE
+analysisParams.analysisSimulate = false;
+analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
+
+% Info needed to make the V1 mask  from benson maps
+analysisParams.areaNum     = 1;
+analysisParams.eccenRange  = [0 20];
+analysisParams.anglesRange  = [0 180];
+analysisParams.hemisphere   = 'combined';
+analysisParams.threshold    = 0.9;
+
+% Define the TR
+analysisParams.TR = 0.800;
+analysisParams.baselineCondNum = 6;
+analysisParams.timeStep = 1/100;
+analysisParams.generateIAMPPlots = false;
+analysisParams.generateCrossValPlots = false;
+analysisParams.blockDuration = 12; %seconds
+analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDuration;
+
+% Plotting params
+analysisParams.numSamples = 25;
+

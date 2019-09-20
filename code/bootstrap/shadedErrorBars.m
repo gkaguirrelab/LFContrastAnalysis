@@ -1,7 +1,7 @@
-function varargout=shadedErrorBar(x,y,errBar,varargin)
+function varargout=shadedErrorBars(x,y,errBar,varargin)
 % generate continuous error bar area around a line plot
 %
-% function H=shadedErrorBar(x,y,errBar, ...)
+% function H=shadedErrorBars(x,y,errBar, ...)
 %
 % Purpose 
 % Makes a 2-d line plot with a pretty shaded error bar made
@@ -43,13 +43,13 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % x=1:size(y,2);
 %
 % 1)
-% shadedErrorBar(x,mean(y,1),std(y),'lineprops','g');
+% shadedErrorBars(x,mean(y,1),std(y),'lineprops','g');
 %
 % 2)
-% shadedErrorBar(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});
+% shadedErrorBars(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});
 %
 % 3)
-% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});
+% shadedErrorBars([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});
 %
 % 4)
 % Overlay two transparent lines:
