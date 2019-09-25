@@ -34,6 +34,7 @@ end
 
 % get error bars
 errorIndx = (numIterations-((percentile/100)*numIterations))/2;
+for ff = 1:length(
 if floor(errorIndx) == errorIndx
     nrOrigUB = sortedRows(end-errorIndx,:);
     nrOrigLB = sortedRows(errorIndx,:);
