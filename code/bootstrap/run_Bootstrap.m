@@ -4,7 +4,7 @@ clear;
 %% Set up bootstrap
 %
 % number of bootstrap iterations
-numIterations = 10;
+numIterations = 100;
 % Subject: 'LZ23', 'KAS25', 'AP26'
 subj = 'AP26';
 percentile = 65;
@@ -17,35 +17,35 @@ analysisParams = getSubjectParams(subj);
 % Get the time course data for the subject
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
-% Fit the GLM 
+% Fit the GLM
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
 % Bootstrap the params
 [boot_qcmParamsOrig,boot_nrValsOrig] = fit_bootstrapQCM(analysisParams,iampParams,numIterations);
 
-% get the median and 65th percentile
+% get the median
 sortedRows = sortrows(boot_nrValsOrig,size(boot_nrValsOrig,2));
-
-if mod(size(sortedRows,1),2) == 0 
+if mod(size(sortedRows,1),2) == 0
     medianNROrig = mean([sortedRows(size(sortedRows,1)/2,:);sortedRows(1+size(sortedRows,1)/2,:)]);
 else
     medianNROrig = sortedRows(ceil(size(sortedRows,1)/2),:);
 end
 
-% get error bars
+% get the CI
 errorIndx = (numIterations-((percentile/100)*numIterations))/2;
-for ff = 1:length(
-if floor(errorIndx) == errorIndx
-    nrOrigUB = sortedRows(end-errorIndx,:);
-    nrOrigLB = sortedRows(errorIndx,:);
-    nrOrigErrorBars = [nrOrigUB-medianNROrig;medianNROrig-nrOrigLB];
-else
-    nrOrigUB = mean([sortedRows(end-ceil(errorIndx),:);sortedRows(end-floor(errorIndx),:)]);
-    nrOrigLB = mean([sortedRows(ceil(errorIndx),:);sortedRows(floor(errorIndx),:)]);
-    nrOrigErrorBars = [nrOrigUB-medianNROrig;medianNROrig-nrOrigLB];
+for ff = 1:size(boot_nrValsOrig,2)
+    sortedTimePointVals = sort(boot_nrValsOrig(:,ff));
+    if floor(errorIndx) == errorIndx
+        nrOrigUB(ff) = sortedTimePointVals(end-errorIndx,:);
+        nrOrigLB(ff) = sortedTimePointVals(errorIndx,:);
+    else
+        nrOrigUB(ff) = mean([sortedTimePointVals(end-ceil(errorIndx),:);sortedTimePointVals(end-floor(errorIndx),:)]);
+        nrOrigLB(ff) = mean([sortedTimePointVals(ceil(errorIndx),:);sortedTimePointVals(floor(errorIndx),:)]);
+    end
 end
+nrOrigErrorBars = [nrOrigUB-medianNROrig;medianNROrig-nrOrigLB];
 
-%% Get the model fit 
+%% Get the model fit
 [qcmParamsOrig, nrValsOrig] = fit_QCM(analysisParams,iampParams);
 
 %% Replication Bootstrap
@@ -56,7 +56,7 @@ analysisParams = getSubjectParams([subj '_replication']);
 % Get the time course data for the subject
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
-% Fit the GLM 
+% Fit the GLM
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
 % Bootstrap the params
@@ -65,7 +65,7 @@ analysisParams = getSubjectParams([subj '_replication']);
 % get the median and 65th percentile
 sortedRows = sortrows(boot_nrValsRep,size(boot_nrValsRep,2));
 
-if mod(size(sortedRows,1),2) == 0 
+if mod(size(sortedRows,1),2) == 0
     medianNRRep = mean([sortedRows(size(sortedRows,1)/2,:);sortedRows(1+size(sortedRows,1)/2,:)]);
 else
     medianNRRep = sortedRows(ceil(size(sortedRows,1)/2),:);
@@ -73,18 +73,20 @@ end
 
 % get error bars
 errorIndx = (numIterations-((percentile/100)*numIterations))/2;
-if floor(errorIndx) == errorIndx
-    nrRepUB = sortedRows(end-errorIndx,:);
-    nrRepLB = sortedRows(errorIndx,:);
-    nrRepErrorBars = [nrRepUB-medianNRRep;medianNRRep-nrRepLB];
-else
-    nrRepUB = mean([sortedRows(end-ceil(errorIndx),:);sortedRows(end-floor(errorIndx),:)]);
-    nrRepLB = mean([sortedRows(ceil(errorIndx),:);sortedRows(floor(errorIndx),:)]);
-    nrRepErrorBars = [nrRepUB-medianNRRep;medianNRRep-nrRepLB];
+for ff = 1:size(boot_nrValsRep,2)
+    sortedTimePointVals = sort(boot_nrValsRep(:,ff));
+    if floor(errorIndx) == errorIndx
+        nrRepUB(ff) = sortedTimePointVals(end-errorIndx,:);
+        nrRepLB(ff) = sortedTimePointVals(errorIndx,:);
+    else
+        nrRepUB(ff) = mean([sortedTimePointVals(end-ceil(errorIndx),:);sortedTimePointVals(end-floor(errorIndx),:)]);
+        nrRepLB(ff) = mean([sortedTimePointVals(ceil(errorIndx),:);sortedTimePointVals(floor(errorIndx),:)]);
+        
+    end
 end
+nrRepErrorBars = [nrRepUB-medianNRRep;medianNRRep-nrRepLB];
 
-
-%% Get the model fit 
+%% Get the model fit
 [qcmParamsRep, nrValsRep] = fit_QCM(analysisParams,iampParams)
 
 
