@@ -89,6 +89,40 @@ nrRepErrorBars = [nrRepUB-medianNRRep;medianNRRep-nrRepLB];
 %% Get the model fit
 [qcmParamsRep, nrValsRep] = fit_QCM(analysisParams,iampParams)
 
+%% Get CI for ellipse params
+sortedMinorAxis = sort(boot_qcmParamsRep(1,:));
+sortedAngle     = sort(boot_qcmParamsRep(2,:));
+errorIndx = (length(sortedAngle)-((percentile/100)*length(sortedAngle)))/2;
+if mod(size(sortedRowsortedMinorAxiss,1),2) == 0
+    medianAngleOrig = mean([sortedAngle(size(sortedAngle,1)/2,:);sortedAngle(1+size(sortedAngle,1)/2,:)]);
+    medianMarOrig = mean([sortedMinorAxis(size(sortedMinorAxis,1)/2,:);sortedMinorAxis(1+size(sortedMinorAxis,1)/2,:)]);
+else
+    medianAngleOrig = sortedAngle(ceil(size(sortedAngle,1)/2),:);
+    medianMarOrig = sortedAngle(ceil(size(sorsortedMinorAxistedAngle,1)/2),:);
+end
+
+if floor(errorIndx) == errorIndx
+    angleRepUB = sortedAngle(end-errorIndx,:);
+    angleRepLB = sortedAnlge(errorIndx,:);
+    marRepUB = sortedMinorAxis(end-errorIndx,:);
+    marRepLB = sortedMinorAxis(errorIndx,:);
+else
+    angleRepUB = mean([sortedAngle(end-ceil(errorIndx),:);sortedAngle(end-floor(errorIndx),:)]);
+    angleRepLB = mean([sortedAngle(ceil(errorIndx),:);sortedAngle(floor(errorIndx),:)]);
+    marRepUB = mean([sortedMinorAxis(end-ceil(errorIndx),:);sortedMinorAxis(end-floor(errorIndx),:)]);
+    marRepLB = mean([sortedMinorAxis(ceil(errorIndx),:);sortedMinorAxis(floor(errorIndx),:)]);
+end
+
+
+
+
+
+yneg = ;
+ypos = [2 5 3 5 2 5 2 2 5 5];
+xneg = [1 3 5 3 5 3 6 4 3 3];
+xpos = [2 5 3 5 2 5 2 2 5 5];
+errorbar(x,y,yneg,ypos,xneg,xpos,'o')
+
 
 %% Plotting
 figure; hold on
