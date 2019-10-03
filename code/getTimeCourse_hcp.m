@@ -53,6 +53,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     functionalRuns    = fullfile(functionalPath,functionalRuns);
     fullFileConfounds = fullfile(functionalPath,confoundFiles);
     
+    savePathROI  = fullfile(getpref(analysisParams.projectName,'projectRootDir'),'MNI','ROIs');
+    saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
+    maskFullFile = fullfile(savePathROI,saveName);
+    
     % Number of acquisitions
     analysisParams.numAcquisitions = length(functionalRuns);
     
@@ -63,21 +67,20 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Load existing cleaned data
     saveFileStatus = 0;
-    if exist(saveFullFile)
+    if exist(saveFullFile) && exist(maskFullFile)
         saveFileStatus = 1;
         disp('cleaned time series file found')
         load(saveFullFile)
         censorPoints{sessionNum,:} = saveCPoints;
+        [ maskMatrix ] = loadCIFTI(maskFullFile);
+        voxelIndex = find(maskMatrix);
         
     else
         
         %% Create restricted V1 mask
-        savePathROI  = fullfile(getpref(analysisParams.projectName,'projectRootDir'),'MNI','ROIs');
-        saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
-        maskFullFile = fullfile(savePathROI,saveName);
-        
         if exist(maskFullFile)
             [ maskMatrix ] = loadCIFTI(maskFullFile);
+            voxelIndex = find(maskMatrix);
         else
             %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
             pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
@@ -87,6 +90,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             maskMatrix = makeMaskFromRetinoCIFTI(analysisParams.areaNum, analysisParams.eccenRange, analysisParams.anglesRange, analysisParams.hemisphere, ...
                 'saveName', maskFullFile, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, ...
                 'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', analysisParams.threshold);
+            voxelIndex = find(maskMatrix);
         end
         
         %% Extract Signal from voxels
@@ -148,8 +152,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
             [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(analysisParams,movementRegressorsFull(:,1:6),...
-                                                        'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
-                
+                'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
+            
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
             
             % get attention event regressor
