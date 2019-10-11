@@ -1,7 +1,7 @@
 % Initialize
 %clear;
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('LZ23');
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 mapSavePath    = fullfile(sessionDir,'hcp_func','surfaceMaps');
 templateFile   = '/Users/michael/labDropbox/MELA_analysis/hcpTemplates/template.dscalar.nii';
@@ -26,29 +26,27 @@ for ii = 1:size(fullCleanData,1)
 end
 
 
-ciftiMap(voxelIndex,:) = qcmParams;
-
 % write out minor axis ratio
 ciftiVec = ciftiMap(:,1);
-mapName        = fullfile(mapSavePath,'minorAxisMap.dscalar.nii');
+mapName        = fullfile(mapSavePath,['minorAxisMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 
 % write out minor axis ratio
 ciftiVec = ciftiMap(:,2);
-mapName        = fullfile(mapSavePath,'angleMap.dscalar.nii');
+mapName        = fullfile(mapSavePath,['angleMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 
 % write out minor axis ratio
 ciftiVec = ciftiMap(:,3);
-mapName        = fullfile(mapSavePath,'nrAmplitudeMap.dscalar.nii');
+mapName        = fullfile(mapSavePath,['nrAmplitudeMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 
 % write out minor axis ratio
 ciftiVec = ciftiMap(:,4);
-mapName        = fullfile(mapSavePath,'nrSemiMap.dscalar.nii');
+mapName        = fullfile(mapSavePath,['nrSemiMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 
 % write out minor axis ratio
 ciftiVec = ciftiMap(:,5);
-mapName        = fullfile(mapSavePath,'nrExpMap.dscalar.nii');
+mapName        = fullfile(mapSavePath,['nrExpMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
