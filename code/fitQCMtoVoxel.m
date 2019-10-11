@@ -1,5 +1,7 @@
-function [qcmParams] = fitQCMtoVoxel(analysisParams,voxelTimeSeries)
-
+function [qcmParams,meanRsquared,stdRsquared] = fitQCMtoVoxel(analysisParams,voxelTimeSeries)
+clear defaultParamsInfo
+defaultParamsInfo.noOffset = false;
+fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
 
 %% Run the IAMP/QCM models
 %
@@ -54,7 +56,16 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 % Fit the CRF with the QCM -- { } is because this expects a cell
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'talkToMe',false);
 
-qcmParams = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
-
+for ii = 1: size(directionTimeCoursePacketPocket,1)
+    for jj = 1: size(directionTimeCoursePacketPocket,2)
+        pred = fitOBJ.computeResponse(qcmCrfMeanParams{1},directionTimeCoursePacketPocket{ii,jj}.stimulus,...
+            directionTimeCoursePacketPocket{ii,jj}.kernel);
+        corrVec = [pred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
+        corrVals = corr(corrVec);
+        rSquaredAllRuns(ii,jj) = corrVals(1,2).^2;  
+    end
 end
- 
+meanRsquared = mean(rSquaredAllRuns(:));
+stdRsquared  = std(rSquaredAllRuns(:));
+qcmParams = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
+    

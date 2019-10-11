@@ -53,7 +53,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     functionalRuns    = fullfile(functionalPath,functionalRuns);
     fullFileConfounds = fullfile(functionalPath,confoundFiles);
     
-    savePathROI  = fullfile(getpref(analysisParams.projectName,'projectRootDir'),'MNI','ROIs');
+    savePathROI  = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis','MNI_ROIs');
     saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
     maskFullFile = fullfile(savePathROI,saveName);
     

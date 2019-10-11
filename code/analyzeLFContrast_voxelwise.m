@@ -18,10 +18,11 @@ for ii = 1:size(fullCleanData,1)
 
     voxelTimeSeries= fullCleanData(ii,:,:);
     
-    qcmParams = fitQCMtoVoxel(analysisParams,voxelTimeSeries);
+    [qcmParams,meanRsquared,stdRsquared] = fitQCMtoVoxel(analysisParams,voxelTimeSeries);
     
     ciftiMap(voxelIndex(ii),:) = qcmParams';
-
+    meanRSquaredMap(voxelIndex(ii),:) = meanRsquared;
+    stdRSquaredMap(voxelIndex(ii),:) = stdRsquared;
 
 end
 
@@ -50,3 +51,11 @@ makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 ciftiVec = ciftiMap(:,5);
 mapName        = fullfile(mapSavePath,['nrExpMap_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+
+% write out mean R squared map
+mapName        = fullfile(mapSavePath,['meanRSquaredMap', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(meanRSquaredMap', [], templateFile, mapName)
+
+% write out standard devation of R squared map
+mapName        = fullfile(mapSavePath,['stdRSquaredMap', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(stdRSquaredMap', [], templateFile, mapName)
