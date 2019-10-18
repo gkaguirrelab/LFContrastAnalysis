@@ -1,4 +1,4 @@
-function [qcmParams,meanRsquared,stdRsquared] = fitQCMtoVoxel(analysisParams,voxelTimeSeries)
+function [qcmParams,meanRsquaredIAMP,stdRsquaredIAMP, meanRsquaredQCM,stdRsquaredQCM] = fitQCMtoVoxel(analysisParams,voxelTimeSeries)
 clear defaultParamsInfo
 defaultParamsInfo.noOffset = false;
 fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
@@ -58,14 +58,26 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 
 for ii = 1: size(directionTimeCoursePacketPocket,1)
     for jj = 1: size(directionTimeCoursePacketPocket,2)
-        pred = fitOBJ.computeResponse(qcmCrfMeanParams{1},directionTimeCoursePacketPocket{ii,jj}.stimulus,...
+        
+        % compute IAMP preditciotn time course and R^2
+        iampPred = iampOBJ.computeResponse(averageIampParams,directionTimeCoursePacketPocket{ii,jj}.stimulus,...
+            directionTimeCoursePacketPocket{ii,jj}.kernel)
+        corrVecIAMP = [qcmPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
+        corrValsIAMP = corr(corrVecIAMP);
+        rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;  
+        
+        % compute QCM preditciotn time course and R^2
+        qcmPred = fitOBJ.computeResponse(qcmCrfMeanParams{1},directionTimeCoursePacketPocket{ii,jj}.stimulus,...
             directionTimeCoursePacketPocket{ii,jj}.kernel);
-        corrVec = [pred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
-        corrVals = corr(corrVec);
-        rSquaredAllRuns(ii,jj) = corrVals(1,2).^2;  
+        corrVecQCM = [qcmPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
+        corrValsQCM = corr(corrVecQCM);
+        rSquaredQCMAllRuns(ii,jj) = corrValsQCM(1,2).^2;  
+        
     end
 end
-meanRsquared = mean(rSquaredAllRuns(:));
-stdRsquared  = std(rSquaredAllRuns(:));
+meanRsquaredIAMP = mean(rSquaredAllRuns(:));
+stdRsquaredIAMP  = std(rSquaredAllRuns(:));
+meanRsquaredQCM = mean(rSquaredAllRuns(:));
+stdRsquaredQCM  = std(rSquaredAllRuns(:));
 qcmParams = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
     

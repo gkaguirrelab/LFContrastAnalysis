@@ -1,7 +1,8 @@
+function analyzeLFContrast_voxelwise(subjID)
 % Initialize
 %clear;
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('LZ23');
+analysisParams = getSubjectParams(subjID);
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 mapSavePath    = fullfile(sessionDir,'hcp_func','surfaceMaps');
 templateFile   = '/Users/michael/labDropbox/MELA_analysis/hcpTemplates/template.dscalar.nii';
@@ -13,7 +14,8 @@ templateFile   = '/Users/michael/labDropbox/MELA_analysis/hcpTemplates/template.
 distcomp.feature( 'LocalUseMpiexec', false )
 % loop over voxels
 ciftiMap = zeros(91282,7);
-
+meanRSquaredMap = zeros(91282,1);
+stdRSquaredMap = zeros(91282,1);
 for ii = 1:size(fullCleanData,1)
 
     voxelTimeSeries= fullCleanData(ii,:,:);
@@ -59,3 +61,4 @@ makeWholeBrainMap(meanRSquaredMap', [], templateFile, mapName)
 % write out standard devation of R squared map
 mapName        = fullfile(mapSavePath,['stdRSquaredMap', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(stdRSquaredMap', [], templateFile, mapName)
+end
