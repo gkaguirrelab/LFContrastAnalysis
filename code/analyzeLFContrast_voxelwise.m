@@ -14,17 +14,21 @@ templateFile   = '/Users/michael/labDropbox/MELA_analysis/hcpTemplates/template.
 distcomp.feature( 'LocalUseMpiexec', false )
 % loop over voxels
 ciftiMap = zeros(91282,7);
-meanRSquaredMap = zeros(91282,1);
-stdRSquaredMap = zeros(91282,1);
+meanRSquaredQCMMap = zeros(91282,1);
+stdRSquaredQCMMap = zeros(91282,1);
+meanRSquaredIAMPMap = zeros(91282,1);
+stdRSquaredIAMPMap = zeros(91282,1);
 for ii = 1:size(fullCleanData,1)
 
     voxelTimeSeries= fullCleanData(ii,:,:);
     
-    [qcmParams,meanRsquared,stdRsquared] = fitQCMtoVoxel(analysisParams,voxelTimeSeries);
+    [qcmParams,meanRsquaredIAMP,stdRsquaredIAMP, meanRsquaredQCM,stdRsquaredQCM] = fitQCMtoVoxel(analysisParams,voxelTimeSeries);
     
     ciftiMap(voxelIndex(ii),:) = qcmParams';
-    meanRSquaredMap(voxelIndex(ii),:) = meanRsquared;
-    stdRSquaredMap(voxelIndex(ii),:) = stdRsquared;
+    meanRSquaredQCMMap(voxelIndex(ii),:)  = meanRsquaredQCM;
+    stdRSquaredQCMMap(voxelIndex(ii),:)   = stdRsquaredQCM;
+    meanRSquaredIAMPMap(voxelIndex(ii),:) = meanRsquaredIAMP;
+    stdRSquaredIAMPMap(voxelIndex(ii),:)  = stdRsquaredIAMP;
 
 end
 
@@ -55,10 +59,18 @@ mapName        = fullfile(mapSavePath,['nrExpMap_', analysisParams.sessionNickna
 makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 
 % write out mean R squared map
-mapName        = fullfile(mapSavePath,['meanRSquaredMap', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(meanRSquaredMap', [], templateFile, mapName)
+mapName        = fullfile(mapSavePath,['meanRSquaredMapQCM', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(meanRSquaredQCMMap', [], templateFile, mapName)
 
 % write out standard devation of R squared map
-mapName        = fullfile(mapSavePath,['stdRSquaredMap', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(stdRSquaredMap', [], templateFile, mapName)
+mapName        = fullfile(mapSavePath,['stdRSquaredMapQCM', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(stdRSquaredQCMMap', [], templateFile, mapName)
+
+% write out mean R squared map
+mapName        = fullfile(mapSavePath,['meanRSquaredMapIAMP', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(meanRSquaredIAMPMap', [], templateFile, mapName)
+
+% write out standard devation of R squared map
+mapName        = fullfile(mapSavePath,['stdRSquaredMapIAMP', analysisParams.sessionNickname '.dscalar.nii']);
+makeWholeBrainMap(stdRSquaredIAMPMap', [], templateFile, mapName)
 end

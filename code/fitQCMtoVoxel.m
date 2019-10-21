@@ -61,8 +61,8 @@ for ii = 1: size(directionTimeCoursePacketPocket,1)
         
         % compute IAMP preditciotn time course and R^2
         iampPred = iampOBJ.computeResponse(averageIampParams,directionTimeCoursePacketPocket{ii,jj}.stimulus,...
-            directionTimeCoursePacketPocket{ii,jj}.kernel)
-        corrVecIAMP = [qcmPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
+            directionTimeCoursePacketPocket{ii,jj}.kernel);
+        corrVecIAMP = [iampPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
         corrValsIAMP = corr(corrVecIAMP);
         rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;  
         
@@ -75,9 +75,9 @@ for ii = 1: size(directionTimeCoursePacketPocket,1)
         
     end
 end
-meanRsquaredIAMP = mean(rSquaredAllRuns(:));
-stdRsquaredIAMP  = std(rSquaredAllRuns(:));
-meanRsquaredQCM = mean(rSquaredAllRuns(:));
-stdRsquaredQCM  = std(rSquaredAllRuns(:));
+meanRsquaredIAMP = mean(rSquaredIAMPAllRuns(:));
+stdRsquaredIAMP  = std(rSquaredIAMPAllRuns(:));
+meanRsquaredQCM = mean(rSquaredQCMAllRuns(:));
+stdRsquaredQCM  = std(rSquaredQCMAllRuns(:));
 qcmParams = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
     
