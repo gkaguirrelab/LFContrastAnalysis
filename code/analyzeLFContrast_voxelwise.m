@@ -18,7 +18,7 @@ meanRSquaredQCMMap = zeros(91282,1);
 stdRSquaredQCMMap = zeros(91282,1);
 meanRSquaredIAMPMap = zeros(91282,1);
 stdRSquaredIAMPMap = zeros(91282,1);
-for ii = 1:size(fullCleanData,1)
+for ii = 1:3%size(fullCleanData,1)
 
     voxelTimeSeries= fullCleanData(ii,:,:);
     

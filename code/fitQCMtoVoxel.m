@@ -60,8 +60,8 @@ for ii = 1: size(directionTimeCoursePacketPocket,1)
     for jj = 1: size(directionTimeCoursePacketPocket,2)
         
         % compute IAMP preditciotn time course and R^2
-        iampPred = iampOBJ.computeResponse(averageIampParams,directionTimeCoursePacketPocket{ii,jj}.stimulus,...
-            directionTimeCoursePacketPocket{ii,jj}.kernel);
+        iampPred = iampOBJ.computeResponse(averageIampParams,iampTimeCoursePacketPocket{ii,jj}.stimulus,...
+            iampTimeCoursePacketPocket{ii,jj}.kernel);
         corrVecIAMP = [iampPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
         corrValsIAMP = corr(corrVecIAMP);
         rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;  
