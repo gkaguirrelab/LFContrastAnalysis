@@ -57,21 +57,33 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIamp
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'talkToMe',false);
 
 for ii = 1: size(directionTimeCoursePacketPocket,1)
+    if ii == 1
+        averageIampParamsSplit = averageIampParams;
+        averageIampParamsSplit.paramMainMatrix = [averageIampParams.paramMainMatrix(1:20); averageIampParams.paramMainMatrix(end)];
+        averageIampParamsSplit.matrixRows = 21;
+    elseif ii == 2
+        averageIampParamsSplit = averageIampParams;
+        averageIampParamsSplit.paramMainMatrix = [averageIampParams.paramMainMatrix(21:40); averageIampParams.paramMainMatrix(end)];
+        averageIampParamsSplit.matrixRows = 21;
+    else
+        error('not coded up for more than 2 sessions')
+    end
     for jj = 1: size(directionTimeCoursePacketPocket,2)
         
         % compute IAMP preditciotn time course and R^2
-        iampPred = iampOBJ.computeResponse(averageIampParams,iampTimeCoursePacketPocket{ii,jj}.stimulus,...
+        
+        iampPred = iampOBJ.computeResponse(averageIampParamsSplit,iampTimeCoursePacketPocket{ii,jj}.stimulus,...
             iampTimeCoursePacketPocket{ii,jj}.kernel);
-        corrVecIAMP = [iampPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
+        corrVecIAMP = [iampPred.values',iampTimeCoursePacketPocket{ii,jj}.response.values'];
         corrValsIAMP = corr(corrVecIAMP);
-        rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;  
+        rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;
         
         % compute QCM preditciotn time course and R^2
         qcmPred = fitOBJ.computeResponse(qcmCrfMeanParams{1},directionTimeCoursePacketPocket{ii,jj}.stimulus,...
             directionTimeCoursePacketPocket{ii,jj}.kernel);
         corrVecQCM = [qcmPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
         corrValsQCM = corr(corrVecQCM);
-        rSquaredQCMAllRuns(ii,jj) = corrValsQCM(1,2).^2;  
+        rSquaredQCMAllRuns(ii,jj) = corrValsQCM(1,2).^2;
         
     end
 end
@@ -80,4 +92,3 @@ stdRsquaredIAMP  = std(rSquaredIAMPAllRuns(:));
 meanRsquaredQCM = mean(rSquaredQCMAllRuns(:));
 stdRsquaredQCM  = std(rSquaredQCMAllRuns(:));
 qcmParams = qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1});
-    
