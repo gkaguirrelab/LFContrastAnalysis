@@ -219,15 +219,6 @@ end
 
 %% Add common params
 
-% set the preprocessing method that was used to ananlyze the data.
-analysisParams.preproc = 'hcp';
-
-analysisParams.showPlots = true;
-
-% SIMULATE MODE
-analysisParams.analysisSimulate = false;
-analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
-
 % Info needed to make the V1 mask  from benson maps
 analysisParams.areaNum     = 1;
 analysisParams.eccenRange  = [0 20];
