@@ -65,7 +65,8 @@ end
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
-
+% reshape 
+iampResponses = {iampResponses{1,:},iampResponses{2,:}};
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -74,6 +75,19 @@ end
 % encapsulates the key things we need to know about the stimulus obtained
 % from the analysis parameters.
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+
+% ###### FIX ###################
+% remove subraction of the baseline
+% ##############################
+for ii = 1:analysisParams.numAcquisitions
+    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
+    %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+end
+
+averageIampParams = iampOBJ.averageParams(concatParams);
+medianIampParams = iampOBJ.medianParams(concatParams);
+
+directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
 
 
 % Fit the time course packets with the QCM -- { } is because this expects a cell
@@ -95,6 +109,7 @@ end
 
 
 %% plot the results
+
 figure
 counter =0;
 for ii = 1:length(qcmParams)
@@ -107,6 +122,7 @@ for ii = 1:length(qcmParams)
     hold on
     plot( directionTimeCoursePacketPocket{ii}.response.timebase, directionTimeCoursePacketPocket{ii}.response.values,'k')
     plot(qcmTimeCoursePlot{ii}.timebase,qcmTimeCoursePlot{ii}.values,'color',qcmTimeCoursePlot{ii}.plotColor,'linewidth',2)
+    plot(iampResponses{ii}.timebase,iampResponses{ii}.values,'g','linewidth',2)
 end
 
 %% create an average QCM from individual run fits
@@ -116,7 +132,9 @@ end
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
 for ii = 1:length(directionTimeCoursePacketPocket)
-    qcmAverageTimeCoursePlot(ii,:) = responseFromPacket('qcmPred', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
+    qcmMedianTimeCoursePlot(ii,:)   = responseFromPacket('qcmPred', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
+    iampAverageTimeCoursePlot(ii,:) = responseFromPacket('', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
+    iampMedianTimeCoursePlot(ii,:)  = responseFromPacket('qcmPred', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
 end
 
 
@@ -132,6 +150,6 @@ for ii = 1:length(qcmParams)
     subplot(3,4,counter)
     hold on
     plot( directionTimeCoursePacketPocket{ii}.response.timebase, directionTimeCoursePacketPocket{ii}.response.values,'k')
-    plot(qcmAverageTimeCoursePlot{ii}.timebase,qcmAverageTimeCoursePlot{ii}.values,'color',qcmAverageTimeCoursePlot{ii}.plotColor,'linewidth',2)
+    plot(qcmMedianTimeCoursePlot{ii}.timebase,qcmMedianTimeCoursePlot{ii}.values,'color',qcmMedianTimeCoursePlot{ii}.plotColor,'linewidth',2)
 end
     
