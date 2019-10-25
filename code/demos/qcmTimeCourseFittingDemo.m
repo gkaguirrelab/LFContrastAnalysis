@@ -65,7 +65,7 @@ end
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
-% reshape 
+% reshape
 iampResponses = {iampResponses{1,:},iampResponses{2,:}};
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
@@ -84,11 +84,7 @@ for ii = 1:analysisParams.numAcquisitions
     %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
 
-averageIampParams = iampOBJ.averageParams(concatParams);
 medianIampParams = iampOBJ.medianParams(concatParams);
-
-directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
-
 
 % Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
@@ -126,16 +122,26 @@ for ii = 1:length(qcmParams)
 end
 
 %% create an average QCM from individual run fits
-[medianParams] = qcmOBJ.medianParams(qcmParams);
-[nrVals] = plotNakaRushtonFromParams(medianParams.crfAmp ,medianParams.crfExponent,medianParams.crfSemi,...
-             'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+[medianQcmParams] = qcmOBJ.medianParams(qcmParams);
+[nrVals] = plotNakaRushtonFromParams(medianQcmParams.crfAmp ,medianQcmParams.crfExponent,medianQcmParams.crfSemi,...
+    'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-for ii = 1:length(directionTimeCoursePacketPocket)
-    qcmMedianTimeCoursePlot(ii,:)   = responseFromPacket('qcmPred', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
-    iampAverageTimeCoursePlot(ii,:) = responseFromPacket('', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
-    iampMedianTimeCoursePlot(ii,:)  = responseFromPacket('qcmPred', analysisParams, medianParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
+% Split regressors
+medianIampParamsSplit.sessionOne = medianIampParams;
+medianIampParamsSplit.sessionOne.paramMainMatrix = [medianIampParams.paramMainMatrix(1:20);medianIampParams.paramMainMatrix(end)];
+medianIampParamsSplit.sessionOne.matrixRows      = length(medianIampParamsSplit.sessionOne.paramMainMatrix);
+
+medianIampParamsSplit.sessionTwo = medianIampParams;
+medianIampParamsSplit.sessionTwo.paramMainMatrix = [medianIampParams.paramMainMatrix(21:40);medianIampParams.paramMainMatrix(end)];
+medianIampParamsSplit.sessionTwo.matrixRows      = length(medianIampParamsSplit.sessionTwo.paramMainMatrix);
+
+for ii= 1:length(directionTimeCoursePacketPocket)
+    qcmMedianTimeCoursePlot(ii,:)   = responseFromPacket('qcmPred', analysisParams, medianQcmParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
 end
+directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+iampMedianTimeCoursePlot  = responseFromPacket('meanIAMP', analysisParams, medianIampParamsSplit, directionTimeCoursePacketPocket, 'plotColor', [.4, .5, .35]);
+iampMedianTimeCoursePlot  = {iampMedianTimeCoursePlot{1,:},iampMedianTimeCoursePlot{2,:}};
 
 
 %% plot the results
@@ -151,5 +157,5 @@ for ii = 1:length(qcmParams)
     hold on
     plot( directionTimeCoursePacketPocket{ii}.response.timebase, directionTimeCoursePacketPocket{ii}.response.values,'k')
     plot(qcmMedianTimeCoursePlot{ii}.timebase,qcmMedianTimeCoursePlot{ii}.values,'color',qcmMedianTimeCoursePlot{ii}.plotColor,'linewidth',2)
+    plot(iampMedianTimeCoursePlot{ii}.timebase,iampMedianTimeCoursePlot{ii}.values,'color',iampMedianTimeCoursePlot{ii}.plotColor,'linewidth',2)
 end
-    
