@@ -4,6 +4,16 @@
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('AP26');
 
+% set the preprocessing method that was used to ananlyze the data.
+analysisParams.preproc = 'hcp';
+
+% turn on or off plotting
+analysisParams.showPlots = true;
+
+% Set the option to use simulated data from known parameters
+analysisParams.analysisSimulate = false;
+% Set which model to use to generate the
+analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 % Get the cleaned time series
 if analysisParams.analysisSimulate
     analysisParams.numAcquisitions = 10;

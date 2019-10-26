@@ -85,6 +85,7 @@ for ii = 1:analysisParams.numAcquisitions
 end
 
 medianIampParams = iampOBJ.medianParams(concatParams);
+directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
 % Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
@@ -101,6 +102,18 @@ directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directio
 % Get the time course predicitions fromt the QCM params fit to the CRF
 for ii = 1:length(qcmParams)
     qcmTimeCoursePlot(ii,:) = responseFromPacket('qcmPred', analysisParams, qcmParams{ii}, directionTimeCoursePacketPocket(ii), 'plotColor', [.7, .1, .3]);
+    
+    % compute some R^2
+    % QCM
+    tmpMat4QcmCorr = [qcmTimeCoursePlot{ii}.values',directionTimeCoursePacketPocket{ii}.response.values'];
+    % IAMP 
+    tmpMat4IampCorr = [iampResponses{ii}.values',directionTimeCoursePacketPocket{ii}.response.values'];
+   
+    qcmCorrMat = corr(tmpMat4QcmCorr);
+    iampCorrMat = corr(tmpMat4IampCorr);
+    
+    rSquaredQCM(ii) = qcmCorrMat(1,2).^2;
+    rSquaredIAMP(ii) = iampCorrMat(1,2).^2;
 end
 
 
@@ -119,6 +132,7 @@ for ii = 1:length(qcmParams)
     plot( directionTimeCoursePacketPocket{ii}.response.timebase, directionTimeCoursePacketPocket{ii}.response.values,'k')
     plot(qcmTimeCoursePlot{ii}.timebase,qcmTimeCoursePlot{ii}.values,'color',qcmTimeCoursePlot{ii}.plotColor,'linewidth',2)
     plot(iampResponses{ii}.timebase,iampResponses{ii}.values,'g','linewidth',2)
+    title(sprintf('R^2 IAMP = %s R^2 QCM = %s', num2str(rSquaredIAMP(ii)), num2str(rSquaredQCM(ii))))
 end
 
 %% create an average QCM from individual run fits
@@ -136,12 +150,25 @@ medianIampParamsSplit.sessionTwo = medianIampParams;
 medianIampParamsSplit.sessionTwo.paramMainMatrix = [medianIampParams.paramMainMatrix(21:40);medianIampParams.paramMainMatrix(end)];
 medianIampParamsSplit.sessionTwo.matrixRows      = length(medianIampParamsSplit.sessionTwo.paramMainMatrix);
 
+% Compute the IAMP median param response 
+iampMedianTimeCoursePlot  = responseFromPacket('meanIAMP', analysisParams, medianIampParamsSplit, iampTimeCoursePacketPocket, 'plotColor', [.4, .5, .35]);
+iampMedianTimeCoursePlot  = {iampMedianTimeCoursePlot{1,:},iampMedianTimeCoursePlot{2,:}};
+
 for ii= 1:length(directionTimeCoursePacketPocket)
     qcmMedianTimeCoursePlot(ii,:)   = responseFromPacket('qcmPred', analysisParams, medianQcmParams, directionTimeCoursePacketPocket(ii), 'plotColor', [.3, .1, .7]);
+    
+    % compute some R^2
+    % QCM
+    tmpMat4QcmCorr = [qcmMedianTimeCoursePlot{ii}.values',directionTimeCoursePacketPocket{ii}.response.values'];
+    % IAMP 
+    tmpMat4IampCorr = [iampMedianTimeCoursePlot{ii}.values',directionTimeCoursePacketPocket{ii}.response.values'];
+   
+    qcmCorrMat = corr(tmpMat4QcmCorr);
+    iampCorrMat = corr(tmpMat4IampCorr);
+    
+    rSquaredMedianQCM(ii) = qcmCorrMat(1,2).^2;
+    rSquaredMedianIAMP(ii) = iampCorrMat(1,2).^2;
 end
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
-iampMedianTimeCoursePlot  = responseFromPacket('meanIAMP', analysisParams, medianIampParamsSplit, directionTimeCoursePacketPocket, 'plotColor', [.4, .5, .35]);
-iampMedianTimeCoursePlot  = {iampMedianTimeCoursePlot{1,:},iampMedianTimeCoursePlot{2,:}};
 
 
 %% plot the results
@@ -158,4 +185,5 @@ for ii = 1:length(qcmParams)
     plot( directionTimeCoursePacketPocket{ii}.response.timebase, directionTimeCoursePacketPocket{ii}.response.values,'k')
     plot(qcmMedianTimeCoursePlot{ii}.timebase,qcmMedianTimeCoursePlot{ii}.values,'color',qcmMedianTimeCoursePlot{ii}.plotColor,'linewidth',2)
     plot(iampMedianTimeCoursePlot{ii}.timebase,iampMedianTimeCoursePlot{ii}.values,'color',iampMedianTimeCoursePlot{ii}.plotColor,'linewidth',2)
+    title(sprintf('R^2 IAMP = %s R^2 QCM = %s', num2str(rSquaredMedianIAMP(ii)), num2str(rSquaredMedianQCM(ii))))
 end
