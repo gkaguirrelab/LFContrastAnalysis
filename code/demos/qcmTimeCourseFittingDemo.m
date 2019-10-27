@@ -63,7 +63,7 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'highpass',true);
 
 % reshape
 iampResponses = {iampResponses{1,:},iampResponses{2,:}};

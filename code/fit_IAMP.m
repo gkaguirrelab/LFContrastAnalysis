@@ -35,6 +35,7 @@ function [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampR
 %    offset                     - Model the offset of a block as a delta
 %                                 function in modelOnsetOffset case
 %    concatAndFit               - Concatenate the runs and stim and fit
+%    highpass                   - use a high pass filter on the data
 
 % MAB 09/09/18
 % MAB 01/06/19 -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -48,6 +49,7 @@ p.addParameter('onset',true,@islogical);
 p.addParameter('midpoint',true,@islogical);
 p.addParameter('offset',true,@islogical);
 p.addParameter('plotColor',[],@isvector);
+p.addParameter('highpass',false,@islogical)
 
 p.parse(analysisParams,fullCleanData,varargin{:});
 
@@ -154,6 +156,9 @@ for sessionNum = 1:analysisParams.numSessions
         
         % Take the median across voxels
         rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
+        if p.Results.highpass
+           highpass(rawTC{sessionNum,jj}.values ,5/288,1/.8);
+        end
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
         rawTC{sessionNum,jj}.plotColor = [0,0,0];
         
