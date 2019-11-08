@@ -57,12 +57,6 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     % Number of acquisitions
     analysisParams.numAcquisitions = length(functionalRuns);
     
-    % Save vars name
-    saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
-    savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
-    saveFullFile = fullfile(savePath,saveName);
-    
-    
     %% Create a cell of stimulusStruct (one struct per run)
     for jj = 1:analysisParams.numAcquisitions
         
@@ -91,7 +85,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         % get attention event regressor
         responseStruct.timeStep = analysisParams.timeStep;
         [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
-        
+        eventsRegressor = sum(eventsRegressor,1);
         % identify the data param file
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
         
