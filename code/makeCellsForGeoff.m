@@ -84,7 +84,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         % get attention event regressor
         responseStruct.timeStep = analysisParams.timeStep;
-        [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
+        [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase,...
+                                                      'numRegressors','single');
         eventsRegressor = sum(eventsRegressor,1);
         % identify the data param file
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
