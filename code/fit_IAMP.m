@@ -157,7 +157,7 @@ for sessionNum = 1:analysisParams.numSessions
         % Take the median across voxels
         rawTC{sessionNum,jj}.values = median(fullCleanData(:,:,(jj+((sessionNum-1)*10))),1);
         if p.Results.highpass
-           highpass(rawTC{sessionNum,jj}.values ,5/288,1/.8);
+            rawTC{sessionNum,jj}.values = highpass(rawTC{sessionNum,jj}.values ,5/288,1/.8);
         end
         rawTC{sessionNum,jj}.timebase = stimulusStruct.timebase;
         rawTC{sessionNum,jj}.plotColor = [0,0,0];
@@ -175,6 +175,9 @@ for sessionNum = 1:analysisParams.numSessions
             thePacket.stimulus.values   = stimulusStruct.values;
             % the kernel
             thePacket.kernel = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+            if p.Results.highpass
+                thePacket.kernel.values = highpass(thePacket.kernel.values ,5/288,1/.8);
+            end
             % the meta data (this is the constrast and directions)
             thePacket.metaData.stimDirections = stimDirections;
             thePacket.metaData.stimContrasts  = stimContrasts;
