@@ -76,7 +76,7 @@ params.noiseSd = 0;
 stimulusStruct.values = stimRegressor;
 stimulusStruct.timebase = 0:deltaT:deltaT*stop(end)-deltaT;
 %kernelStruct.timebase = deltaT:deltaT:5000;
-kernelStruct = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+kernelStruct = analysisParams.HRF;
 
 
 

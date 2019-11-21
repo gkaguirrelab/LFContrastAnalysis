@@ -174,7 +174,7 @@ for sessionNum = 1:analysisParams.numSessions
             thePacket.stimulus.timebase = stimulusStruct.timebase;
             thePacket.stimulus.values   = stimulusStruct.values;
             % the kernel
-            thePacket.kernel = generateHRFKernel(6,12,10,stimulusStruct.timebase);
+            thePacket.kernel = analysisParams.HRF;
             if p.Results.highpass
                 thePacket.kernel.values = highpass(thePacket.kernel.values ,5/288,1/.8);
             end

@@ -5,7 +5,7 @@
 clear;
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('KAS25');
 
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
@@ -18,6 +18,12 @@ analysisParams.analysisSimulate = false;
 % Set which model to use to generate the
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
+%set the HRF
+load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_flobsSearch_eventGain_results.mat']));
+xBase = zeros(1,analysisParams.expLengthTR);
+xBase(1:length(results.hrf')) = results.hrf';
+analysisParams.HRF.values = xBase;
+analysisParams.HRF.timebase =   analysisParams.timebase*1000;
 %% Get the time series
 % from simulation
 if analysisParams.analysisSimulate
@@ -63,7 +69,7 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'highpass',true);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'highpass',false);
 
 % reshape
 iampResponses = {iampResponses{1,:},iampResponses{2,:}};
@@ -87,9 +93,12 @@ end
 medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
+%[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{ directionCrfMeanPacket });
+
 % Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
-[qcmOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket);
+[qcmOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket,'initialParams',qcmCrfMeanParams);
+%[qcmOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket);
 
 % plot the nonlinearity
 % if analysisParams.showPlots

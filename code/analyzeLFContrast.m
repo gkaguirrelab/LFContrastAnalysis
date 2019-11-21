@@ -2,7 +2,7 @@
 %clear;
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('KAS25');
 
 % set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
@@ -14,6 +14,16 @@ analysisParams.showPlots = true;
 analysisParams.analysisSimulate = false;
 % Set which model to use to generate the
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
+
+%set the HRF
+% load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_flobsSearch_eventGain_results.mat']));
+% xBase = zeros(1,analysisParams.expLengthTR);
+% xBase(1:length(results.hrf')) = results.hrf';
+% analysisParams.HRF.values = xBase;
+% analysisParams.HRF.timebase =   analysisParams.timebase*1000;
+
+  analysisParams.HRF = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
+
 % Get the cleaned time series
 if analysisParams.analysisSimulate
     analysisParams.numAcquisitions = 10;

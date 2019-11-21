@@ -86,7 +86,7 @@ for sessionNum = 1:analysisParams.numSessions
         deltaT = analysisParams.TR*1000;
         timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
         
-        theKernel = generateHRFKernel(6,12,10,timebase);
+        theKernel = analysisParams.HRF;
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];

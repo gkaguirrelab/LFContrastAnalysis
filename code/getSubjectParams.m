@@ -238,3 +238,8 @@ analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDurat
 % Plotting params
 analysisParams.numSamples = 25;
 
+% create timebase
+totalTime =analysisParams.expLengthTR*analysisParams.TR; 
+deltaT = analysisParams.TR;
+analysisParams.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
+
