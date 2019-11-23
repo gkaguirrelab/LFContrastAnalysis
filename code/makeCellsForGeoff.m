@@ -1,13 +1,13 @@
 function [stimCells] = makeCellsForGeoff(subjId)
 % This funciton makes a cell array contaiming the stimulus design matrix
-% for each run. 
+% for each run.
 %
 % Syntax:
 %   [stimCells] = makeCellsForGeoff(subjId);
 %
 % Description:
 %    Takes in a subject ID and returns a cell array {1xnumber of runs} that contains
-%    the stimulus design matric for that run. 
+%    the stimulus design matric for that run.
 %    {session 1 directions; session 2 directions; baseline condition;
 %    attentional events}
 %
@@ -85,7 +85,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         % get attention event regressor
         responseStruct.timeStep = analysisParams.timeStep;
         [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase,...
-                                                      'numRegressors','single');
+            'numRegressors','single');
         eventsRegressor = sum(eventsRegressor,1);
         % identify the data param file
         dataParamFile = fullfile(trialOrderDir,trialOrderFiles{jj});
@@ -110,7 +110,14 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             tmpStimMat = [zeros(size(stimBlocks(1:end-1,:)));stimBlocks(1:end-1,:);stimBlocks(end,:);eventsRegressor];
         end
         
-        stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
-        
+        if analysisParams.numClipFramesEnd == 0
+            stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
+            clear tmpStimMat
+        else
+            tmpStimMat = [tmpStimMat zeros(size(tmpStimMat,1),analysisParams.numClipFramesEnd)];
+            tmpStimMat(end - 1,analysisParams.expLengthTR:analysisParams.expLengthTR+analysisParams.numClipFramesEnd) = 1;
+            stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
+            clear tmpStimMat
+        end
     end
 end
