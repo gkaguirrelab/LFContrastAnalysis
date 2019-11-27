@@ -2,15 +2,18 @@
 %
 
 %% Initialize
-clear; close all
+clear;
+
+%% Fit error scalar matters
+fitErrorScalar  = 10000;
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams('AP26');
 
-% Set the preprocessing method that was used to ananlyze the data.
+% set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
 
-% Turn on or off plotting
+% turn on or off plotting
 analysisParams.showPlots = true;
 
 % Set the option to use simulated data from known parameters
@@ -19,10 +22,10 @@ analysisParams.analysisSimulate = false;
 % Set which model to use to generate the
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
-% Using the canonical HRF until I meet with Geoff for fitted HRFs
+% using the canonical HRF until I meet with Geoff for fitted HRFs
 analysisParams.HRF = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
 
-% Get the data
+% get the data
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
 %% Run the IAMP/QCM models
@@ -51,6 +54,7 @@ iampResponses = {iampResponses{1,:},iampResponses{2,:}};
 % that we put there to allow exactly this conversion.  That meta data
 % encapsulates the key things we need to know about the stimulus obtained
 % from the analysis parameters.
+directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
 
 % ###### FIX ###################
 % remove subraction of the baseline
@@ -60,49 +64,54 @@ for ii = 1:analysisParams.numAcquisitions
     %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
 
-%% Get median IAMP parameters
 medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
-%% Which run to look at in detail
-runIdx = 3;
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{ directionCrfMeanPacket },'fitErrorScalar',fitErrorScalar);
 
-%% Fit error scalar matters
-fitErrorScalar  = 10000;
-
-%% Fit the time course packets with the QCM -- { } is because this expects a cell
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+% Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
-directionTimeCoursePacket = directionTimeCoursePacketPocket{runIdx};
-
-%% Fit QCM model to the IAMP parameters 
-[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{directionCrfMeanPacket},'fitErrorScalar',fitErrorScalar);
-qcmTimeCourseCrf = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1},{directionTimeCoursePacket});
-fQcmTimeCourseCrf = qcmCrfMeanOBJ.fitError(qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1}),directionTimeCoursePacket,'fitErrorScalar',fitErrorScalar);
 
 
-% Unseeded fit and time course predictions
-[qcmOBJ,qcmParamsUnseeded] = fitDirectionModel(analysisParams, 'qcmFit',{directionTimeCoursePacket},'fitErrorScalar',fitErrorScalar);
-qcmTimeCourseUnseeded = responseFromPacket('qcmPred', analysisParams, qcmParamsUnseeded{1},{directionTimeCoursePacket});
-fQcmTimeCourseUnseeded = qcmOBJ.fitError(qcmOBJ.paramsToVec(qcmParamsUnseeded{1}),directionTimeCoursePacket,'fitErrorScalar',fitErrorScalar);
+%% Fitting with QCM for example run that show a difference in fit when seeded
+runIdx = 3;
+% unseeded fit 
+[qcmOBJ,qcmParamsUnseeded] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket(runIdx),'fitErrorScalar',fitErrorScalar);
 
-% Seeded fit and time course predictions
-[qcmOBJ,qcmParamsSeeded] = fitDirectionModel(analysisParams, 'qcmFit',{directionTimeCoursePacket},'initialParams',qcmCrfMeanParams,'fitErrorScalar',fitErrorScalar);
-qcmTimeCourseSeeded = responseFromPacket('qcmPred', analysisParams, qcmParamsSeeded{1},{directionTimeCoursePacket});
-fQcmTimeCourseSeeded = qcmOBJ.fitError(qcmOBJ.paramsToVec(qcmParamsSeeded{1}),directionTimeCoursePacket,'fitErrorScalar',fitErrorScalar);
+foo = directionTimeCoursePacketPocket(runIdx);
+fee = directionTimeCoursePacketPocket{runIdx};
+faa = foo{1};
+figure; hold on;
+plot(fee.response.values,'k','LineWidth',4);
+plot(faa.response.values,'r','LineWidth',2);
 
-% Plot the fits 
+% seeded fit
+[qcmOBJ,qcmParamsSeeded] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket(runIdx),'initialParams',qcmCrfMeanParams,'fitErrorScalar',fitErrorScalar);
+
+% generate timecourse predictions unseeded
+qcmTimeCourseUnseeded = responseFromPacket('qcmPred', analysisParams, qcmParamsUnseeded{1}, directionTimeCoursePacketPocket(runIdx));
+fQcmTimeCourseUnseeded = qcmOBJ.fitError(qcmOBJ.paramsToVec(qcmParamsUnseeded{1}),directionTimeCoursePacketPocket{runIdx},'fitErrorScalar',fitErrorScalar);
+
+% generate timecourse predictions seeded
+qcmTimeCourseSeeded = responseFromPacket('qcmPred', analysisParams, qcmParamsSeeded{1}, directionTimeCoursePacketPocket(runIdx));
+fQcmTimeCourseSeeded = qcmOBJ.fitError(qcmOBJ.paramsToVec(qcmParamsSeeded{1}),directionTimeCoursePacketPocket{runIdx},'fitErrorScalar',fitErrorScalar);
+
+% generate timecourse predictions crf fit
+qcmTimeCourseCrf = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket(runIdx));
+fQcmTimeCourseCrf = qcmCrfMeanOBJ.fitError(qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1}),directionTimeCoursePacketPocket{runIdx},'fitErrorScalar',fitErrorScalar);
+
+% plot the fits 
 figure;
-hold on
+hold on 
 plot(qcmTimeCourseCrf{1}.timebase,qcmTimeCourseCrf{1}.values,'g','LineWidth',4);
 plot(qcmTimeCourseUnseeded{1}.timebase,qcmTimeCourseUnseeded{1}.values,'r','LineWidth',4);
 plot(qcmTimeCourseSeeded{1}.timebase,qcmTimeCourseSeeded{1}.values,'b','LineWidth',2);
-plot(directionTimeCoursePacket.response.timebase,directionTimeCoursePacket.response.values,'k','LineWidth',2);
-legend('CRF Fit','Unseeded Fit','Seeded Fit','Time Course')
+plot(directionTimeCoursePacketPocket{runIdx}.response.timebase,directionTimeCoursePacketPocket{runIdx}.response.values,'k')
+plot(directionTimeCoursePacketPocket{runIdx}.response.timebase,qcmTimeCourseCrf{1}.values,'y','LineWidth',2)
+legend('IAMP Fit','Unseeded Fit','Seeded Fit','Time Course')
 xlabel('Time (s)')
-
-% Report error
 title(sprintf('Fit error CRF: %g; Unseeded: %g; Seeded: %g',fQcmTimeCourseCrf,fQcmTimeCourseUnseeded,fQcmTimeCourseSeeded));
+
 
 
 
