@@ -1,4 +1,4 @@
-function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams)
+function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams,varargin)
 % Takes in the analysis params struct and returns a voxel by timepoint by
 % aquisistion matrix for all the runs found fro the specicied session(s)
 %

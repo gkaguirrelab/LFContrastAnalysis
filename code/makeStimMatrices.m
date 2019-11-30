@@ -21,15 +21,22 @@ function [stimCells] = makeStimMatrices(subjId,varargin)
 %    analysisParams             - Returns analysisParams with any updates`
 %
 % Optional key/value pairs:
-%    reorderCells               - permute the order of of the cells based
-%                                 on a vecotr input indication the postion 
-%                                 that current cell should be 
+%    reorderCells               - Permute the order of of the cells based
+%                                 on a vecotr input indication the postion
+%                                 that current cell should be
+%    padTheEnds                 - Add TRs assigned to the baseline
+%                                 condition equal to the length of the MR
+%                                 scan. (Default is to make the stimulus
+%                                 design matrix the length specified by the
+%                                 exp. paremters).
+%
 
 % MAB 11/07/19
 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('subjId',@isstr);
 p.addParameter('reorderCells',[],@isvector);
+p.addParameter('padTheEnds',false,@islogical);
 p.parse(subjId,varargin{:});
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
@@ -117,12 +124,18 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             tmpStimMat = [zeros(size(stimBlocks(1:end-1,:)));stimBlocks(1:end-1,:);stimBlocks(end,:);eventsRegressor];
         end
         
-        if analysisParams.numClipFramesEnd == 0
-            stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
-            clear tmpStimMat
+        % Baseline pad the end
+        if p.Results.padTheEnds
+            if analysisParams.numClipFramesEnd == 0
+                stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
+                clear tmpStimMat
+            else
+                tmpStimMat = [tmpStimMat zeros(size(tmpStimMat,1),analysisParams.numClipFramesEnd)];
+                tmpStimMat(end - 1,analysisParams.expLengthTR:analysisParams.expLengthTR+analysisParams.numClipFramesEnd) = 1;
+                stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
+                clear tmpStimMat
+            end
         else
-            tmpStimMat = [tmpStimMat zeros(size(tmpStimMat,1),analysisParams.numClipFramesEnd)];
-            tmpStimMat(end - 1,analysisParams.expLengthTR:analysisParams.expLengthTR+analysisParams.numClipFramesEnd) = 1;
             stimCells{analysisParams.numAcquisitions*(sessionNum-1) + jj} = tmpStimMat;
             clear tmpStimMat
         end

@@ -25,30 +25,74 @@ analysisParams.HRF.timebase =   analysisParams.timebase*1000;
 scaleVal = trapz(analysisParams.HRF.timebase,analysisParams.HRF.values);
 analysisParams.HRF.values = analysisParams.HRF.values./scaleVal;
 
-%% Get stimulus design matrix for the entire measurment set (session 1 and session 2 pair) 
+
+%% Get stimulus design matrix for the entire measurment set (session 1 and session 2 pair)
 [stimCells] = makeStimMatrices(subjId);
 
 % Get the time course data
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
+% Pull out the median time courses
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
 
-%% Run the IAMP/QCM models
-%
-% Fit IAMP
-%
-% Fit IAMP to each constructed packet and create packetPocket cell array of
-% all the fit packets.
-%     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
-%     iampOBJ - the tfe IAMP object
-%     iampParams - cell array of iampParams for each object
-%
-% NOTE: Each session gets its own row in the packet pocket.  May want to sweep
-% back at some point and match conventions in analysis params to this, for
-% example by making the various cell arrays columns rather than rows to
-% match.  Similarly with LMVectorAngles vector, which could turn into a
-% matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
+% Concat the stim matrices and time courses
+theSignal = [rawTC{1}.values, rawTC{2}.values];
+theStimIAMP   =  cat(2, stimCells{:});
 
+% Create timebase
+numTimePoints = length(theSignal);
+timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
+
+% Create the packet
+thePacketIAMP.response.values   = theSignal;
+thePacketIAMP.response.timebase = timebase;
+
+thePacketIAMP.stimulus.values   = theStimIAMP;
+thePacketIAMP.stimulus.timebase = timebase;
+% the kernel
+kernelVec = zeros(size(timebase));
+kernelVec(1:length(analysisParams.HRF.values)) = analysisParams.HRF.values;
+thePacketIAMP.kernel.values = kernelVec;
+thePacketIAMP.kernel.timebase = timebase;
+% packet meta data
+thePacketIAMP.metaData = [];
+
+% Construct the model object
+iampOBJ = tfeIAMP('verbosity','none');
+
+% fit the IAMP model
+defaultParamsInfo.nInstances = size(thePacketIAMP.stimulus.values,1);
+[paramsFit,fVal,IAMPResponses] = iampOBJ.fitResponse(thePacketIAMP,...
+    'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+% generate time course from params fit and stim struct
+modelResponseStruct = iampOBJ.computeResponse(paramsFit,thePacketIAMP.stimulus,thePacketIAMP.kernel);
+
+% Calculate R^2
+corrVals = [modelResponseStruct.values',thePacketIAMP.response.values'];
+rSquared = corr(corrVals).^2;
+
+
+%% Do the QCM fit!
+directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTimeCoursePacketPocket{2}.stimulus.values];
+
+% Create the packet
+thePacketQCM.response = thePacketIAMP.response;
+
+thePacketQCM.stimulus.values   = theStimQCM;
+thePacketQCM.stimulus.timebase = timebase;
+% the kernel
+thePacketQCM.kernel = thePacketIAMP.kernel;
+% packet meta data
+thePacketQCM.metaData = [];
+
+[qcmOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', {thePacketQCM});
+
+
+% plot it
+figure;hold on
+plot(thePacketIAMP.response.timebase,thePacketIAMP.response.values,'k','LineWidth',2);
+plot(modelResponseStruct.timebase,modelResponseStruct.values,'r','LineWidth',2);
 
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
@@ -57,7 +101,7 @@ analysisParams.HRF.values = analysisParams.HRF.values./scaleVal;
 % that we put there to allow exactly this conversion.  That meta data
 % encapsulates the key things we need to know about the stimulus obtained
 % from the analysis parameters.
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+
 
 % This puts together pairs of acquistions from the two sessions, so that
 % we have one IAMP fit for each pair.  We do this because to fit the
