@@ -23,10 +23,17 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysi
 %    voxelIndex          - A cell of the lines of the input text file. (cell)
 %
 % Optional key/value pairs:
-%    none
-
+%    regressAttenEvents  - Option to either regress out attentional events
+%                          or keep them in.
+%    polyFitOrder        - Order of the polynomial fit for trend removal.
 % MAB 09/09/18
 
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('analysisParams',@isstruct);
+p.addParameter('regressAttenEvents',false,@islogical);
+p.addParameter('polyFitOrder',5,@isnumeric);
+
+p.parse(analysisParams,varargin{:});
 
 % Set up files and paths
 
@@ -181,10 +188,14 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
-            if unique(eventsRegressor) == 0
-                thePacket.stimulus.values = [confoundRegressors];
+            if p.Results.regressAttenEvents
+                if unique(eventsRegressor) == 0
+                    thePacket.stimulus.values = [confoundRegressors];
+                else
+                    thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
+                end
             else
-                thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
+                thePacket.stimulus.values = [confoundRegressors];
             end
             
             defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
@@ -225,7 +236,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 
                 % Linear detrending of the timecourse
                 S = cTimeSeries - nanVec;
-                f = fit(timeBase',S','poly1', 'Exclude', find(isnan(cTimeSeries)));
+                f = fit(timeBase',S',['poly' num2str(p.Results.polyFitOrder)], 'Exclude', find(isnan(cTimeSeries)));
                 cleanRunData(vxl,:,jj) = S - f(timeBase)';
             end
             clear thePacket

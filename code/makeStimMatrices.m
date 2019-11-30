@@ -1,4 +1,4 @@
-function [stimCells] = makeCellsForGeoff(subjId)
+function [stimCells] = makeStimMatrices(subjId,varargin)
 % This funciton makes a cell array contaiming the stimulus design matrix
 % for each run.
 %
@@ -18,12 +18,19 @@ function [stimCells] = makeCellsForGeoff(subjId)
 %                                 (string)
 %
 % Outputs:
-%    analysisParams             - Returns analysisParams with any updates
+%    analysisParams             - Returns analysisParams with any updates`
 %
 % Optional key/value pairs:
-%    none
+%    reorderCells               - permute the order of of the cells based
+%                                 on a vecotr input indication the postion 
+%                                 that current cell should be 
 
 % MAB 11/07/19
+
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('subjId',@isstr);
+p.addParameter('reorderCells',[],@isvector);
+p.parse(subjId,varargin{:});
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams(subjId);
@@ -120,4 +127,12 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             clear tmpStimMat
         end
     end
+end
+
+% reorder the cells to match the order they were run in ICA Fix
+if ~isempty(p.Results.reorderCells)
+    if length(p.Results.reorderCells) ~= length(stimCells)
+        warning('Reordering vector must match the number of cells')
+    end
+    stimCells =stimCells(p.Results.reorderCells);
 end

@@ -2,10 +2,10 @@
 %
 
 %% Initialize
-clear; close all
+clear; %close all
 
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams('AP26');
+analysisParams = getSubjectParams('KAS25');
 
 % Set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
@@ -20,7 +20,14 @@ analysisParams.analysisSimulate = false;
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
 % Using the canonical HRF until I meet with Geoff for fitted HRFs
-analysisParams.HRF = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
+  analysisParams.HRF = generateHRFKernel(4,12,5,analysisParams.timebase*1000);
+%set the HRF
+% load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_eventGain_results.mat']));
+% xBase = zeros(1,analysisParams.expLengthTR);
+% xBase(1:length(results.hrf')) = results.hrf';
+% analysisParams.HRF.values = xBase;
+% analysisParams.HRF.timebase =   analysisParams.timebase*1000;
+
 
 % Get the data
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
@@ -41,9 +48,6 @@ analysisParams.HRF = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'highpass',false);
-
-% reshape
-iampResponses = {iampResponses{1,:},iampResponses{2,:}};
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
@@ -68,7 +72,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampP
 runIdx = 3;
 
 %% Fit error scalar matters
-fitErrorScalar  = 10000;
+fitErrorScalar  = 1000;
 
 %% Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
@@ -98,11 +102,18 @@ plot(qcmTimeCourseCrf{1}.timebase,qcmTimeCourseCrf{1}.values,'g','LineWidth',4);
 plot(qcmTimeCourseUnseeded{1}.timebase,qcmTimeCourseUnseeded{1}.values,'r','LineWidth',4);
 plot(qcmTimeCourseSeeded{1}.timebase,qcmTimeCourseSeeded{1}.values,'b','LineWidth',2);
 plot(directionTimeCoursePacket.response.timebase,directionTimeCoursePacket.response.values,'k','LineWidth',2);
-legend('CRF Fit','Unseeded Fit','Seeded Fit','Time Course')
+plot(iampResponses{runIdx}.timebase,iampResponses{runIdx}.values, 'color', [0.5,0.5,0.5],'LineWidth',4);
+legend('CRF Fit','Unseeded Fit','Seeded Fit','Time Course','IAMP')
 xlabel('Time (s)')
 
-% Report error
-title(sprintf('Fit error CRF: %g; Unseeded: %g; Seeded: %g',fQcmTimeCourseCrf,fQcmTimeCourseUnseeded,fQcmTimeCourseSeeded));
+% Calculate R^2
+corrCRF = corr([qcmTimeCourseCrf{1}.values',directionTimeCoursePacket.response.values']).^2;
+corrQcmUnseeded = corr([qcmTimeCourseUnseeded{1}.values',directionTimeCoursePacket.response.values']).^2;
+corrQcmSeeded = corr([qcmTimeCourseSeeded{1}.values',directionTimeCoursePacket.response.values']).^2;
+corrIAMP = corr([iampResponses{runIdx}.values',directionTimeCoursePacket.response.values']).^2;
+
+% Report R^2
+title(sprintf('R Squared CRF: %g; Unseeded: %g; Seeded: %g; IAMP: %g',corrCRF(1,2),corrQcmUnseeded(1,2),corrQcmSeeded(1,2),corrIAMP(1,2)));
 
 
 
