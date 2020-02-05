@@ -1,8 +1,5 @@
-% Initialize
-%clear;
-
+function theOutputPacketsFUllTC = analyzeLFContrast_fullTimeSeries(subjId)
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-subjId = 'KAS25';
 analysisParams = getSubjectParams(subjId);
 
 % set the preprocessing method that was used to ananlyze the data.
