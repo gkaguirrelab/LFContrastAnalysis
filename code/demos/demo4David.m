@@ -71,7 +71,7 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampP
 runIdx = 3;
 
 %% Fit error scalar matters
-fitErrorScalar  = 1000;
+fitErrorScalar  = 2000;
 
 %% Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);

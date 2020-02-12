@@ -1,4 +1,4 @@
-function [] = analyzeLFContrast(subjId, varargin)
+function [modelResponseStructIAMP, modelResponseStructQCM, thePacketIAMP, thePacketQCM]  = analyzeLFContrast(subjId, varargin)
 % Takes in a time series and chops it up into n runs.
 %
 % Syntax:
