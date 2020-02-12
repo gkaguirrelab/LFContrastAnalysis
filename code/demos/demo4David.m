@@ -46,6 +46,7 @@ analysisParams.HRF.values = xBase ./hrfAUC;
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
 [analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData,'highpass',false);
+iampResponses = {iampResponses{1,:},iampResponses{2,:}};
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 %
