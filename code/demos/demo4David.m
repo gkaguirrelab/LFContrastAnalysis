@@ -25,7 +25,7 @@ xBase = zeros(1,analysisParams.expLengthTR);
 xBase(1:length(results.hrf')) = results.hrf';
 analysisParams.HRF.timebase =   analysisParams.timebase*1000;
 hrfAUC = trapz(analysisParams.HRF.timebase,xBase);
-analysisParams.HRF.values = analysisParams.HRF.values ./hrfAUC;
+analysisParams.HRF.values = xBase ./hrfAUC;
 
 % Get the data
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
