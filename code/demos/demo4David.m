@@ -20,7 +20,13 @@ analysisParams.analysisSimulate = false;
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
 % Using the canonical HRF until I meet with Geoff for fitted HRFs
-  analysisParams.HRF = generateHRFKernel(4,12,5,analysisParams.timebase*1000);
+load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_eventGain_results.mat']));
+xBase = zeros(1,analysisParams.expLengthTR);
+xBase(1:length(results.hrf')) = results.hrf';
+analysisParams.HRF.values = xBase;
+analysisParams.HRF.timebase =   analysisParams.timebase*1000;
+analysisParams.HRF = generateHRFKernel(4,12,5,analysisParams.timebase*1000);
+analysisParams.HRF = generateHRFKernel(4,12,5,analysisParams.timebase*1000);
 %set the HRF
 % load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_eventGain_results.mat']));
 % xBase = zeros(1,analysisParams.expLengthTR);

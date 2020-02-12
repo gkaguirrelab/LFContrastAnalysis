@@ -51,7 +51,7 @@ params.crfOffset   = p.Results.crfOffset;
 params.noiseSd     = p.Results.noiseSD;
 params.noiseInverseFrequencyPower = p.Results.noiseInverseFrequencyPower;
 
-for sessionNum = 1:analysisParams.numSessions
+for sessionNum = 1:length(analysisParams.session)
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);

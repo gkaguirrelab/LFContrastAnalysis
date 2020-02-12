@@ -19,7 +19,7 @@ analysisParams.analysisSimulate = false;
 analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 
 %set the HRF
-load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_flobsSearch_eventGain_results.mat']));
+load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_eventGain_results.mat']));
 xBase = zeros(1,analysisParams.expLengthTR);
 xBase(1:length(results.hrf')) = results.hrf';
 analysisParams.HRF.values = xBase;
@@ -93,7 +93,7 @@ end
 medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
-%[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{ directionCrfMeanPacket });
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{ directionCrfMeanPacket });
 
 % Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
