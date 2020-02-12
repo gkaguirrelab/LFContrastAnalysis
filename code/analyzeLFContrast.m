@@ -50,7 +50,10 @@ xBase(1:length(results.hrf')) = results.hrf';
 analysisParams.HRF.values = xBase;
 analysisParams.HRF.timebase =   analysisParams.timebase*1000;
 
-%  analysisParams.HRF = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
+hrfAUC = trapz(analysisParams.HRF.timebase,analysisParams.HRF.values);
+analysisParams.HRF.values = analysisParams.HRF.values ./hrfAUC;
+
+%analysisParams.HRF2 = generateHRFKernel(6,12,10,analysisParams.timebase*1000);
 
 %Get the cleaned time series
 if analysisParams.analysisSimulate
@@ -105,7 +108,8 @@ end
 % that we put there to allow exactly this conversion.  That meta data
 % encapsulates the key things we need to know about the stimulus obtained
 % from the analysis parameters.
-directionTimeCoursePackeatPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
+directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
 
 % This puts together pairs of acquistions from the two sessions, so that
 % we have one IAMP fit for each pair.  We do this because to fit the
@@ -121,30 +125,30 @@ directionTimeCoursePackeatPocket = makeDirectionTimeCoursePacketPocket(iampTimeC
 % ##############################
 for ii = 1:analysisParams.numAcquisitions
     [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
-    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+    %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
 end
 
-averageIampParams = iampOBJ.averageParams(concatParams);
+medianIampParams = iampOBJ.medianParams(concatParams);
 
-directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
+directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
 % Fit the direction based models to the mean IAMP beta weights
 
 
-% Fit the CRF -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
-
-% Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
-
-% Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
-[nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
-
-% Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
+% % Fit the CRF -- { } is because this expects a cell
+% [nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
+% 
+% % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
+% [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+% 
+% % Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
+% [nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
+% 
+% % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
+% [nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
-[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'fitErrorScalar',1);
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'fitErrorScalar',1000);
 
 % Do some plotting of these fits
 if analysisParams.showPlots
