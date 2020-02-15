@@ -68,10 +68,10 @@ medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
 %% Which run to look at in detail
-runIdx = 3;
+runIdx = 2;
 
 %% Fit error scalar matters
-fitErrorScalar  = 2000;
+fitErrorScalar = 2000;
 
 %% Fit the time course packets with the QCM -- { } is because this expects a cell
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
@@ -82,7 +82,6 @@ directionTimeCoursePacket = directionTimeCoursePacketPocket{runIdx};
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit',{directionCrfMeanPacket},'fitErrorScalar',fitErrorScalar);
 qcmTimeCourseCrf = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1},{directionTimeCoursePacket});
 fQcmTimeCourseCrf = qcmCrfMeanOBJ.fitError(qcmCrfMeanOBJ.paramsToVec(qcmCrfMeanParams{1}),directionTimeCoursePacket,'fitErrorScalar',fitErrorScalar);
-
 
 % Unseeded fit and time course predictions
 [qcmOBJ,qcmParamsUnseeded] = fitDirectionModel(analysisParams, 'qcmFit',{directionTimeCoursePacket},'fitErrorScalar',fitErrorScalar);
