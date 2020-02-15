@@ -68,7 +68,16 @@ medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
 %% Which run to look at in detail
+%
+% When we last looked, run 2 was fit consistently by all
+% methods, while run 3 led to very thin ellipses for
+% the time course method. None-the-less, that method
+% had better R^2 to time course than fitting to CRF
+% from IAMP betas.
 runIdx = 2;
+
+%% Note in code below, the printout that happens in the low level routine
+% says fit to IAMP betas independently of what was actully fit.
 
 %% Fit error scalar matters
 fitErrorScalar = 2000;
