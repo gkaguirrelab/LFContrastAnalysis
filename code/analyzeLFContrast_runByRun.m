@@ -132,7 +132,6 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampP
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
 [qcmCrfMeanOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket,'fitErrorScalar',1000);
-
 qcmMedianParams = qcmCrfMeanOBJ.medianParams(qcmParams)
-
-
+qcmCrfMeanOBJ.paramPrint(qcmMedianParams)
+end

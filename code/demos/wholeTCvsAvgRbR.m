@@ -6,7 +6,20 @@
 subjId = 'KAS25';
 
 % Fit the model to the concatenated time series 
-[fullTC_IAMP, fullTC_QCM, thePacketIAMP, thePacketQCM] = analyzeLFContrast_fullTimeSeries(subjId,'showPlot',false);
+[modelResponseStructIAMP_FTC, modelResponseStructQCM_FTC, thePacketIAMP_FTC, thePacketQCM_FTC] = fullTimeCourseFit(subjId)
+
+[modelResponseStructIAMP_RbR, modelResponseStructQCM_RbR, thePacketIAMP_RbR, thePacketQCM_RbR]  = analyzeLFContrast_runByRun(subjId)
+
+A = chopUpTimeCourse(thePacketQCM_RbR,20)
+
+
+
+
+
+
+
+
+
 
 % Calculate R^2
 corrValsIAMP = [modelResponseStructIAMP.values',thePacketIAMP.response.values'];
