@@ -1,4 +1,4 @@
-function [modelResponseStructIAMP, modelResponseStructQCM, thePacketIAMP, thePacketQCM]  = analyzeLFContrast_runByRun(subjId, varargin)
+function [modelResponseStructIAMP, modelResponseStructQCM, iampTimeCoursePacketPocket, directionTimeCoursePacketPocket]  = analyzeLFContrast_runByRun(subjId, varargin)
 % Takes in a time series and chops it up into n runs.
 %
 % Syntax:
@@ -96,12 +96,12 @@ end
 % example by making the various cell arrays columns rather than rows to
 % match.  Similarly with LMVectorAngles vector, which could turn into a
 % matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, modelResponseStructIAMP, rawTC] = fit_IAMP(analysisParams,fullCleanData);
 
 
 
 % Get directon/contrast form of time course and IAMP crf packet pockets.
-% 
+%
 % This conversion is possible because the IAMP packet pocket has meta data
 % that we put there to allow exactly this conversion.  That meta data
 % encapsulates the key things we need to know about the stimulus obtained
@@ -112,12 +112,12 @@ directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directio
 % This puts together pairs of acquistions from the two sessions, so that
 % we have one IAMP fit for each pair.  We do this because to fit the
 % quadratic model, we need data for all of the color directions together.
-% 
+%
 % NOTE: This bit is very specific to the design of the experiment we are
 % currently analyzing, and has to do specifically with the way color
 % directions were studied across acquisitions and sessions.
-% 
-% 
+%
+%
 % ###### FIX ###################
 % remove subraction of the baseline
 % ##############################
@@ -131,7 +131,12 @@ medianIampParams = iampOBJ.medianParams(concatParams);
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampParams);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
-[qcmCrfMeanOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket,'fitErrorScalar',1000);
-qcmMedianParams = qcmCrfMeanOBJ.medianParams(qcmParams)
-qcmCrfMeanOBJ.paramPrint(qcmMedianParams)
+[qcmOBJ,qcmParams] = fitDirectionModel(analysisParams, 'qcmFit', directionTimeCoursePacketPocket,'fitErrorScalar',1000);
+qcmMedianParams = qcmOBJ.medianParams(qcmParams)
+qcmOBJ.paramPrint(qcmMedianParams)
+
+
+for jj = 1:length(directionTimeCoursePacketPocket)
+    modelResponseStructQCM{jj} = qcmOBJ.computeResponse(qcmMedianParams,directionTimeCoursePacketPocket{jj}.stimulus,directionTimeCoursePacketPocket{jj}.kernel);
+end
 end

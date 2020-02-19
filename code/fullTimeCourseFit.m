@@ -77,7 +77,6 @@ thePacketQCM.metaData = [];
 
 % generate time course from params fit and stim struct
 [qcmOBJ,paramsFitQCM] = fitDirectionModel(analysisParams, 'qcmFit', {thePacketQCM});
-qcmOBJ.paramPrint(paramsFitQCM{1})
 modelResponseStructQCM = qcmOBJ.computeResponse(paramsFitQCM{1},thePacketQCM.stimulus,thePacketQCM.kernel);
 
 
