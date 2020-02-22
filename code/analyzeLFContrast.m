@@ -173,10 +173,13 @@ crfPlot.respNrQcmBased.color = [1 0 0];
 crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsAmpSemi{1},crfStimulus,[]);
 crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
+% dummy up sem as 0s
+semParams = iampParams;
+semParams.paramMainMatrix =abs(rand(size(iampParams.paramMainMatrix)));
 % Plot the CRF from the IAMP, QCM, and  fits
 if analysisParams.showPlots
     [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
-    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampPoints,iampSEM,'subtractBaseline', true);
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semParams,'subtractBaseline', true);
     figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
         [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
     FigureSave(figNameCrf,crfHndl,'pdf');

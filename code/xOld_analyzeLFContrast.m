@@ -135,17 +135,17 @@ directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,medianIampP
 % Fit the direction based models to the mean IAMP beta weights
 
 
-% % Fit the CRF -- { } is because this expects a cell
-% [nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
-% 
-% % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-% [nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
-% 
-% % Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
-% [nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
-% 
-% % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-% [nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
+% Fit the CRF -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket});
+
+% Fit the CRF with the NR common amplitude -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true);
+
+% Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
+[nrCrfOBJ,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonExp', true);
+
+% Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
+[nrCrfOBJ,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {directionCrfMeanPacket}, 'commonAmp', true, 'commonExp', true);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
 [qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'fitErrorScalar',1000);
