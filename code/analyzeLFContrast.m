@@ -19,7 +19,7 @@ analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 [stimCells] = makeStimMatrices(subjId); 
 
 %set the HRF
-[analysisParams] = loadHRF(analysisParams);;
+[analysisParams] = loadHRF(analysisParams);
 
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
