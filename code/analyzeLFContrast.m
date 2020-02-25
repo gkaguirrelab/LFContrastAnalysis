@@ -96,7 +96,8 @@ thePacket.metaData = [];
 % ##############################
 
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
-
+%remove attentional event regressor
+directionCrfMeanPacket.response.values(end) = []; 
 % Fit the direction based models to the mean IAMP beta weights
 
 % Fit the CRF -- { } is because this expects a cell
@@ -174,8 +175,13 @@ crfPlot.respNrQcmBasedCrfAmpSemi = nrCrfOBJ.computeResponse(nrQcmBasedCrfParamsA
 crfPlot.respNrQcmBasedCrfAmpSemi.color = [1 0.2 0];
 
 % dummy up sem as 0s
+% THIS NEEDS TO BE CALCULATED WITH THE BOOTSTRAP ROUTINE BUT FOR NOW RAND
+% TO HAVE SOMETHING TO PLOT AND NOT CRASH
+iampParams.paramMainMatrix(end) = [];
+iampParams.matrixRows = size(iampParams.paramMainMatrix,1)
 semParams = iampParams;
-semParams.paramMainMatrix =abs(rand(size(iampParams.paramMainMatrix)));
+semParams.paramMainMatrix =zeros(size(iampParams.paramMainMatrix));
+
 % Plot the CRF from the IAMP, QCM, and  fits
 if analysisParams.showPlots
     [iampPoints, iampSEM] = iampOBJ.averageParams(concatParams);
@@ -206,7 +212,7 @@ timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, 
 % Get the predictions from individual IAMP params
 for ii = 1:size(iampParams,1)
     for jj = 1:size(iampParams,2)
-        timeCoursePlot.iamp{ii,jj} = responseFromPacket('IAMP', analysisParams, iampParams{ii,jj}, iampTimeCoursePacketPocket{ii,jj}, 'plotColor', [0.5 0.2 0]);
+        timeCoursePlot.iamp{ii,jj} = responseFromPacket('IAMP', analysisParams, iampParams, iampTimeCoursePacketPocket{ii,jj}, 'plotColor', [0.5 0.2 0]);
     end
 end
 
