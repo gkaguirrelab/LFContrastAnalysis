@@ -243,7 +243,6 @@ for sessionNum = 1:analysisParams.numSessions
         concatTimebase= 0:deltaT:deltaT*length(thePacket.response.values)-1;
         thePacket.response.timebase = concatTimebase;
         thePacket.stimulus.timebase = concatTimebase;
-        thePacket.kernel = generateHRFKernel(6,12,10,concatTimebase);
         
         tempTC{sessionNum, 1}.values = thePacket.response.values;
         tempTC{sessionNum, 1}.timebase = concatTimebase;
