@@ -1,21 +1,18 @@
+%% Set up params
 % Set the subject
 subjId = 'KAS25'; 
 
-%Get subject specific params: 'LZ23', 'KAS25', 'AP26'
+% Get subject specific params: 'LZ23', 'KAS25', 'AP26'
 analysisParams = getSubjectParams(subjId);
 
-%set the preprocessing method that was used to ananlyze the data.
+% Set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
 
-%turn on or off plotting
+% Turn on or off plotting
 analysisParams.showPlots = true;
 
-%Set the option to use simulated data from known parameters
-analysisParams.analysisSimulate = false;
-%Set which model to use to generate the
-analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
-
-%% Get stimulus design matrix for the entire measurment set (session 1 and session 2 pair)
+%% Load the relevant data (SDM, HRF, TC)
+% Get stimulus design matrix for the entire measurment set (session 1 and session 2 pair)
 [stimCells] = makeStimMatrices(subjId); 
 
 %set the HRF
@@ -24,6 +21,7 @@ analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
+%% Concatenate the data
 % Pull out the median time courses
 [analysisParams, iampTimeCoursePacketPocket, ~, ~, ~, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
 
@@ -35,13 +33,16 @@ theStimIAMP   =  cat(2, stimCells{:});
 numTimePoints = length(theSignal);
 timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
 
-% Create the IAMP packet for the full experiment session 1 and 2
-% Create the packet
+%% Create the IAMP packet for the full experiment session 1 and 2
+% Tull time course
 thePacketIAMP.response.values   = theSignal;
+% Timebase 
 thePacketIAMP.response.timebase = timebase;
-
-thePacketIAMP.stimulus.values   = theStimIAMP;
+% Stimulus design matrix
+thePacketIAMP.stimulus.values   = theStimIAMP(1:end-1,:);
+% Timebase
 thePacketIAMP.stimulus.timebase = timebase;
+
 % the kernel
 kernelVec = zeros(size(timebase));
 kernelVec(1:length(analysisParams.HRF.values)) = analysisParams.HRF.values;
@@ -65,7 +66,6 @@ theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTim
 
 % Create the packet
 thePacket.response = thePacketIAMP.response;
-
 thePacket.stimulus.values   = theStimQCM;
 thePacket.stimulus.timebase = timebase;
 % the kernel
