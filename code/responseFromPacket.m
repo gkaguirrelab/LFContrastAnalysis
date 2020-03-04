@@ -42,6 +42,11 @@ for ii = 1:size(packetPocket,1)
             fitOBJ = tfeNakaRushtonDirection(directions);
             params = fitParams(srt:stp);
             
+        case 'nrFullTCPred'
+            directions = analysisParams.directionCoding(1:analysisParams.theDimension, :);
+            fitOBJ = tfeNakaRushtonDirection(directions);
+            params = fitParams;
+            
         case 'qcmPred'
             fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
             params = fitParams;
