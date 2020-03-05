@@ -69,30 +69,30 @@ directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCo
 theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTimeCoursePacketPocket{2}.stimulus.values];
 
 % Create the tine course packet
-thePacket.response = thePacketIAMP.response;
-thePacket.stimulus.values   = theStimQCM;
-thePacket.stimulus.timebase = timebase;
-thePacket.kernel = thePacketIAMP.kernel;
-thePacket.metaData = [];
+timeCoursePacket.response = thePacketIAMP.response;
+timeCoursePacket.stimulus.values   = theStimQCM;
+timeCoursePacket.stimulus.timebase = timebase;
+timeCoursePacket.kernel = thePacketIAMP.kernel;
+timeCoursePacket.metaData = [];
 
 % Make the CRF packet
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 
 %% Fit the direction based models to the mean IAMP beta weights
 % Fit the CRF -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {thePacket});
+[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket});
 
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-[~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {thePacket}, 'commonAmp', true);
+[~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonAmp', true);
 
 % Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
-[~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {thePacket}, 'commonExp', true);
+[~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonExp', true);
 
 % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-[~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {thePacket}, 'commonAmp', true, 'commonExp', true);
+[~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonAmp', true, 'commonExp', true);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
-[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {thePacket},'fitErrorScalar',1000);
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {timeCoursePacket},'fitErrorScalar',1000);
 
 % Do some plotting of these fits
 if analysisParams.showPlots
