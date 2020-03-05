@@ -159,6 +159,8 @@ timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanPar
 timeCoursePlot.timecourse = {thePacketIAMP.response};
 timeCoursePlot.timecourse{1}.plotColor =[0, 0, 0];
 
+% Cut up time course into 20 runs...
+
 % Plot the time course prediction for each run using the different fits to
 % the crf
 if analysisParams.showPlots
