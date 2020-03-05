@@ -63,15 +63,6 @@ defaultParamsInfo.nInstances = size(thePacketIAMP.stimulus.values,1);
 [iampParams,fVal,iampResponses] = iampOBJ.fitResponse(thePacketIAMP,...
     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
 
-% Get directon/contrast form of time course and IAMP crf packet pockets.
-% 
-% This conversion is possible because the IAMP packet pocket has meta data
-% that we put there to allow exactly this conversion.  That meta data
-% encapsulates the key things we need to know about the stimulus obtained
-% from the analysis parameters.
-% directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
-% directionTimeCoursePacketPocket = {directionTimeCoursePacketPocket{1,:},directionTimeCoursePacketPocket{2,:}};
-
 %% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
@@ -153,54 +144,36 @@ end
 % Get the time course predicitions of the CRF params
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 0, 1]);
+timeCoursePlot.nrAmp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmp{1}, {timeCoursePacket}, 'plotColor', [0, 0, 1]);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemi = responseFromPacket('nrPred', analysisParams, nrCrfParamsExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .33, 1]);
+timeCoursePlot.nrAmpSemi = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsExp{1}, {timeCoursePacket}, 'plotColor', [0, .33, 1]);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrPred', analysisParams, nrCrfParamsAmpExp{1}, directionTimeCoursePacketPocket, 'plotColor', [0, .66, 1]);
+timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, {timeCoursePacket}, 'plotColor', [0, .66, 1]);
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, directionTimeCoursePacketPocket, 'plotColor', [0, 1, 0]);
-
-% Get the time course predicitions from the NR common Amp and Semi fit to
-% the CRF, based on QCM fit.
-timeCoursePlot.nrQcmBasedAmpSemi = responseFromPacket('nrPred', analysisParams, nrQcmBasedCrfParamsAmpSemi{1}, directionTimeCoursePacketPocket, 'plotColor', [0.5 0.2 0.6]);
-
-% Get the predictions from individual IAMP params
-for ii = 1:size(iampParams,1)
-    for jj = 1:size(iampParams,2)
-        timeCoursePlot.iamp{ii,jj} = responseFromPacket('IAMP', analysisParams, iampParams, iampTimeCoursePacketPocket{ii,jj}, 'plotColor', [0.5 0.2 0]);
-    end
-end
-
-% FIX THIS
-% Get the time course prediction from the avarage IAMP params
-iampParamsTC.sessionOne  = iampOBJ.averageParams(iampParams(1,:));
-iampParamsTC.sessionTwo  = iampOBJ.averageParams(iampParams(2,:));
-iampParamsTC.baseline = concatBaselineShift;
-timeCoursePlot.meanIamp = responseFromPacket('meanIAMP', analysisParams, iampParamsTC, iampTimeCoursePacketPocket, 'plotColor', [0.0 0.2 0.6]);
+timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, {timeCoursePacket}, 'plotColor', [0, 1, 0]);
 
 % Add clean time
-timeCoursePlot.timecourse = rawTC;
-
+timeCoursePlot.timecourse = {thePacketIAMP.response};
+timeCoursePlot.timecourse{1}.plotColor =[0, 0, 0];
 
 % Plot the time course prediction for each run using the different fits to
 % the crf
 if analysisParams.showPlots
-    tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, concatBaselineShift, analysisParams.numSessions*analysisParams.numAcquisitions);
-    figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    FigureSave(figNameTc,tcHndl,'pdf');
+    tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, 0, 1);
+%     figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+%         [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+%     FigureSave(figNameTc,tcHndl,'pdf');
 end
 
 % Plot isoresponce contour
 if analysisParams.showPlots
-    thresholds = [0.10, 0.2, 0.3];
-    colors     = [0.5,0.0,0.0; 0.5,0.5,0.0; 0.0,0.5,0.5;];
-    qcmHndl    = plotIsoresponse(analysisParams,iampPoints,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
-    figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    FigureSave(figNameQcm,qcmHndl,'pdf');
+    thresholds = [0.15];
+    colors     = [0.5,0.0,0.0];
+    qcmHndl    = plotIsoresponse(analysisParams,iampParams,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
+%     figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+%         [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+%     FigureSave(figNameQcm,qcmHndl,'pdf');
 end

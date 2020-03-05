@@ -7,7 +7,7 @@ analysisParams = getSubjectParams(subjId);
 
 % Set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
-
+ 
 % Turn on or off plotting
 analysisParams.showPlots = true;
 
@@ -34,7 +34,7 @@ numTimePoints = length(theSignal);
 timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
 
 %% Create the IAMP packet for the full experiment session 1 and 2
-% Tull time course
+% Full time course
 thePacketIAMP.response.values   = theSignal;
 
 % Timebase 
