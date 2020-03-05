@@ -144,27 +144,34 @@ end
 % Get the time course predicitions of the CRF params
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmp{1}, {timeCoursePacket}, 'plotColor', [0, 0, 1]);
+nrAmp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmp{1}, {timeCoursePacket}, 'plotColor', [0, 0, 1]);
+[timeCoursePlot.nrAmp] = chopUpTimeCourse(nrAmp{1},20);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemi = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsExp{1}, {timeCoursePacket}, 'plotColor', [0, .33, 1]);
+nrAmpSemi = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsExp{1}, {timeCoursePacket}, 'plotColor', [0, .33, 1]);
+[timeCoursePlot.nrAmpSemi] = chopUpTimeCourse(nrAmpSemi{1},20);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-timeCoursePlot.nrAmpSemiExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, {timeCoursePacket}, 'plotColor', [0, .66, 1]);
+nrAmpSemiExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, {timeCoursePacket}, 'plotColor', [0, .66, 1]);
+[timeCoursePlot.nrAmpSemiExp] = chopUpTimeCourse(nrAmpSemiExp{1},20);
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-timeCoursePlot.qcm = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, {timeCoursePacket}, 'plotColor', [0, 1, 0]);
+qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, {timeCoursePacket}, 'plotColor', [0, 1, 0]);
+[timeCoursePlot.qcm] = chopUpTimeCourse(qcmTimeCourse{1},20);
+
+% Add the IAMP
+iampResponses.plotColor = [.5,.5,.5];
+[timeCoursePlot.IAMP] = chopUpTimeCourse(iampResponses,20);
 
 % Add clean time
-timeCoursePlot.timecourse = {thePacketIAMP.response};
-timeCoursePlot.timecourse{1}.plotColor =[0, 0, 0];
-
-% Cut up time course into 20 runs...
+theTimeCourse = {thePacketIAMP.response};
+theTimeCourse{1}.plotColor =[0, 0, 0];
+[timeCoursePlot.timecourse] = chopUpTimeCourse(theTimeCourse{1},20);
 
 % Plot the time course prediction for each run using the different fits to
 % the crf
 if analysisParams.showPlots
-    tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, 0, 1);
+    tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, zeros(20,1), 20);
 %     figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
 %         [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
 %     FigureSave(figNameTc,tcHndl,'pdf');

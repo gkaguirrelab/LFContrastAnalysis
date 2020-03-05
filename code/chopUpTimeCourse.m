@@ -43,5 +43,8 @@ for ii = 1:numChops;
     
     % Make cell array of chopped packets
     thePackets{ii}.timebase = newTimeBase;
-    thePackets{ii}.values = newValues;    
+    thePackets{ii}.values = newValues;  
+    if isfield(timeCoursePacket,'plotColor')
+        thePackets{ii}.plotColor = timeCoursePacket.plotColor; 
+    end
 end
