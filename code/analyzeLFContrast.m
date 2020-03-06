@@ -5,6 +5,9 @@ subjId = 'KAS25';
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
+% Flag for running all the NR models 
+analysisParams.runAllModels = false;
+
 %set the preprocessing method that was used to ananlyze the data.
 analysisParams.preproc = 'hcp';
 
@@ -136,9 +139,9 @@ semParams.paramMainMatrix =zeros(size(iampParams.paramMainMatrix));
 % Plot the CRF from the IAMP, QCM, and  fits
 if analysisParams.showPlots
     crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semParams,'subtractBaseline', true);
-%     figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-%         [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-%     FigureSave(figNameCrf,crfHndl,'pdf');
+    figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameCrf,crfHndl,'pdf');
 end
 
 % Get the time course predicitions of the CRF params
@@ -172,9 +175,9 @@ theTimeCourse{1}.plotColor =[0, 0, 0];
 % the crf
 if analysisParams.showPlots
     tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, zeros(20,1), 20);
-%     figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-%         [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-%     FigureSave(figNameTc,tcHndl,'pdf');
+    figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameTc,tcHndl,'pdf');
 end
 
 % Plot isoresponce contour
