@@ -183,6 +183,8 @@ for sessionNum = 1:analysisParams.numSessions
             thePacket.metaData.stimContrasts  = stimContrasts;
             thePacket.metaData.lmsContrast    = LMSContrastMat;
             
+            
+            % Remove 
             regressionMatrixStruct=thePacket.stimulus;
             regressionMatrixStruct = iampOBJ.applyKernel(regressionMatrixStruct,thePacket.kernel);
             regressionMatrixStruct = iampOBJ.resampleTimebase(regressionMatrixStruct,thePacket.response.timebase);
@@ -196,7 +198,7 @@ for sessionNum = 1:analysisParams.numSessions
                 X = X(validIdx,:);
             end
             
-            dropBlocIndx =  find((std(regressionMatrixStruct.values').*.2) > std(X));
+            dropBlocIndx =  find((std(regressionMatrixStruct.values').*.2) > nanstd(X));
             
             % Perform the fit
             [paramsFit,fVal(sessionNum,jj),IAMPResponses] = ...

@@ -24,8 +24,16 @@ analysisParams.showPlots = true;
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
-%% Concatenate the data
-% Pull out the median time courses
+% %% Get a packet for each run (1-20) 
+% [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
+% 
+% %% Concatenate the packets
+% [analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket);
+% 
+% 
+% % Pull out the median time courses
+
+
 [analysisParams, iampTimeCoursePacketPocket, ~, ~, ~, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
 
 % Concat the stim matrices and time courses

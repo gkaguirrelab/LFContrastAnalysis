@@ -158,6 +158,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
+            
+            % Get the censored time-point times 
             [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(analysisParams,movementRegressorsFull(:,1:6),...
                 'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
             
