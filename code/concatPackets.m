@@ -19,7 +19,8 @@ function [analysisParams, theFullPacket] = concatPackets(analysisParams, packetP
 %    theFullPacket              - The concatenated packet 
 %
 % Optional key/value pairs:
-%    none now (this will change with options to shuffle for bootstrap)
+%    bootstrap                  - Logical. If true, will randomly sample
+%                                 with replacement the input packets.  
 
 % MAB 03/10/20 Wrote it.
 

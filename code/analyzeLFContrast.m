@@ -16,7 +16,6 @@ analysisParams.showPlots = true;
 
 %% Load the relevant data (SDM, HRF, TC)
 
-
 %set the HRF
 [analysisParams] = loadHRF(analysisParams);
 
@@ -29,41 +28,7 @@ analysisParams.showPlots = true;
 %% Concatenate the packets
 [analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket);
 
-
 % Pull out the median time courses
-
-
-% [analysisParams, iampTimeCoursePacketPocket, ~, ~, ~, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
-% 
-% % Concat the stim matrices and time courses
-% theSignal = [rawTC{1}.values, rawTC{2}.values];
-% theStimIAMP   =  cat(2, stimCells{:});
-% 
-% % Create timebase
-% numTimePoints = length(theSignal);
-% timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
-% 
-% %% Create the IAMP packet for the full experiment session 1 and 2
-% % Full time course
-% thePacketIAMP.response.values   = theSignal;
-% 
-% % Timebase
-% thePacketIAMP.response.timebase = timebase;
-% 
-% % Stimulus design matrix remove attentional events
-% thePacketIAMP.stimulus.values   = theStimIAMP(1:end-1,:);
-% 
-% % Timebase
-% thePacketIAMP.stimulus.timebase = timebase;
-% 
-% % The Kernel
-% kernelVec = zeros(size(timebase));
-% kernelVec(1:length(analysisParams.HRF.values)) = analysisParams.HRF.values;
-% thePacketIAMP.kernel.values = kernelVec;
-% thePacketIAMP.kernel.timebase = timebase;
-% 
-% % Packet meta data
-% thePacketIAMP.metaData = [];
 
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');
@@ -76,11 +41,7 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 %% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
-%theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTimeCoursePacketPocket{2}.stimulus.values];
 
-% Create the tine course packet
-%timeCoursePacket = theFullPacket;
-%timeCoursePacket.stimulus.values   = theStimQCM;
 
 % Make the CRF packet
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
@@ -174,6 +135,11 @@ iampResponses.plotColor = [.5,.5,.5];
 theTimeCourse = {theFullPacket.response};
 theTimeCourse{1}.plotColor =[0, 0, 0];
 [timeCoursePlot.timecourse] = chopUpTimeCourse(theTimeCourse{1},20);
+
+
+%% plot stuff
+
+
 
 % Plot the time course prediction for each run using the different fits to
 % the crf
