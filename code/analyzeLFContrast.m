@@ -15,8 +15,7 @@ analysisParams.preproc = 'hcp';
 analysisParams.showPlots = true;
 
 %% Load the relevant data (SDM, HRF, TC)
-% Get stimulus design matrix for the entire measurment set (session 1 and session 2 pair)
-[stimCells] = makeStimMatrices(subjId); 
+
 
 %set the HRF
 [analysisParams] = loadHRF(analysisParams);
@@ -24,86 +23,83 @@ analysisParams.showPlots = true;
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
-% %% Get a packet for each run (1-20) 
-% [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
+%% Get a packet for each run (1-20) 
+[analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
+
+%% Concatenate the packets
+[analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket);
+
+
+% Pull out the median time courses
+
+
+% [analysisParams, iampTimeCoursePacketPocket, ~, ~, ~, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
 % 
-% %% Concatenate the packets
-% [analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket);
+% % Concat the stim matrices and time courses
+% theSignal = [rawTC{1}.values, rawTC{2}.values];
+% theStimIAMP   =  cat(2, stimCells{:});
 % 
+% % Create timebase
+% numTimePoints = length(theSignal);
+% timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
 % 
-% % Pull out the median time courses
-
-
-[analysisParams, iampTimeCoursePacketPocket, ~, ~, ~, rawTC] = fit_IAMP(analysisParams,fullCleanData,'concatAndFit', true);
-
-% Concat the stim matrices and time courses
-theSignal = [rawTC{1}.values, rawTC{2}.values];
-theStimIAMP   =  cat(2, stimCells{:});
-
-% Create timebase
-numTimePoints = length(theSignal);
-timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
-
-%% Create the IAMP packet for the full experiment session 1 and 2
-% Full time course
-thePacketIAMP.response.values   = theSignal;
-
-% Timebase
-thePacketIAMP.response.timebase = timebase;
-
-% Stimulus design matrix remove attentional events
-thePacketIAMP.stimulus.values   = theStimIAMP(1:end-1,:);
-
-% Timebase
-thePacketIAMP.stimulus.timebase = timebase;
-
-% The Kernel
-kernelVec = zeros(size(timebase));
-kernelVec(1:length(analysisParams.HRF.values)) = analysisParams.HRF.values;
-thePacketIAMP.kernel.values = kernelVec;
-thePacketIAMP.kernel.timebase = timebase;
-
-% Packet meta data
-thePacketIAMP.metaData = [];
+% %% Create the IAMP packet for the full experiment session 1 and 2
+% % Full time course
+% thePacketIAMP.response.values   = theSignal;
+% 
+% % Timebase
+% thePacketIAMP.response.timebase = timebase;
+% 
+% % Stimulus design matrix remove attentional events
+% thePacketIAMP.stimulus.values   = theStimIAMP(1:end-1,:);
+% 
+% % Timebase
+% thePacketIAMP.stimulus.timebase = timebase;
+% 
+% % The Kernel
+% kernelVec = zeros(size(timebase));
+% kernelVec(1:length(analysisParams.HRF.values)) = analysisParams.HRF.values;
+% thePacketIAMP.kernel.values = kernelVec;
+% thePacketIAMP.kernel.timebase = timebase;
+% 
+% % Packet meta data
+% thePacketIAMP.metaData = [];
 
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');
 
 % fit the IAMP model
-defaultParamsInfo.nInstances = size(thePacketIAMP.stimulus.values,1);
-[iampParams,fVal,iampResponses] = iampOBJ.fitResponse(thePacketIAMP,...
+defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
+[iampParams,fVal,iampResponses] = iampOBJ.fitResponse(theFullPacket,...
     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
 
 %% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
-theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTimeCoursePacketPocket{2}.stimulus.values];
+timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
+%theStimQCM   =  [directionTimeCoursePacketPocket{1}.stimulus.values,directionTimeCoursePacketPocket{2}.stimulus.values];
 
 % Create the tine course packet
-timeCoursePacket.response = thePacketIAMP.response;
-timeCoursePacket.stimulus.values   = theStimQCM;
-timeCoursePacket.stimulus.timebase = timebase;
-timeCoursePacket.kernel = thePacketIAMP.kernel;
-timeCoursePacket.metaData = [];
+%timeCoursePacket = theFullPacket;
+%timeCoursePacket.stimulus.values   = theStimQCM;
 
 % Make the CRF packet
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 
 %% Fit the direction based models to the mean IAMP beta weights
 % Fit the CRF -- { } is because this expects a cell
-[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket});
+[nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket);
 
 % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-[~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonAmp', true);
+[~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true);
 
 % Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
-[~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonExp', true);
+[~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonExp', true);
 
 % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-[~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', {timeCoursePacket}, 'commonAmp', true, 'commonExp', true);
+[~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true, 'commonExp', true);
 
 % Fit the CRF with the QCM -- { } is because this expects a cell
-[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {timeCoursePacket},'fitErrorScalar',1000);
+[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000);
 
 % Do some plotting of these fits
 if analysisParams.showPlots
@@ -155,19 +151,19 @@ end
 % Get the time course predicitions of the CRF params
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-nrAmp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmp{1}, {timeCoursePacket}, 'plotColor', [0, 0, 1]);
+nrAmp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmp{1}, timeCoursePacket, 'plotColor', [0, 0, 1]);
 [timeCoursePlot.nrAmp] = chopUpTimeCourse(nrAmp{1},20);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-nrAmpSemi = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsExp{1}, {timeCoursePacket}, 'plotColor', [0, .33, 1]);
+nrAmpSemi = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsExp{1}, timeCoursePacket, 'plotColor', [0, .33, 1]);
 [timeCoursePlot.nrAmpSemi] = chopUpTimeCourse(nrAmpSemi{1},20);
 
 % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
-nrAmpSemiExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, {timeCoursePacket}, 'plotColor', [0, .66, 1]);
+nrAmpSemiExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, timeCoursePacket, 'plotColor', [0, .66, 1]);
 [timeCoursePlot.nrAmpSemiExp] = chopUpTimeCourse(nrAmpSemiExp{1},20);
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, {timeCoursePacket}, 'plotColor', [0, 1, 0]);
+qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmCrfMeanParams{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
 [timeCoursePlot.qcm] = chopUpTimeCourse(qcmTimeCourse{1},20);
 
 % Add the IAMP
@@ -175,7 +171,7 @@ iampResponses.plotColor = [.5,.5,.5];
 [timeCoursePlot.IAMP] = chopUpTimeCourse(iampResponses,20);
 
 % Add clean time
-theTimeCourse = {thePacketIAMP.response};
+theTimeCourse = {theFullPacket.response};
 theTimeCourse{1}.plotColor =[0, 0, 0];
 [timeCoursePlot.timecourse] = chopUpTimeCourse(theTimeCourse{1},20);
 
@@ -189,11 +185,11 @@ if analysisParams.showPlots
 end
 
 % Plot isoresponce contour
-if analysisParams.showPlots
-    thresholds = [0.15];
-    colors     = [0.5,0.0,0.0];
-    qcmHndl    = plotIsoresponse(analysisParams,iampParams,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
-%     figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-%         [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-%     FigureSave(figNameQcm,qcmHndl,'pdf');
-end
+% if analysisParams.showPlots
+%     thresholds = [0.15];
+%     colors     = [0.5,0.0,0.0];
+%     qcmHndl    = plotIsoresponse(analysisParams,iampParams,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
+% %     figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+% %         [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+% %     FigureSave(figNameQcm,qcmHndl,'pdf');
+% end

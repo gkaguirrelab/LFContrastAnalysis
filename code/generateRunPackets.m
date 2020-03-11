@@ -90,8 +90,17 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-        stimulusStruct.values =  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
-
+        regMat=  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        
+        % this converts the 21xt regression matrix to 41xt martix to
+        % code for the 40 total conditions + baseline
+        if sessionNum == 1
+            stimulusStruct.values = [regMat(1:end-1,:);zeros(size(regMat(1:end-1,:)));regMat(end,:)];
+        elseif sessionNum == 2
+            stimulusStruct.values = [zeros(size(regMat(1:end-1,:)));regMat];
+        else
+            error('A thrid session is not coded for')
+        end
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
