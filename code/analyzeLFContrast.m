@@ -2,6 +2,9 @@
 % Set the subject: 'LZ23', 'KAS25', 'AP26'
 subjId = 'KAS25'; 
 
+% Number of bootstrap iterations
+numIter  = 100; 
+
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
@@ -25,10 +28,8 @@ analysisParams.showPlots = true;
 %% Get a packet for each run (1-20) 
 [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
 
-%% Concatenate the packets
-[analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
-
-% Pull out the median time courses
+%% Fit the GLM to get the crf betas
+[analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',false);
 
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');
@@ -38,10 +39,27 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 [iampParams,fVal,iampResponses] = iampOBJ.fitResponse(theFullPacket,...
     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
 
+%% Bootstrap
+% init vars
+paramsMat   = []; 
+for ii = 1:numIter
+[analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
+
+% fit the IAMP model
+defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
+[iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
+    'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+paramsMat = [paramsMat, iampParamsBoot.paramMainMatrix];
+end
+
+% Calc SEM for betas
+semIAMP = std(paramsMat,0,2)./sqrt(numIter);
+semParams = iampParams;
+semParams.paramMainMatrix =semIAMP;
+
 %% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
-
 
 % Make the CRF packet
 directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
@@ -92,14 +110,6 @@ crfPlot.respNrCrfAmpExp.color = [0, .66, 1];
 % Predict the responses for CRF with params from QCM
 crfPlot.respQCMCrf = qcmCrfMeanOBJ.computeResponse(qcmCrfMeanParams{1},crfStimulus,[]);
 crfPlot.respQCMCrf.color = [0, 1, 0];
-
-% dummy up sem as 0s
-% THIS NEEDS TO BE CALCULATED WITH THE BOOTSTRAP ROUTINE BUT FOR NOW RAND
-% TO HAVE SOMETHING TO PLOT AND NOT CRASH
-iampParams.paramMainMatrix(end) = [];
-iampParams.matrixRows = size(iampParams.paramMainMatrix,1)
-semParams = iampParams;
-semParams.paramMainMatrix =zeros(size(iampParams.paramMainMatrix));
 
 % Plot the CRF from the IAMP, QCM, and  fits
 if analysisParams.showPlots

@@ -55,7 +55,7 @@ theFullPacket.metaData.stimContrasts  = [];
 theFullPacket.metaData.lmsContrast    = [];
 
  if p.Results.bootstrap == true
-        runOrder = [ randi([1 10],1,10) ,  randi([11 20],1,10)]
+        runOrder = [ randi([1 10],1,10) ,  randi([11 20],1,10)];
     else 
         runOrder = 1:20;
     end
