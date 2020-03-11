@@ -27,6 +27,7 @@ function [analysisParams, theFullPacket] = concatPackets(analysisParams, packetP
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addRequired('packetPocket',@iscell);
+p.addParameter('bootstrap',false,@islogical)
 
 p.parse(analysisParams,packetPocket,varargin{:});
 
@@ -53,16 +54,21 @@ theFullPacket.metaData.stimDirections = [];
 theFullPacket.metaData.stimContrasts  = [];
 theFullPacket.metaData.lmsContrast    = [];
 
+ if p.Results.bootstrap == true
+        runOrder = [ randi([1 10],1,10) ,  randi([11 20],1,10)]
+    else 
+        runOrder = 1:20;
+    end
 for ii = 1:length(packetPocket)
-    
+
     % The Response
-    theFullPacket.response.values   = [theFullPacket.response.values packetPocket{ii}.response.values];
+    theFullPacket.response.values   = [theFullPacket.response.values packetPocket{runOrder(ii)}.response.values];
     % The Stimulus
-    theFullPacket.stimulus.values   = [theFullPacket.stimulus.values packetPocket{ii}.stimulus.values];
+    theFullPacket.stimulus.values   = [theFullPacket.stimulus.values packetPocket{runOrder(ii)}.stimulus.values];
     % The metaData (this is the constrast and directions)
-    theFullPacket.metaData.stimDirections = [theFullPacket.metaData.stimDirections packetPocket{ii}.metaData.stimDirections];
-    theFullPacket.metaData.stimContrasts  = [theFullPacket.metaData.stimContrasts  packetPocket{ii}.metaData.stimContrasts];
-    theFullPacket.metaData.lmsContrast    = [theFullPacket.metaData.lmsContrast packetPocket{ii}.metaData.lmsContrast];
+    theFullPacket.metaData.stimDirections = [theFullPacket.metaData.stimDirections packetPocket{runOrder(ii)}.metaData.stimDirections];
+    theFullPacket.metaData.stimContrasts  = [theFullPacket.metaData.stimContrasts  packetPocket{runOrder(ii)}.metaData.stimContrasts];
+    theFullPacket.metaData.lmsContrast    = [theFullPacket.metaData.lmsContrast packetPocket{runOrder(ii)}.metaData.lmsContrast];
 end
 
 

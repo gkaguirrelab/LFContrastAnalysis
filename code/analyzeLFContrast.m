@@ -26,7 +26,7 @@ analysisParams.showPlots = true;
 [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
 
 %% Concatenate the packets
-[analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket);
+[analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
 
 % Pull out the median time courses
 
