@@ -67,6 +67,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
             crfValues = theModelResp.values(1:modelIndx);
             xAxisModels = contrastSpacing(1:modelIndx);
             iampVals = iampPoints.paramMainMatrix(1:iampIndx)';
+            if isfield(theModelResp, 'shaddedErrorBars')
+                shdErrVals = theModelResp.shaddedErrorBars(1:modelIndx);
+            end
             if exist('iampSEM','var')
                 errVals = iampSEM.paramMainMatrix(1:iampIndx)';
             end
@@ -74,6 +77,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
             crfValues = theModelResp.values((ii-1)*modelIndx+1:ii*modelIndx);
             xAxisModels = contrastSpacing((ii-1)*modelIndx+1:ii*modelIndx);
             iampVals = iampPoints.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
+            if isfield(theModelResp, 'shaddedErrorBars')
+                shdErrVals = theModelResp.shaddedErrorBars((ii-1)*modelIndx+1:ii*modelIndx);
+            end
             if exist('iampSEM','var')
                 errVals = iampSEM.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
             end
@@ -89,6 +95,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
         subplot(rws,cols,ii); hold on
         h(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
         q1    = scatter(xAxisIamp,iampVals,'ok');
+        if isfield(theModelResp, 'shaddedErrorBars')
+            shadedErrorBars(xAxisModels,crfValues,shdErrVals);
+        end
         if exist('iampSEM','var')
             errorbar(xAxisIamp,iampVals, errVals, 'LineStyle','none');
         end

@@ -3,16 +3,15 @@
 subjId = 'KAS25';
 
 % Number of bootstrap iterations
-numIter  = 100;
+numIter  = 10;
 
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
+analysisParams.preproc = 'hcp';
+
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
-
-%set the preprocessing method that was used to ananlyze the data.
-analysisParams.preproc = 'hcp';
 
 %turn on or off plotting
 analysisParams.showPlots = true;
@@ -39,25 +38,7 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 [iampParams,fVal,iampResponses] = iampOBJ.fitResponse(theFullPacket,...
     'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
 
-%% Bootstrap
-% init vars
-paramsMat   = [];
-for ii = 1:numIter
-    [analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
-    
-    % fit the IAMP model
-    defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
-    [iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
-        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-    paramsMat = [paramsMat, iampParamsBoot.paramMainMatrix];
-end
-
-% Calc SEM for betas
-semIAMP = std(paramsMat,0,2);
-semParams = iampParams;
-semParams.paramMainMatrix =semIAMP;
-
-%% Create the time Course packet
+% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
 
@@ -84,12 +65,7 @@ end
 % Fit the time course with the QCM -- { } is because this expects a cell
 [qcmCrfOBJ,qcmCrfParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000);
 
-% Do some plotting of these fits
-if analysisParams.showPlots
-    [nrVals] = plotNakaRushtonFromParams(qcmCrfParams{1}.crfAmp ,qcmCrfParams{1}.crfExponent,qcmCrfParams{1}.crfSemi,...
-        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
-end
-
+%% CRF
 % Upsample the NR repsonses
 crfStimulus = upsampleCRF(analysisParams);
 
@@ -116,9 +92,51 @@ end
 crfPlot.respQCMCrf = qcmCrfOBJ.computeResponse(qcmCrfParams{1},crfStimulus,[]);
 crfPlot.respQCMCrf.color = [0, 1, 0];
 
+
+%% Bootstrap
+% init vars
+iampParamsMat   = [];
+qcmParamsMat    = [];
+crfQCMBoot      = [];
+for ii = 1:numIter
+    [analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
+    timeCoursePacketBoot = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
+    
+    % fit the IAMP model
+    defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
+    [iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
+        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+    iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
+    
+     % Fit the time course with the QCM -- { } is because this expects a cell
+    [qcmCrfOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000);
+    qcmParamsMat = [qcmParamsMat,qcmCrfOBJ.paramsToVec(qcmCrfParamsBoot{1})];
+    crfQCMBootStruct = qcmCrfOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
+    crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
+end
+
+% Calc SEM for IAMP betas
+semIAMP = std(iampParamsMat,0,2);
+semIAMPParams = iampParams;
+semIAMPParams.paramMainMatrix =semIAMP;
+
+% Calc SEM for QCM Params
+semQCM = std(qcmParamsMat,0,2);
+semQCMParams = iampParams;
+semQCMParams.paramMainMatrix =semQCM;
+
+% Calc SEM for QCM CRF
+crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
+
+% Do some plotting of these fits
+if analysisParams.showPlots
+    [nrVals] = plotNakaRushtonFromParams(qcmCrfParams{1}.crfAmp ,qcmCrfParams{1}.crfExponent,qcmCrfParams{1}.crfSemi,...
+        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+end
+
 % Plot the CRF from the IAMP, QCM, and  fits
 if analysisParams.showPlots
-    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semParams,'subtractBaseline', true);
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true);
     figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
         [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
     FigureSave(figNameCrf,crfHndl,'pdf');
