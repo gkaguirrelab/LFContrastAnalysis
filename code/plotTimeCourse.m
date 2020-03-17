@@ -57,14 +57,17 @@ for ii = 1:numSubPlots
         end
         
         subplot(rws,cols,ii); hold on
-        p(jj) = plot(theModelResp{ii}.timebase,response,'color',theModelResp{ii}.plotColor);
-        
+        if isfield(theModelResp{ii}, 'shaddedErrorBars')
+            shadedErrorBars(theModelResp{ii}.timebase,response,theModelResp{ii}.shaddedErrorBars,...
+                'lineprops',{'color',theModelResp{ii}.plotColor},'patchSaturation', 0.05);
+        end
+        p(jj) = plot(theModelResp{ii}.timebase,response,'color',theModelResp{ii}.plotColor,'LineWidth', 1.0);
         
         % put info
         ylabel('PSC')
         xlabel('Time mS')
         title(sprintf('Run = %s', num2str(ii)));
-        
+        set(gca, 'FontName', 'Helvetica', 'FontSize', 14,'FontWeight', 'normal');
         
     end
 end

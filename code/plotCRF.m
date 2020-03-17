@@ -93,10 +93,10 @@ for ii = 1:size(analysisParams.directionCoding,2)
         xAxisIamp = maxConVal.*analysisParams.contrastCoding;
         %% Plot the stuff
         subplot(rws,cols,ii); hold on
-        h(jj) = plot(xAxisModels,crfValues,'color',theModelResp.color);
+        h(jj) = plot(xAxisModels,crfValues,'color',theModelResp.plotColor,'LineWidth', 1.0);
         q1    = scatter(xAxisIamp,iampVals,'ok');
         if isfield(theModelResp, 'shaddedErrorBars')
-            shadedErrorBars(xAxisModels,crfValues,shdErrVals);
+            shadedErrorBars(xAxisModels,crfValues,shdErrVals,'lineprops',{'color',theModelResp.plotColor});
         end
         if exist('iampSEM','var')
             errorbar(xAxisIamp,iampVals, errVals, 'LineStyle','none');

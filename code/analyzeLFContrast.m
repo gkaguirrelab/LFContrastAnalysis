@@ -24,12 +24,13 @@ analysisParams.showPlots = true;
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
-%% Get a packet for each run (1-20)
+% Get a packet for each run (1-20)
 [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
 
-%% Fit the GLM to get the crf betas
+% Concatenate Packet
 [analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',false);
 
+%% FIT THE TIME COURSE
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');
 
@@ -43,9 +44,7 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
 
 % Make the CRF packet
-directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
-
-%% Fit the direction based models to the concatenated time course
+% directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 
 % run NR models if set to true
 if analysisParams.runNRModels
@@ -63,7 +62,7 @@ if analysisParams.runNRModels
 end
 
 % Fit the time course with the QCM -- { } is because this expects a cell
-[qcmCrfOBJ,qcmCrfParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000);
+[qcmTcOBJ,qcmTcParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000);
 
 %% CRF
 % Upsample the NR repsonses
@@ -73,76 +72,26 @@ crfStimulus = upsampleCRF(analysisParams);
 if analysisParams.runNRModels
     % Predict the responses for CRF with params from NR common Amp.
     crfPlot.respNrCrf = nrCrfOBJ.computeResponse(nrCrfParams{1},crfStimulus,[]);
-    crfPlot.respNrCrf.color = [.5, .3, .8];
+    crfPlot.respNrCrf.plotColor = [.5, .3, .8];
     
     % Predict the responses for CRF with params from NR common Amp.
     crfPlot.respNrCrfAmp = nrCrfOBJ.computeResponse(nrCrfParamsAmp{1},crfStimulus,[]);
-    crfPlot.respNrCrfAmp.color = [0, 0, 1];
+    crfPlot.respNrCrfAmp.plotColor = [0, 0, 1];
     
     % Predict the responses for CRF with params from NR common Exp
     crfPlot.respNrCrfExp = nrCrfOBJ.computeResponse(nrCrfParamsExp{1},crfStimulus,[]);
-    crfPlot.respNrCrfExp.color = [0, .33, 1];
+    crfPlot.respNrCrfExp.plotColor = [0, .33, 1];
     
     % Predict the responses for CRF with params from NR common Amp and Exps
     crfPlot.respNrCrfAmpExp = nrCrfOBJ.computeResponse(nrCrfParamsAmpExp{1},crfStimulus,[]);
-    crfPlot.respNrCrfAmpExp.color = [0, .66, 1];
+    crfPlot.respNrCrfAmpExp.plotColor = [0, .66, 1];
 end
 
 % Predict the responses for CRF with params from QCM
-crfPlot.respQCMCrf = qcmCrfOBJ.computeResponse(qcmCrfParams{1},crfStimulus,[]);
-crfPlot.respQCMCrf.color = [0, 1, 0];
+crfPlot.respQCMCrf = qcmTcOBJ.computeResponse(qcmTcParams{1},crfStimulus,[]);
+crfPlot.respQCMCrf.plotColor = [0, 1, 0];
 
-
-%% Bootstrap
-% init vars
-iampParamsMat   = [];
-qcmParamsMat    = [];
-crfQCMBoot      = [];
-for ii = 1:numIter
-    [analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
-    timeCoursePacketBoot = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
-    
-    % fit the IAMP model
-    defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
-    [iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
-        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-    iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
-    
-     % Fit the time course with the QCM -- { } is because this expects a cell
-    [qcmCrfOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000);
-    qcmParamsMat = [qcmParamsMat,qcmCrfOBJ.paramsToVec(qcmCrfParamsBoot{1})];
-    crfQCMBootStruct = qcmCrfOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
-    crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
-end
-
-% Calc SEM for IAMP betas
-semIAMP = std(iampParamsMat,0,2);
-semIAMPParams = iampParams;
-semIAMPParams.paramMainMatrix =semIAMP;
-
-% Calc SEM for QCM Params
-semQCM = std(qcmParamsMat,0,2);
-semQCMParams = iampParams;
-semQCMParams.paramMainMatrix =semQCM;
-
-% Calc SEM for QCM CRF
-crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
-
-% Do some plotting of these fits
-if analysisParams.showPlots
-    [nrVals] = plotNakaRushtonFromParams(qcmCrfParams{1}.crfAmp ,qcmCrfParams{1}.crfExponent,qcmCrfParams{1}.crfSemi,...
-        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
-end
-
-% Plot the CRF from the IAMP, QCM, and  fits
-if analysisParams.showPlots
-    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true);
-    figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    FigureSave(figNameCrf,crfHndl,'pdf');
-end
-
-% Get the time course predicitions of the CRF params
+%% TIME COURSE PREDICTIONS
 
 if analysisParams.runNRModels
     % Get the time course predicitions from the NR common Amp and Semi fit to the CRF
@@ -159,11 +108,11 @@ if analysisParams.runNRModels
 end
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmCrfParams{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
+qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
 [timeCoursePlot.qcm] = chopUpTimeCourse(qcmTimeCourse{1},20);
 
 % Add the IAMP
-iampResponses.plotColor = [.5,.5,.5];
+iampResponses.plotColor = [.9,.15,0];
 [timeCoursePlot.IAMP] = chopUpTimeCourse(iampResponses,20);
 
 % Add clean time
@@ -171,13 +120,82 @@ theTimeCourse = {theFullPacket.response};
 theTimeCourse{1}.plotColor =[0, 0, 0];
 [timeCoursePlot.timecourse] = chopUpTimeCourse(theTimeCourse{1},20);
 
-% Plot the time course prediction for each run using the different fits to
-% the crf
+%% Bootstrap
+% init vars
+iampParamsMat    = [];
+iampResponseBoot = [];
+qcmParamsMat     = [];
+crfQCMBoot       = [];
+tcQCMBoot        = [];
+for ii = 1:numIter
+    [analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
+    timeCoursePacketBoot = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
+    
+    % fit the IAMP model
+    defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
+    [iampParamsBoot,fValBoot(ii),iampResps] = iampOBJ.fitResponse(theFullPacketBoot,...
+        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+    iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
+    iampResponseBoot = [iampResponseBoot; iampResps.values];
+    
+    % Fit the time course with the QCM -- { } is because this expects a cell
+    [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000);
+    qcmParamsMat = [qcmParamsMat,qcmTcOBJ.paramsToVec(qcmCrfParamsBoot{1})];
+    crfQCMBootStruct = qcmTcOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
+    crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
+    
+    % get the QCM time course prediction for the bootstrap to calc error bars
+    qcmTimeCourseBoot = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, timeCoursePacketBoot, 'plotColor', [0, 1, 0]);
+    tcQCMBoot         = [tcQCMBoot; qcmTimeCourseBoot{1}.values];
+end
+
+% Calc SEM for IAMP betas
+semIAMP = std(iampParamsMat,0,2);
+semIAMPParams = iampParams;
+semIAMPParams.paramMainMatrix =semIAMP;
+
+% Calc SEM for IAMP TC Prediction
+errorIampTC= std(iampResponseBoot,0,1);
+timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
+
+% Calc SEM for QCM Params
+semQCM = std(qcmParamsMat,0,2);
+semQCMParams = iampParams;
+semQCMParams.paramMainMatrix =semQCM;
+
+% Calc SEM for QCM CRF
+crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
+
+% Calc SEM for QCM TC Prediction
+errorQcmTC = std(tcQCMBoot,0,1);
+timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
+
+%% MAKE THE PLOTS
+
+% Plot the CRF
+if analysisParams.showPlots
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true);
+    figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    FigureSave(figNameCrf,crfHndl,'pdf');
+end
+
+% Plot the time course prediction
 if analysisParams.showPlots
     tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, zeros(20,1), 20);
+    
+    % Plot configuration
+    set(tcHndl, 'Renderer', 'Painters');
+    figureSizeInches = [20 15];
+    set(tcHndl, 'PaperUnits', 'inches');
+    set(tcHndl, 'PaperSize',figureSizeInches);
+    set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
+    
     figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
         [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    FigureSave(figNameTc,tcHndl,'pdf');
+    %FigureSave(figNameTc,tcHndl,'pdf');
+    print(tcHndl, figNameTc, '-dpdf', '-r300');
+    
 end
 
 % Plot isoresponce contour
@@ -189,3 +207,9 @@ end
 % %         [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
 % %     FigureSave(figNameQcm,qcmHndl,'pdf');
 % end
+
+% Plot the Non-linearity
+if analysisParams.showPlots
+    [nrVals] = plotNakaRushtonFromParams(qcmTcParams{1}.crfAmp ,qcmTcParams{1}.crfExponent,qcmTcParams{1}.crfSemi,...
+        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+end
