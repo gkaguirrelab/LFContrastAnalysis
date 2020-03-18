@@ -59,7 +59,7 @@ for ii = 1:numSubPlots
         subplot(rws,cols,ii); hold on
         if isfield(theModelResp{ii}, 'shaddedErrorBars')
             shadedErrorBars(theModelResp{ii}.timebase,response,theModelResp{ii}.shaddedErrorBars,...
-                'lineprops',{'color',theModelResp{ii}.plotColor},'patchSaturation', 0.05);
+                'lineprops',{'color',theModelResp{ii}.plotColor},'patchSaturation', 0.35);
         end
         p(jj) = plot(theModelResp{ii}.timebase,response,'color',theModelResp{ii}.plotColor,'LineWidth', 1.0);
         

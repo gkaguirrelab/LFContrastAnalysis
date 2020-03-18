@@ -24,6 +24,7 @@ function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampPoin
 %
 % Optional key/value pairs:
 %    subtractBaseline          - The baseline value to be subtracted from the CRF values
+%    iampColor                 - Optional color for IAMP markers
 
 % MAB 09/09/18
 
@@ -35,7 +36,7 @@ p.addRequired('crfStimulus',@isstruct);
 p.addRequired('iampPoints',@isstruct);
 p.addRequired('iampSEM',@isstruct);
 p.addParameter('subtractBaseline',true,@islogical);
-
+p.addParameter('iampColor',[0,0,0],@isvector);
 
 p.parse(analysisParams,crfPlotStruct,crfStimulus,iampPoints,iampSEM,varargin{:});
 
@@ -94,18 +95,23 @@ for ii = 1:size(analysisParams.directionCoding,2)
         %% Plot the stuff
         subplot(rws,cols,ii); hold on
         h(jj) = plot(xAxisModels,crfValues,'color',theModelResp.plotColor,'LineWidth', 1.0);
-        q1    = scatter(xAxisIamp,iampVals,'ok');
         if isfield(theModelResp, 'shaddedErrorBars')
             shadedErrorBars(xAxisModels,crfValues,shdErrVals,'lineprops',{'color',theModelResp.plotColor});
         end
         if exist('iampSEM','var')
-            errorbar(xAxisIamp,iampVals, errVals, 'LineStyle','none');
+            q1    = errorbar(xAxisIamp,iampVals, errVals, 'o','MarkerSize',7,...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', p.Results.iampColor, ...
+                'LineWidth',1.0,'Color','k');
+        else
+            q1    = scatter(xAxisIamp,iampVals, 36,'o','MarkerFaceColor', p.Results.iampColor, ...
+                'MarkerEdgeColor', 'k');
         end
         % put info
         ylabel('Mean Beta Weight')
         xlabel('Contrast')
         title(sprintf('LM stim = %s', num2str(analysisParams.LMVectorAngles(ii))));
         ylim([-0.3 1.4]);
+        set(gca, 'FontName', 'Helvetica', 'FontSize', 14,'FontWeight', 'normal');
         
     end
 end

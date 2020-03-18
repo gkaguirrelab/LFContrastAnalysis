@@ -3,7 +3,7 @@
 subjId = 'KAS25';
 
 % Number of bootstrap iterations
-numIter  = 10;
+numIter  = 100;
 
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
@@ -15,6 +15,8 @@ analysisParams.runNRModels = false;
 
 %turn on or off plotting
 analysisParams.showPlots = true;
+qcmColor  = [0.4078, 0.2784, 0.5765];
+iampColor = [0.8902, 0.6235, 0.5529];
 
 %% Load the relevant data (SDM, HRF, TC)
 
@@ -89,7 +91,7 @@ end
 
 % Predict the responses for CRF with params from QCM
 crfPlot.respQCMCrf = qcmTcOBJ.computeResponse(qcmTcParams{1},crfStimulus,[]);
-crfPlot.respQCMCrf.plotColor = [0, 1, 0];
+crfPlot.respQCMCrf.plotColor = qcmColor;
 
 %% TIME COURSE PREDICTIONS
 
@@ -108,11 +110,11 @@ if analysisParams.runNRModels
 end
 
 % Get the time course predicitions fromt the QCM params fit to the CRF
-qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
+qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, timeCoursePacket, 'plotColor', qcmColor);
 [timeCoursePlot.qcm] = chopUpTimeCourse(qcmTimeCourse{1},20);
 
 % Add the IAMP
-iampResponses.plotColor = [.9,.15,0];
+iampResponses.plotColor = iampColor;
 [timeCoursePlot.IAMP] = chopUpTimeCourse(iampResponses,20);
 
 % Add clean time
@@ -174,9 +176,11 @@ timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
 
 % Plot the CRF
 if analysisParams.showPlots
-    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true);
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true, 'iampColor',iampColor);
     figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
         [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    set(crfHndl, 'Renderer', 'Painters');
+    
     FigureSave(figNameCrf,crfHndl,'pdf');
 end
 
@@ -191,9 +195,11 @@ if analysisParams.showPlots
     set(tcHndl, 'PaperSize',figureSizeInches);
     set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
     
+    % Full file name
     figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
         [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    %FigureSave(figNameTc,tcHndl,'pdf');
+    
+    % Save it
     print(tcHndl, figNameTc, '-dpdf', '-r300');
     
 end
