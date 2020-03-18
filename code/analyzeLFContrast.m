@@ -162,8 +162,7 @@ timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
 
 % Calc SEM for QCM Params
 semQCM = std(qcmParamsMat,0,2);
-semQCMParams = iampParams;
-semQCMParams.paramMainMatrix =semQCM;
+semQCMParams =qcmTcOBJ.vecToParams(semQCM); 
 
 % Calc SEM for QCM CRF
 crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
@@ -206,7 +205,7 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
-    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor);
+    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,'qcmSem',semQCMParams,'dispParams',false);
     set(ellipseNonlinHndl, 'Renderer', 'Painters');
     figureSizeInches = [11 5];
     set(ellipseNonlinHndl, 'PaperUnits', 'inches');
