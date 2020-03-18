@@ -82,11 +82,9 @@ if p.Results.dispParams
     end
     % Add the above text to the plot
     theTextHandle = text(gca, -.9,.9 , modelTxtTheta, 'Interpreter', 'latex');
+     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
     theTextHandle = text(gca, -.9,.76 , modelTxtMAR, 'Interpreter', 'latex');
-    set(theTextHandle, ...
-        'FontSize', 10, ...
-        'Color', [0.3 0.3 0.3], ...
-        'BackgroundColor', [1 1 1]);
+     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
 set(gca, ...
@@ -149,12 +147,11 @@ if p.Results.dispParams
     
     % Add the above text to the plot
     theTextHandle = text(gca, .05,9.5 , modelTxtAmp, 'Interpreter', 'latex');
-    theTextHandle = text(gca, .55,9.5, modelTxtExp, 'Interpreter', 'latex');
-    theTextHandle = text(gca, .27,8.55 , modelTxtSemi, 'Interpreter', 'latex');
-    set(theTextHandle, ...
-        'FontSize', 10, ...
-        'Color', [0.3 0.3 0.3], ...
-        'BackgroundColor', [1 1 1]);
+    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    theTextHandle = text(gca, .05,9, modelTxtExp, 'Interpreter', 'latex');
+    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    theTextHandle = text(gca, .05,8.5 , modelTxtSemi, 'Interpreter', 'latex');
+    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
 

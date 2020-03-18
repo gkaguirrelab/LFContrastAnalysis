@@ -205,7 +205,7 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
-    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,'qcmSem',semQCMParams,'dispParams',false);
+    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,'qcmSem',semQCMParams,'dispParams',true);
     set(ellipseNonlinHndl, 'Renderer', 'Painters');
     figureSizeInches = [11 5];
     set(ellipseNonlinHndl, 'PaperUnits', 'inches');
