@@ -204,18 +204,16 @@ if analysisParams.showPlots
     
 end
 
-% Plot isoresponce contour
-% if analysisParams.showPlots
-%     thresholds = [0.15];
-%     colors     = [0.5,0.0,0.0];
-%     qcmHndl    = plotIsoresponse(analysisParams,iampParams,qcmCrfMeanParams,thresholds,nrCrfParamsAmp,colors);
-% %     figNameQcm = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-% %         [analysisParams.expSubjID,'_QCM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-% %     FigureSave(figNameQcm,qcmHndl,'pdf');
-% end
-
-% Plot the Non-linearity
+%Plot isoresponce contour
 if analysisParams.showPlots
-    [nrVals] = plotNakaRushtonFromParams(qcmTcParams{1}.crfAmp ,qcmTcParams{1}.crfExponent,qcmTcParams{1}.crfSemi,...
-        'analysisParams',analysisParams,'plotFunction',true,'savePlot',true);
+    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor);
+    set(ellipseNonlinHndl, 'Renderer', 'Painters');
+    figureSizeInches = [11 5];
+    set(ellipseNonlinHndl, 'PaperUnits', 'inches');
+    set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
+    set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
+    figNameEllipseNonlin = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_Ellipse_Nonlin_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+    print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
+
 end
