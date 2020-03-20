@@ -23,7 +23,7 @@ function [analysisParams] = loadHRF(analysisParams)
 
 % MAB 12/22/19 created it
 
-load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_eventGain_results.mat']));
+load(fullfile(getpref('LFContrastAnalysis','melaAnalysisPath'),'LFContrastAnalysis','subjectHRFs',analysisParams.expSubjID,[analysisParams.expSubjID '_'  analysisParams.sessionNickname '_eventGain_results.mat']));
 xBase = zeros(1,analysisParams.expLengthTR);
 xBase(1:length(results.hrf')) = results.hrf';
 analysisParams.HRF.values = xBase;

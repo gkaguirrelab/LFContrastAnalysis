@@ -2,13 +2,15 @@
 % Set the subject: 'LZ23', 'KAS25', 'AP26'
 subjId = 'KAS25';
 
-% Number of bootstrap iterations
-numIter  = 100;
-
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
 analysisParams.preproc = 'hcp';
+
+analysisParams.saveFigs = false;
+
+% Number of bootstrap iterations
+numIter  = 10;
 
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
@@ -162,7 +164,7 @@ timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
 
 % Calc SEM for QCM Params
 semQCM = std(qcmParamsMat,0,2);
-semQCMParams =qcmTcOBJ.vecToParams(semQCM); 
+semQCMParams =qcmTcOBJ.vecToParams(semQCM);
 
 % Calc SEM for QCM CRF
 crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
@@ -175,44 +177,48 @@ timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
 
 % Plot the CRF
 if analysisParams.showPlots
-    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,'subtractBaseline', true, 'iampColor',iampColor);
-    figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    set(crfHndl, 'Renderer', 'Painters');
+    crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,...
+                     'subtractBaseline', true, 'iampColor',iampColor, 'indivBootCRF', crfQCMBoot);
     
-    FigureSave(figNameCrf,crfHndl,'pdf');
+    if analysisParams.saveFigs
+        figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+            [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        set(crfHndl, 'Renderer', 'Painters');
+        FigureSave(figNameCrf,crfHndl,'pdf');
+    end
 end
 
 % Plot the time course prediction
 if analysisParams.showPlots
     tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, zeros(20,1), 20);
     
-    % Plot configuration
-    set(tcHndl, 'Renderer', 'Painters');
-    figureSizeInches = [20 15];
-    set(tcHndl, 'PaperUnits', 'inches');
-    set(tcHndl, 'PaperSize',figureSizeInches);
-    set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
-    
-    % Full file name
-    figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    
-    % Save it
-    print(tcHndl, figNameTc, '-dpdf', '-r300');
-    
+    if analysisParams.saveFigs
+        % Plot configuration
+        set(tcHndl, 'Renderer', 'Painters');
+        figureSizeInches = [20 15];
+        set(tcHndl, 'PaperUnits', 'inches');
+        set(tcHndl, 'PaperSize',figureSizeInches);
+        set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
+        % Full file name
+        figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+            [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        % Save it
+        print(tcHndl, figNameTc, '-dpdf', '-r300');
+    end
 end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
     [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,'qcmSem',semQCMParams,'dispParams',true);
-    set(ellipseNonlinHndl, 'Renderer', 'Painters');
-    figureSizeInches = [11 5];
-    set(ellipseNonlinHndl, 'PaperUnits', 'inches');
-    set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
-    set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
-    figNameEllipseNonlin = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_Ellipse_Nonlin_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
-    print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
-
+    
+    if analysisParams.saveFigs
+        set(ellipseNonlinHndl, 'Renderer', 'Painters');
+        figureSizeInches = [11 5];
+        set(ellipseNonlinHndl, 'PaperUnits', 'inches');
+        set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
+        set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
+        figNameEllipseNonlin = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+            [analysisParams.expSubjID,'_Ellipse_Nonlin_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
+    end
 end

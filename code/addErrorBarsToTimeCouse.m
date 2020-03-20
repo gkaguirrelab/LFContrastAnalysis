@@ -42,6 +42,6 @@ for ii = 1:numPackets;
     % Chop up the error values
     startPos = 1 + (ii - 1)*numTimePoints;
     stopPos = (ii)*numTimePoints;
-    cutErrorVals = errorVals(startPos:stopPos);
+    cutErrorVals = errorVals(:,startPos:stopPos);
     timeCoursePackets{ii}.shaddedErrorBars = cutErrorVals;
 end

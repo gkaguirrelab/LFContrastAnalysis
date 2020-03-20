@@ -5,15 +5,18 @@ function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampPoin
 %   [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints);
 %
 % Description:
-%    This function plots the IAMP fits and IAMP-QCM predictions from runIAMP_QCM.m as contrast response
-%    functions (one plot per modulation direction).
+%    This function plots the IAMP fits and IAMP-QCM predictions from 
+%    runIAMP_QCM.m as contrast response functions (one plot per modulation 
+%    direction).
 %
 % Inputs:
-%    analysisParams            - Analysis parameter stuct set in analyzeLFContrast (Struct)
+%    analysisParams            - Analysis parameter stuct set in 
+%                                analyzeLFContrast (Struct)
 %    crfPlotStruct             - A struct containing each model you want
-%                                plotted as a field. Each model must subfields
-%                                of values (the CRF model predictions) and color
-%                                (the color values of the line)
+%                                plotted as a field. Each model must 
+%                                subfields of values (the CRF model 
+%                                predictions) and color (the color values 
+%                                of the line)
 %    crfStimulus               - The CRF stimulus used to make the model
 %                                predictions
 %    iampsPoints               - The mean IAMP beta weights
@@ -23,8 +26,11 @@ function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampPoin
 %    figHdl                    - Figure handle
 %
 % Optional key/value pairs:
-%    subtractBaseline          - The baseline value to be subtracted from the CRF values
+%    subtractBaseline          - The baseline value to be subtracted from 
+%                                the CRF values
 %    iampColor                 - Optional color for IAMP markers
+%    indivBootCRF              - Plot each draw of a bootstrap analysis in
+%                                each corresponding CRF
 
 % MAB 09/09/18
 
@@ -37,10 +43,12 @@ p.addRequired('iampPoints',@isstruct);
 p.addRequired('iampSEM',@isstruct);
 p.addParameter('subtractBaseline',true,@islogical);
 p.addParameter('iampColor',[0,0,0],@isvector);
-
+p.addParameter('indivBootCRF',[],@ismatrix);
 p.parse(analysisParams,crfPlotStruct,crfStimulus,iampPoints,iampSEM,varargin{:});
 
-
+if ~isempty(p.Results.indivBootCRF)
+    indivBootCRF = p.Results.indivBootCRF;
+end
 
 rws = ceil(sqrt(size(analysisParams.directionCoding,2)));
 cols = rws;
@@ -74,6 +82,9 @@ for ii = 1:size(analysisParams.directionCoding,2)
             if exist('iampSEM','var')
                 errVals = iampSEM.paramMainMatrix(1:iampIndx)';
             end
+            if ~isempty(p.Results.indivBootCRF)
+                theBoots = indivBootCRF(:,1:modelIndx)';
+            end
         else
             crfValues = theModelResp.values((ii-1)*modelIndx+1:ii*modelIndx);
             xAxisModels = contrastSpacing((ii-1)*modelIndx+1:ii*modelIndx);
@@ -84,16 +95,24 @@ for ii = 1:size(analysisParams.directionCoding,2)
             if exist('iampSEM','var')
                 errVals = iampSEM.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
             end
+            if ~isempty(p.Results.indivBootCRF)
+                theBoots = indivBootCRF(:,(ii-1)*modelIndx+1:ii*modelIndx)';
+            end
         end
         if p.Results.subtractBaseline
-            %offestVal = crfValues(end);
             offestVal = iampPoints.paramMainMatrix(end);
             crfValues = crfValues - offestVal;
-            iampVals = iampVals - offestVal;
+            iampVals  = iampVals - offestVal;
+            if ~isempty(p.Results.indivBootCRF)
+                theBoots  = theBoots - offestVal;
+            end
         end
         xAxisIamp = maxConVal.*analysisParams.contrastCoding;
         %% Plot the stuff
         subplot(rws,cols,ii); hold on
+        if ~isempty(p.Results.indivBootCRF)
+            plot(xAxisModels,theBoots,'--','Color',[0.3, 0.3, 0.3,.4],'LineWidth', 0.75);
+        end
         h(jj) = plot(xAxisModels,crfValues,'color',theModelResp.plotColor,'LineWidth', 1.0);
         if isfield(theModelResp, 'shaddedErrorBars')
             shadedErrorBars(xAxisModels,crfValues,shdErrVals,'lineprops',{'color',theModelResp.plotColor});

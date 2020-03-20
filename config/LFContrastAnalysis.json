@@ -39,19 +39,6 @@
 		"url": ""
 	},
     {
-		"flavor": "",
-		"hook": "",
-		"importance": "",
-		"localHookTemplate": "config/LFContrastAnalysisLocalHookTemplate.m",
-		"name": "LFContrastAnalysis",
-		"pathPlacement": "append",
-		"subfolder": ["toolbox","code","bootstrap"],
-		"toolboxRoot": "",
-		"type": "git",
-		"update": "",
-		"url": "https://github.com/gkaguirrelab/LFContrastAnalysis.git"
-	},	
-    {
         "flavor": "",
 		"hook": "",
 		"importance": "",
@@ -63,5 +50,18 @@
 		"type": "git",
 		"update": "",
 		"url": "https://github.com/brainardlab/BrainardLabToolbox.git"
+	},
+    {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "config/LFContrastAnalysisLocalHookTemplate.m",
+		"name": "LFContrastAnalysis",
+		"pathPlacement": "append",
+		"subfolder": "code",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/gkaguirrelab/LFContrastAnalysis.git"
 	}
 ]
