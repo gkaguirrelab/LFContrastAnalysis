@@ -28,6 +28,7 @@ p.addParameter('nQCMPoints',100,@isnumeric);
 p.addParameter('plotColor',[0.3 0.45 0.81],@isvector);
 p.addParameter('xSampleBase',[0:0.01:1],@isnumeric);
 p.addParameter('dispParams',true,@islogical);
+p.addParameter('addEqContrastPts',[],@isstruct);
 p.parse(qcmParams,varargin{:});
 
 % Pull stuff out of the results struct
@@ -82,9 +83,9 @@ if p.Results.dispParams
     end
     % Add the above text to the plot
     theTextHandle = text(gca, -.9,.9 , modelTxtTheta, 'Interpreter', 'latex');
-     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
     theTextHandle = text(gca, -.9,.76 , modelTxtMAR, 'Interpreter', 'latex');
-     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
 set(gca, ...
@@ -117,6 +118,29 @@ nrVals = NR(xSampleBase);
 
 % Plot it
 subplot(1,2,2)
+hold on
+
+if ~isempty(p.Results.addEqContrastPts)
+    eqContrast =p.Results.addEqContrastPts;
+    eqContrast.values(2,:) = eqContrast.values(2,:) - eqContrast.values(2,end);
+    cVals = eqContrast.colorVals;
+    for ii = 1:length(eqContrast.values)
+        markerSize = 6;
+        markerAreaPtsSquared = markerSize^2;
+        sctrHndl = scatter(eqContrast.values(1,ii),eqContrast.values(2,ii),markerAreaPtsSquared, ...
+            'LineWidth', 1.0, 'MarkerFaceColor', cVals(ii,:), ...
+            'MarkerEdgeColor', cVals(ii,:));
+  
+    end
+    colormap(eqContrast.colorMap);
+    caxis([-45,112.5]);
+    c = colorbar('Location','southoutside' ,'Ticks',[-35,-15,5,25,42.5,62.5,82.5,102.5],...
+             'TickLabels',{'-45^o','-22.5^o','0^o','22.5^o','45^o','67.5^o','90^o','112.5^o'});
+    c.Label.String = 'Chromatic Direction (angles in L/M plane)';
+    c.Label.FontSize = 12; 
+
+end
+
 L1 = plot(xSampleBase,nrVals,'Color', plotColor, 'LineWidth', 2);
 
 hTitle  = title ('Response Nonlinearlity');
@@ -148,14 +172,11 @@ if p.Results.dispParams
     % Add the above text to the plot
     theTextHandle = text(gca, .05,9.5 , modelTxtAmp, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, .05,9, modelTxtExp, 'Interpreter', 'latex');
+    theTextHandle = text(gca, .05,8.8, modelTxtExp, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, .05,8.5 , modelTxtSemi, 'Interpreter', 'latex');
+    theTextHandle = text(gca, .05,8.1 , modelTxtSemi, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
-
-
-
 
 set(gca, ...
     'Box'         , 'off'     , ...
@@ -170,7 +191,7 @@ set(gca, ...
     'LineWidth'   , 2         , ...
     'ActivePositionProperty', 'OuterPosition');
 ylim([0 10]);
-
+xlim([0 1]);
 set(gcf, 'Color', 'white' );
 
 

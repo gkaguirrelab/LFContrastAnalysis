@@ -26,7 +26,7 @@ function [timeCoursePackets]= addErrorBarsToTimeCouse(errorVals,timeCoursePacket
 % MAB 03/17/20 created it
 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
-p.addRequired('errorVals',@isvector);
+p.addRequired('errorVals',@ismatrix);
 p.addRequired('timeCoursePackets',@iscell);
 p.parse(errorVals,timeCoursePackets,varargin{:});
 

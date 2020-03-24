@@ -3,7 +3,7 @@ function [stimCells] = makeStimMatrices(subjId,varargin)
 % for each run.
 %
 % Syntax:
-%   [stimCells] = makeCellsForGeoff(subjId);
+%   [stimCells] = makeStimMatrices(subjId);
 %
 % Description:
 %    Takes in a subject ID and returns a cell array {1xnumber of runs} that contains

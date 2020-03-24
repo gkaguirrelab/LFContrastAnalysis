@@ -7,10 +7,10 @@ analysisParams = getSubjectParams(subjId);
 
 analysisParams.preproc = 'hcp';
 
-analysisParams.saveFigs = false;
+analysisParams.saveFigs = f;
 
 % Number of bootstrap iterations
-numIter  = 10;
+numIter  = 5;
 
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
@@ -47,8 +47,8 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
 
-% Make the CRF packet
-% directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,iampParams);
+% Make the CRF packet for plotting the stilumi in the nonlinearlty 
+stimAndRespForPlot = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 
 % run NR models if set to true
 if analysisParams.runNRModels
@@ -117,7 +117,7 @@ qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, ti
 
 % Add the IAMP
 iampResponses.plotColor = iampColor;
-[timeCoursePlot.IAMP] = chopUpTimeCourse(iampResponses,20);
+[timeCoursePlot.IAMP]   = chopUpTimeCourse(iampResponses,20);
 
 % Add clean time
 theTimeCourse = {theFullPacket.response};
@@ -159,30 +159,41 @@ semIAMPParams = iampParams;
 semIAMPParams.paramMainMatrix =semIAMP;
 
 % Calc SEM for IAMP TC Prediction
-errorIampTC= std(iampResponseBoot,0,1);
+% errorIampTC= std(iampResponseBoot,0,1);
+% timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
+ciIampTC = getConfIntForMatrix(iampResponseBoot,'row');
+errorIampTC = abs(ciIampTC -qcmTimeCourse{1}.values);
 timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
+
 
 % Calc SEM for QCM Params
 semQCM = std(qcmParamsMat,0,2);
 semQCMParams =qcmTcOBJ.vecToParams(semQCM);
 
 % Calc SEM for QCM CRF
-crfPlot.respQCMCrf.shaddedErrorBars = std(crfQCMBoot,0,1);
+% respQCMCrfCI = getConfIntForMatrix(crfQCMBoot,'row');
+% crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
+crfPlot.respQCMCrf.shaddedErrorBars  = std(crfQCMBoot,0,1);
 
 % Calc SEM for QCM TC Prediction
-errorQcmTC = std(tcQCMBoot,0,1);
+ciQcmTC = getConfIntForMatrix(tcQCMBoot,'row');
+errorQcmTC = abs(ciQcmTC -qcmTimeCourse{1}.values);
 timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
+
+
+
 
 %% MAKE THE PLOTS
 
 % Plot the CRF
 if analysisParams.showPlots
+    
     crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,...
-                     'subtractBaseline', true, 'iampColor',iampColor, 'indivBootCRF', crfQCMBoot);
+                     'subtractBaseline', true, 'iampColor',iampColor);
     
     if analysisParams.saveFigs
         figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+            [analysisParams.expSubjID,'_CRF_SEM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         set(crfHndl, 'Renderer', 'Painters');
         FigureSave(figNameCrf,crfHndl,'pdf');
     end
@@ -201,7 +212,7 @@ if analysisParams.showPlots
         set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         % Full file name
         figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+            [analysisParams.expSubjID,'_TimeCourse_SEM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         % Save it
         print(tcHndl, figNameTc, '-dpdf', '-r300');
     end
@@ -209,8 +220,11 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
-    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,'qcmSem',semQCMParams,'dispParams',true);
     
+    eqContrastPts = computeEquivContrast(stimAndRespForPlot,qcmTcParams{1});
+    [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,...
+                                 'qcmSem',semQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
+    analysisParams.saveFigs = true;
     if analysisParams.saveFigs
         set(ellipseNonlinHndl, 'Renderer', 'Painters');
         figureSizeInches = [11 5];
