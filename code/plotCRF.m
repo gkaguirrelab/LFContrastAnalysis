@@ -1,32 +1,32 @@
-function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampPoints, iampSEM, varargin)
+function [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampPoints, iampError, varargin)
 % This function plots the IAMP CRF and the IAMP-QCM CRF.
 %
 % Syntax:
 %   [figHdl] = plotCRF(analysisParams, crfPlotStruct, crfStimulus, iampsPoints);
 %
 % Description:
-%    This function plots the IAMP fits and IAMP-QCM predictions from 
-%    runIAMP_QCM.m as contrast response functions (one plot per modulation 
+%    This function plots the IAMP fits and IAMP-QCM predictions from
+%    runIAMP_QCM.m as contrast response functions (one plot per modulation
 %    direction).
 %
 % Inputs:
-%    analysisParams            - Analysis parameter stuct set in 
+%    analysisParams            - Analysis parameter stuct set in
 %                                analyzeLFContrast (Struct)
 %    crfPlotStruct             - A struct containing each model you want
-%                                plotted as a field. Each model must 
-%                                subfields of values (the CRF model 
-%                                predictions) and color (the color values 
+%                                plotted as a field. Each model must
+%                                subfields of values (the CRF model
+%                                predictions) and color (the color values
 %                                of the line)
 %    crfStimulus               - The CRF stimulus used to make the model
 %                                predictions
 %    iampsPoints               - The mean IAMP beta weights
-%    iampSEM                   - Error bars for iampPoints
+%    iampError                 - Error bars for iampPoints
 %
 % Outputs:
 %    figHdl                    - Figure handle
 %
 % Optional key/value pairs:
-%    subtractBaseline          - The baseline value to be subtracted from 
+%    subtractBaseline          - The baseline value to be subtracted from
 %                                the CRF values
 %    iampColor                 - Optional color for IAMP markers
 %    indivBootCRF              - Plot each draw of a bootstrap analysis in
@@ -40,11 +40,11 @@ p.addRequired('analysisParams',@isstruct);
 p.addRequired('crfPlotStruct',@isstruct);
 p.addRequired('crfStimulus',@isstruct);
 p.addRequired('iampPoints',@isstruct);
-p.addRequired('iampSEM',@isstruct);
+p.addRequired('iampError',@isstruct);
 p.addParameter('subtractBaseline',true,@islogical);
 p.addParameter('iampColor',[0,0,0],@isvector);
 p.addParameter('indivBootCRF',[],@ismatrix);
-p.parse(analysisParams,crfPlotStruct,crfStimulus,iampPoints,iampSEM,varargin{:});
+p.parse(analysisParams,crfPlotStruct,crfStimulus,iampPoints,iampError,varargin{:});
 
 if ~isempty(p.Results.indivBootCRF)
     indivBootCRF = p.Results.indivBootCRF;
@@ -77,10 +77,10 @@ for ii = 1:size(analysisParams.directionCoding,2)
             xAxisModels = contrastSpacing(1:modelIndx);
             iampVals = iampPoints.paramMainMatrix(1:iampIndx)';
             if isfield(theModelResp, 'shaddedErrorBars')
-                shdErrVals = theModelResp.shaddedErrorBars(1:modelIndx);
+                shdErrVals = theModelResp.shaddedErrorBars(:,1:modelIndx);
             end
-            if exist('iampSEM','var')
-                errVals = iampSEM.paramMainMatrix(1:iampIndx)';
+            if exist('iampError','var')
+                errVals = iampError.paramMainMatrix(:,1:iampIndx)';
             end
             if ~isempty(p.Results.indivBootCRF)
                 theBoots = indivBootCRF(:,1:modelIndx)';
@@ -90,10 +90,10 @@ for ii = 1:size(analysisParams.directionCoding,2)
             xAxisModels = contrastSpacing((ii-1)*modelIndx+1:ii*modelIndx);
             iampVals = iampPoints.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
             if isfield(theModelResp, 'shaddedErrorBars')
-                shdErrVals = theModelResp.shaddedErrorBars((ii-1)*modelIndx+1:ii*modelIndx);
+                shdErrVals = theModelResp.shaddedErrorBars(:,(ii-1)*modelIndx+1:ii*modelIndx);
             end
-            if exist('iampSEM','var')
-                errVals = iampSEM.paramMainMatrix((ii-1)*iampIndx+1:ii*iampIndx)';
+            if exist('iampError','var')
+                errVals = iampError.paramMainMatrix(:,(ii-1)*iampIndx+1:ii*iampIndx)';
             end
             if ~isempty(p.Results.indivBootCRF)
                 theBoots = indivBootCRF(:,(ii-1)*modelIndx+1:ii*modelIndx)';
@@ -117,10 +117,19 @@ for ii = 1:size(analysisParams.directionCoding,2)
         if isfield(theModelResp, 'shaddedErrorBars')
             shadedErrorBars(xAxisModels,crfValues,shdErrVals,'lineprops',{'color',theModelResp.plotColor});
         end
-        if exist('iampSEM','var')
-            q1    = errorbar(xAxisIamp,iampVals, errVals, 'o','MarkerSize',7,...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', p.Results.iampColor, ...
-                'LineWidth',1.0,'Color','k');
+        
+        if exist('iampError','var')
+            if size(errVals,2) == 2
+                upperCI = errVals(:,1);
+                lowerCI = errVals(:,2);
+                q1    = errorbar(xAxisIamp, iampVals, lowerCI, upperCI, 'o','MarkerSize',7,...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', p.Results.iampColor, ...
+                    'LineWidth',1.0,'Color','k');
+            else
+                                q1    = errorbar(xAxisIamp,iampVals, errVals, 'o','MarkerSize',7,...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', p.Results.iampColor, ...
+                    'LineWidth',1.0,'Color','k');
+            end
         else
             q1    = scatter(xAxisIamp,iampVals, 36,'o','MarkerFaceColor', p.Results.iampColor, ...
                 'MarkerEdgeColor', 'k');

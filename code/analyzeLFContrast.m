@@ -7,10 +7,10 @@ analysisParams = getSubjectParams(subjId);
 
 analysisParams.preproc = 'hcp';
 
-analysisParams.saveFigs = f;
+analysisParams.saveFigs = true;
 
 % Number of bootstrap iterations
-numIter  = 5;
+numIter  = 200;
 
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
@@ -153,35 +153,38 @@ for ii = 1:numIter
     tcQCMBoot         = [tcQCMBoot; qcmTimeCourseBoot{1}.values];
 end
 
-% Calc SEM for IAMP betas
-semIAMP = std(iampParamsMat,0,2);
-semIAMPParams = iampParams;
-semIAMPParams.paramMainMatrix =semIAMP;
+%% Get error bars on stuff
+ciPercent = 68;
+upperCiVal = 100 - ((100 - ciPercent)/2);
+lowerCiVal = ((100 - ciPercent)/2);
 
-% Calc SEM for IAMP TC Prediction
-% errorIampTC= std(iampResponseBoot,0,1);
-% timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
-ciIampTC = getConfIntForMatrix(iampResponseBoot,'row');
+% Calc Error for IAMP betas
+ciIampParams = prctile(iampParamsMat',[upperCiVal lowerCiVal]);
+ciIampParams = abs(ciIampParams - iampParams.paramMainMatrix');
+semIAMPParams = iampParams;
+semIAMPParams.paramMainMatrix =ciIampParams;
+
+% Calc error for IAMP TC Prediction
+ciIampTC = prctile(iampResponseBoot,[upperCiVal lowerCiVal]);
 errorIampTC = abs(ciIampTC -qcmTimeCourse{1}.values);
 timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
 
+% Calc error for QCM Params
+ciQCM = prctile(qcmParamsMat',[upperCiVal lowerCiVal])';
+ciQCMParams.mar   =ciQCM(1,:);
+ciQCMParams.angle =ciQCM(2,:);
+ciQCMParams.amp   =ciQCM(3,:);
+ciQCMParams.exp   =ciQCM(4,:);
+ciQCMParams.semi  =ciQCM(5,:);
 
-% Calc SEM for QCM Params
-semQCM = std(qcmParamsMat,0,2);
-semQCMParams =qcmTcOBJ.vecToParams(semQCM);
-
-% Calc SEM for QCM CRF
-% respQCMCrfCI = getConfIntForMatrix(crfQCMBoot,'row');
-% crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
-crfPlot.respQCMCrf.shaddedErrorBars  = std(crfQCMBoot,0,1);
+% Calc error for QCM CRF
+ respQCMCrfCI = prctile(crfQCMBoot,[upperCiVal lowerCiVal]);
+ crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
 
 % Calc SEM for QCM TC Prediction
-ciQcmTC = getConfIntForMatrix(tcQCMBoot,'row');
+ciQcmTC =prctile(tcQCMBoot,[upperCiVal lowerCiVal]);
 errorQcmTC = abs(ciQcmTC -qcmTimeCourse{1}.values);
 timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
-
-
-
 
 %% MAKE THE PLOTS
 
@@ -189,7 +192,7 @@ timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
 if analysisParams.showPlots
     
     crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,...
-                     'subtractBaseline', true, 'iampColor',iampColor);
+                     'subtractBaseline', true, 'iampColor',iampColor,'indivBootCRF',[]);
     
     if analysisParams.saveFigs
         figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
@@ -220,14 +223,13 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
-    
     eqContrastPts = computeEquivContrast(stimAndRespForPlot,qcmTcParams{1});
     [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,...
-                                 'qcmSem',semQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
-    analysisParams.saveFigs = true;
+                                 'qcmCI',ciQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
+                        
     if analysisParams.saveFigs
         set(ellipseNonlinHndl, 'Renderer', 'Painters');
-        figureSizeInches = [11 5];
+        figureSizeInches = [13.5 6];
         set(ellipseNonlinHndl, 'PaperUnits', 'inches');
         set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
         set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
