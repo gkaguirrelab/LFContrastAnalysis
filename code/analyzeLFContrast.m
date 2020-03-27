@@ -1,6 +1,6 @@
 %% Set up params
 % Set the subject: 'LZ23', 'KAS25', 'AP26'
-subjId = 'KAS25';
+subjId = 'AP26';
 
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
@@ -15,6 +15,9 @@ numIter  = 200;
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
 
+% bandpass the signal
+analysisParams.highpass = false;
+
 %turn on or off plotting
 analysisParams.showPlots = true;
 qcmColor  = [0.4078, 0.2784, 0.5765];
@@ -25,11 +28,15 @@ iampColor = [0.8902, 0.6235, 0.5529];
 %set the HRF
 [analysisParams] = loadHRF(analysisParams);
 
+if analysisParams.highpass 
+    analysisParams.HRF.values = highpass(analysisParams.HRF.values ,5/288,1/.8);
+end
+
 % Load the time course
 [fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
 
 % Get a packet for each run (1-20)
-[analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData);
+[analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData,'highpass',analysisParams.highpass);
 
 % Concatenate Packet
 [analysisParams, theFullPacket] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',false);
@@ -196,7 +203,7 @@ if analysisParams.showPlots
     
     if analysisParams.saveFigs
         figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_CRF_SEM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+            [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         set(crfHndl, 'Renderer', 'Painters');
         FigureSave(figNameCrf,crfHndl,'pdf');
     end
@@ -215,7 +222,7 @@ if analysisParams.showPlots
         set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         % Full file name
         figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_TimeCourse_SEM_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+            [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         % Save it
         print(tcHndl, figNameTc, '-dpdf', '-r300');
     end
@@ -223,7 +230,6 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
-    eqContrastPts = computeEquivContrast(stimAndRespForPlot,qcmTcParams{1});
     [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,...
                                  'qcmCI',ciQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
                         

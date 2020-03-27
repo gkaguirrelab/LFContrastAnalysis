@@ -32,7 +32,7 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addParameter('regressAttenEvents',false,@islogical);
 p.addParameter('polyFitOrder',5,@isnumeric);
-
+p.addParameter('highpass',true,@isnumeric);
 p.parse(analysisParams,varargin{:});
 
 % Set up files and paths
@@ -240,6 +240,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 S = cTimeSeries - nanVec;
                 f = fit(timeBase',S',['poly' num2str(p.Results.polyFitOrder)], 'Exclude', find(isnan(cTimeSeries)));
                 cleanRunData(vxl,:,jj) = S - f(timeBase)';
+
             end
             clear thePacket
         end
