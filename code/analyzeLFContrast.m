@@ -1,6 +1,6 @@
 %% Set up params
 % Set the subject: 'LZ23', 'KAS25', 'AP26'
-subjId = 'AP26';
+subjId = 'KAS25_replication';
 
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
@@ -230,6 +230,8 @@ end
 
 %Plot isoresponce contour
 if analysisParams.showPlots
+ 
+    eqContrastPts = computeEquivContrast(stimAndRespForPlot,qcmTcParams{1});
     [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,...
                                  'qcmCI',ciQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
                         

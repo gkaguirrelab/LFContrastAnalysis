@@ -71,7 +71,7 @@ switch subjID
         
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
-        analysisParams.numClipFramesEnd   = 2;
+        analysisParams.numClipFramesEnd   = 0;
         analysisParams.expLengthTR        = 360;
         
     case 'KAS25'

@@ -27,7 +27,7 @@ p.addRequired('qcmParams',@isstruct);
 p.addParameter('qcmCI',[],@isstruct);
 p.addParameter('nQCMPoints',100,@isnumeric);
 p.addParameter('plotColor',[0.3 0.45 0.81],@isvector);
-p.addParameter('xSampleBase',[0:0.01:1],@isnumeric);
+p.addParameter('xSampleBase',[0.001:0.005:1],@isnumeric);
 p.addParameter('dispParams',true,@islogical);
 p.addParameter('addEqContrastPts',[],@isstruct);
 p.parse(qcmParams,varargin{:});
@@ -92,9 +92,9 @@ if p.Results.dispParams
     
     % Add the above text to the plot
     theTextHandle = text(gca, -.9,.9 , modelTxtTheta, 'Interpreter', 'latex');
-    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
     theTextHandle = text(gca, -.9,.76 , modelTxtMAR, 'Interpreter', 'latex');
-    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
 % format the figure
@@ -151,7 +151,7 @@ if ~isempty(p.Results.addEqContrastPts)
             'MarkerEdgeColor', cVals(ii,:));
         
         % set the alpha value 
-        set(sctrHndl, 'MarkerFaceAlpha', 0.6);
+        set(sctrHndl, 'MarkerFaceAlpha', 0.8);
     end
     
     % get the current plot size
@@ -204,12 +204,12 @@ if p.Results.dispParams
     end
     
     % Add the above text to the plot
-    theTextHandle = text(gca, .0075,9.5 , modelTxtAmp, 'Interpreter', 'latex');
-    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, .0075,8.8, modelTxtExp, 'Interpreter', 'latex');
-    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, .0075,8.1 , modelTxtSemi, 'Interpreter', 'latex');
-    set(theTextHandle,'FontSize', 10, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    theTextHandle = text(gca, 1/500,3.8 , modelTxtAmp, 'Interpreter', 'latex');
+    set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    theTextHandle = text(gca, 1/500,3.5, modelTxtExp, 'Interpreter', 'latex');
+    set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+    theTextHandle = text(gca, 1/500,3.2 , modelTxtSemi, 'Interpreter', 'latex');
+    set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
 % format plot
@@ -222,13 +222,13 @@ set(gca, ...
     'YGrid'       , 'on'      , ...
     'XColor'      , [.3 .3 .3], ...
     'YColor'      , [.3 .3 .3], ...
-    'YTick'       , 0:2:10    , ...
+    'YTick'       , 0:1:4    , ...
     'XTick'       , [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0], ...
     'XTickLabel'  , {'0%','1%','2%','5%','10%','20%','50%','100%'}, ...
     'LineWidth'   , 2         , ...
     'ActivePositionProperty', 'OuterPosition',...
     'xscale','log');
-ylim([0 10]);
+ylim([0 4]);
 xlim([0 1]);
 set(gcf, 'Color', 'white' );
 axis square
