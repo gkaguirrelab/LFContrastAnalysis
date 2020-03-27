@@ -40,16 +40,16 @@ qcmCI        = p.Results.qcmCI;
 
 %% Ellipse Figure
 % Get the eq. contrast needed for a normalized ellipse
-desiredEqContrast = InvertNakaRushton([qcmParams.crfAmp,qcmParams.crfSemi,qcmParams.crfExponent],1);
 
 % Generate a circle of calculated eq. contrast radius
-circlePoints = desiredEqContrast*UnitCircleGenerate(nQCMPoints);
+circlePoints = UnitCircleGenerate(nQCMPoints);
 
 % Create transformation found from fitting the QCM
-[~,Ainv,Q] = EllipsoidMatricesGenerate([1 qcmParams.Qvec],'dimension',2);
+scaleMat = [qcmParams.Qvec(1),0;0,1];
+rotMat   = deg2rotm(qcmParams.Qvec(2));
 
 % Apply transformation
-ellipsePoints = Ainv*circlePoints;
+ellipsePoints = (circlePoints' * scaleMat * rotMat)';
 
 % Plot it
 figHndl = figure;
