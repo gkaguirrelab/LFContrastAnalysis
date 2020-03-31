@@ -58,7 +58,8 @@ theFullPacket.metaData.lmsContrast    = [];
         runOrder = [ randi([1 10],1,10) ,  randi([11 20],1,10)];
     else 
         runOrder = 1:20;
-    end
+ end
+    
 for ii = 1:length(packetPocket)
 
     % The Response

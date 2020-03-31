@@ -86,7 +86,11 @@ for ii = 1:numSubPlots
     % put info
     ylabel('PSC')
     xlabel('Time mS')
-    title(sprintf('Run %s: QCM R^{2} %s, IAMP R^{2} %s', num2str(ii),num2str(round(qcmR2,2)),num2str(round(iampR2,2))));
+    if ~isempty(find(strcmp(fields(:), 'IAMP')))
+        title(sprintf('Run %s: QCM R^{2} %s, IAMP R^{2} %s', num2str(ii),num2str(round(qcmR2,2)),num2str(round(iampR2,2))));
+    else
+        title(sprintf('Run %s', num2str(ii)));
+    end
     set(gca, 'FontName', 'Helvetica', 'FontSize', 14,'FontWeight', 'normal');
 end
 

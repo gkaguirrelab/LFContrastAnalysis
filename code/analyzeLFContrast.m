@@ -1,7 +1,5 @@
-%% Set up params
-% Set the subject: 'LZ23', 'KAS25', 'AP26'
-subjId = 'KAS25_replication';
-
+function [] = analyzeLFContrast(subjId)
+display(['STARTING: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
@@ -60,20 +58,20 @@ stimAndRespForPlot = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 % run NR models if set to true
 if analysisParams.runNRModels
     % Fit the CRF -- { } is because this expects a cell
-    [nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket);
+    [nrCrfOBJ,nrCrfParams] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket,'talkToMe',false);
     
     % Fit the CRF with the NR common amplitude -- { } is because this expects a cell
-    [~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true);
+    [~,nrCrfParamsAmp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true,'talkToMe',false);
     
     % Fit the CRF with the NR common Exponent -- { } iPs because this expects a cell
-    [~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonExp', true);
+    [~,nrCrfParamsExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonExp', true,'talkToMe',false);
     
     % Fit the CRF with the NR common amplitude, and exponent  -- { } is because this expects a cell
-    [~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true, 'commonExp', true);
+    [~,nrCrfParamsAmpExp] = fitDirectionModel(analysisParams, 'nrFit', timeCoursePacket, 'commonAmp', true, 'commonExp', true,'talkToMe',false);
 end
 
 % Fit the time course with the QCM -- { } is because this expects a cell
-[qcmTcOBJ,qcmTcParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000);
+[qcmTcOBJ,qcmTcParams] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacket,'fitErrorScalar',1000,'talkToMe',false);
 
 %% CRF
 % Upsample the NR repsonses
@@ -150,7 +148,7 @@ for ii = 1:numIter
     iampResponseBoot = [iampResponseBoot; iampResps.values];
     
     % Fit the time course with the QCM -- { } is because this expects a cell
-    [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000);
+    [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000,'talkToMe',false);
     qcmParamsMat = [qcmParamsMat,qcmTcOBJ.paramsToVec(qcmCrfParamsBoot{1})];
     crfQCMBootStruct = qcmTcOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
     crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
@@ -245,4 +243,6 @@ if analysisParams.showPlots
             [analysisParams.expSubjID,'_Ellipse_Nonlin_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
     end
+end
+display(['COMPLETED: ',subjId])
 end

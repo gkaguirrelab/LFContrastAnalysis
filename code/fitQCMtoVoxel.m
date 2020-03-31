@@ -1,92 +1,85 @@
-function [qcmParams,meanRsquaredIAMP,stdRsquaredIAMP, meanRsquaredQCM,stdRsquaredQCM] = fitQCMtoVoxel(analysisParams,voxelTimeSeries)
-clear defaultParamsInfo
-defaultParamsInfo.noOffset = false;
-fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
-
-%% Run the IAMP/QCM models
-%
-% Fit IAMP
-%
-% Fit IAMP to each constructed packet and create packetPocket cell array of
-% all the fit packets.
-%     packetPocket - Meta data of packePocket contains the direction/contrast form of the same packet.
-%     iampOBJ - the tfe IAMP object
-%     iampParams - cell array of iampParams for each object
-%
-% NOTE: Each session gets its own row in the packet pocket.  May want to sweep
-% back at some point and match conventions in analysis params to this, for
-% example by making the various cell arrays columns rather than rows to
-% match.  Similarly with LMVectorAngles vector, which could turn into a
-% matrix.
-[analysisParams, iampTimeCoursePacketPocket, iampOBJ, iampParams, iampResponses, rawTC] = fit_IAMP(analysisParams,voxelTimeSeries);
+function [qcmParams,meanRsquaredIAMP,stdRsquaredIAMP, meanRsquaredQCM,stdRsquaredQCM] = fitQCMtoVoxel(fitOBJ, analysisParams,voxelTimeSeries)
 
 
+%set the HRF
+[analysisParams] = loadHRF(analysisParams);
 
+if analysisParams.highpass
+    analysisParams.HRF.values = highpass(analysisParams.HRF.values ,5/288,1/.8);
+end
+
+% Load the time course
+[fullCleanData, analysisParams] = getTimeCourse_hcp(analysisParams);
+
+% Get a packet for each run (1-20)
+[analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData,'highpass',analysisParams.highpass);
+
+%% Generate a cell array of concat train packets and a corresponding cell
+%  array of concat test packets
+[theTestPackets, theTrainPackets,leaveOutPairs] = concatPackets_crossVal(analysisParams, iampTimeCoursePacketPocket);
+
+% Create the time Course packet
 % Get directon/contrast form of time course and IAMP crf packet pockets.
-%
-% This conversion is possible because the IAMP packet pocket has meta data
-% that we put there to allow exactly this conversion.  That meta data
-% encapsulates the key things we need to know about the stimulus obtained
-% from the analysis parameters.
-directionTimeCoursePacketPocket = makeDirectionTimeCoursePacketPocket(iampTimeCoursePacketPocket);
-
-% This puts together pairs of acquistions from the two sessions, so that
-% we have one IAMP fit for each pair.  We do this because to fit the
-% quadratic model, we need data for all of the color directions together.
-%
-% NOTE: This bit is very specific to the design of the experiment we are
-% currently analyzing, and has to do specifically with the way color
-% directions were studied across acquisitions and sessions.
+timeCourseTrainPackets = makeDirectionTimeCoursePacketPocket(theTrainPackets);
+timeCourseTestPackets = makeDirectionTimeCoursePacketPocket(theTestPackets);
+% Construct the model object
+iampOBJ = tfeIAMP('verbosity','none');
 
 
-% ###### FIX ###################
-% remove subraction of the baseline
-% ##############################
-for ii = 1:analysisParams.numAcquisitions
-    [concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','averageBaseline');
-    %[concatParams{ii},concatBaselineShift(:,ii)] = iampOBJ.concatenateParams(iampParams(:,ii),'baselineMethod','makeBaselineZero');
+timeCoursePlot.qcm = [];
+timeCoursePlot.IAMP = [];
+timeCoursePlot.timecourse = [];
+rSquaredQcm = [];
+rSquaredIamp = [];
+count = 0;
+for ii = 1:length(theTrainPackets)
+    
+    %% FIT THE TIME COURSE
+    trainPacket = theTrainPackets{ii};
+    timeCoursePacket = timeCourseTrainPackets{ii};
+    tcTestPacket = timeCourseTestPackets{ii};
+    iampTestPacket = theTestPackets{ii};
+    
+    % fit the IAMP model
+    defaultParamsInfo.nInstances = size(trainPacket.stimulus.values,1);
+    [iampParams,fVal,iampResponses] = iampOBJ.fitResponse(trainPacket,...
+        'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
+    
+    
+    % Fit the time course with the QCM -- { } is because this expects a cell
+    [qcmTcOBJ,qcmTcParams] = fitDirectionModel(analysisParams, 'qcmFit', {timeCoursePacket},'fitErrorScalar',1000,'talkToMe',false);
+    
+    % Get the time course predicitions fromt the QCM params fit to the CRF
+    qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, {tcTestPacket}, 'plotColor', qcmColor);
+    qcmChopped = chopUpTimeCourse(qcmTimeCourse{1},2);
+    [timeCoursePlot.qcm] = [timeCoursePlot.qcm,qcmChopped];
+    
+    iampTimeCourse = responseFromPacket('IAMP', analysisParams, iampParams, iampTestPacket, 'plotColor', iampColor);
+    iampChopped = chopUpTimeCourse(iampTimeCourse,2);
+    [timeCoursePlot.IAMP] = [timeCoursePlot.IAMP, iampChopped];
+    
+    theTimeCourse= tcTestPacket.response;
+    theTimeCourse.plotColor =[0, 0, 0];
+    timeCourseChopped = chopUpTimeCourse(theTimeCourse,2);
+    [timeCoursePlot.timecourse] = [timeCoursePlot.timecourse, timeCourseChopped];
+    
+    %% Calc R squared
+    
+    for jj = 1:length(timeCourseChopped)
+        count = count +1;
+        qcmCorrVec =  [timeCourseChopped{jj}.values',qcmChopped{jj}.values'];
+        iampCorrVec =  [timeCourseChopped{jj}.values',iampChopped{jj}.values'];
+        
+        qcmCorrVals = corrcoef(qcmCorrVec(:,1),qcmCorrVec(:,2),'rows','complete').^2;
+        iampCorrVals = corrcoef(iampCorrVec(:,1),iampCorrVec(:,2),'rows','complete').^2;
+        
+        rSquaredQcm(count) = qcmCorrVals(1,2);
+        rSquaredIamp(count) = iampCorrVals(1,2);
+    end
+    
 end
 
-averageIampParams = iampOBJ.averageParams(concatParams);
 
-directionCrfMeanPacket = makeDirectionCrfPacketPocket(analysisParams,averageIampParams);
-
-%% Fit the direction based models to the mean IAMP beta weights
-%
-% Fit the CRF with the QCM -- { } is because this expects a cell
-[qcmCrfMeanOBJ,qcmCrfMeanParams] = fitDirectionModel(analysisParams, 'qcmFit', {directionCrfMeanPacket},'talkToMe',false);
-
-for ii = 1: size(directionTimeCoursePacketPocket,1)
-    if ii == 1
-        averageIampParamsSplit = averageIampParams;
-        averageIampParamsSplit.paramMainMatrix = [averageIampParams.paramMainMatrix(1:20); averageIampParams.paramMainMatrix(end)];
-        averageIampParamsSplit.matrixRows = 21;
-    elseif ii == 2
-        averageIampParamsSplit = averageIampParams;
-        averageIampParamsSplit.paramMainMatrix = [averageIampParams.paramMainMatrix(21:40); averageIampParams.paramMainMatrix(end)];
-        averageIampParamsSplit.matrixRows = 21;
-    else
-        error('not coded up for more than 2 sessions')
-    end
-    for jj = 1: size(directionTimeCoursePacketPocket,2)
-        
-        % compute IAMP preditciotn time course and R^2
-        
-        iampPred = iampOBJ.computeResponse(averageIampParamsSplit,iampTimeCoursePacketPocket{ii,jj}.stimulus,...
-            iampTimeCoursePacketPocket{ii,jj}.kernel);
-        corrVecIAMP = [iampPred.values',iampTimeCoursePacketPocket{ii,jj}.response.values'];
-        corrValsIAMP = corr(corrVecIAMP);
-        rSquaredIAMPAllRuns(ii,jj) = corrValsIAMP(1,2).^2;
-        
-        % compute QCM preditciotn time course and R^2
-        qcmPred = fitOBJ.computeResponse(qcmCrfMeanParams{1},directionTimeCoursePacketPocket{ii,jj}.stimulus,...
-            directionTimeCoursePacketPocket{ii,jj}.kernel);
-        corrVecQCM = [qcmPred.values',directionTimeCoursePacketPocket{ii,jj}.response.values'];
-        corrValsQCM = corr(corrVecQCM);
-        rSquaredQCMAllRuns(ii,jj) = corrValsQCM(1,2).^2;
-        
-    end
-end
 meanRsquaredIAMP = mean(rSquaredIAMPAllRuns(:));
 stdRsquaredIAMP  = std(rSquaredIAMPAllRuns(:));
 meanRsquaredQCM = mean(rSquaredQCMAllRuns(:));

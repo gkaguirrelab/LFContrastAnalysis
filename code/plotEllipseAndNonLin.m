@@ -45,8 +45,8 @@ qcmCI        = p.Results.qcmCI;
 circlePoints = UnitCircleGenerate(nQCMPoints);
 
 % Create transformation found from fitting the QCM
-scaleMat = [qcmParams.Qvec(1),0;0,1];
-rotMat   = deg2rotm(qcmParams.Qvec(2));
+scaleMat = [1,0;0,qcmParams.Qvec(1)];
+rotMat   = deg2rotm(-1*qcmParams.Qvec(2));
 
 % Apply transformation
 ellipsePoints = (circlePoints' * scaleMat * rotMat)';

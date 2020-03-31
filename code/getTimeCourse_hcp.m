@@ -101,7 +101,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         
         %% Extract Signal from voxels
-        saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns','voxelTimeSeries.mat');
+        voxelsSaveName = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2))];
+        saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
             theVars = load(saveVoxelTimeSeriesName);
             voxelTimeSeries = theVars.voxelTimeSeries;
