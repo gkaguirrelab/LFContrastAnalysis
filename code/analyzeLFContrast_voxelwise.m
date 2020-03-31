@@ -1,7 +1,8 @@
-%function analyzeLFContrast_voxelwise(subjID)
-subjID = 'KAS25_replication';
+function [] = analyzeLFContrast_voxelwise(subjId)
+
+display(['STARTING - Making Maps: ',subjId])
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams(subjID);
+analysisParams = getSubjectParams(subjId);
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
 mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
@@ -89,3 +90,5 @@ makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 % write out mean R squared map
 mapName        = fullfile(mapSavePath,['rSquaredMapQcm_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(rSquaredQcmMap', [], templateFile, mapName)
+display(['COMPLETED: ',subjId])
+end

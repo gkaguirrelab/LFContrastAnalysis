@@ -1,5 +1,6 @@
 function [] = analyzeLFContrast_crossValidate(subjId)
 
+display(['STARTING - Cross Validating: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
@@ -176,5 +177,5 @@ if analysisParams.saveFigs
         [analysisParams.expSubjID,'_Cross_Val_R2_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
     print(crossValR2, figNameEllipseNonlin, '-dpdf', '-r300');
 end
-
+display(['COMPLETED: ',subjId])
 end

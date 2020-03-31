@@ -1,5 +1,5 @@
 function [] = analyzeLFContrast(subjId)
-display(['STARTING: ',subjId])
+display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
