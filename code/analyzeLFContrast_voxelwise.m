@@ -11,10 +11,7 @@ templateFile   = fullfile(dropBoxPath,'surfaceMaps','templates','template.dscala
 %% Set up stuff
 % Initialize the maps
 qcmParamMap = zeros(91282,7);
-meanRSquaredQCMMap = zeros(91282,1);
-stdRSquaredQCMMap = zeros(91282,1);
-meanRSquaredIAMPMap = zeros(91282,1);
-stdRSquaredIAMPMap = zeros(91282,1);
+rSquaredQcmMap = zeros(91282,1);
 
 % Create the fit object 
 fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
@@ -90,5 +87,7 @@ makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
 % write out mean R squared map
 mapName        = fullfile(mapSavePath,['rSquaredMapQcm_', analysisParams.sessionNickname '.dscalar.nii']);
 makeWholeBrainMap(rSquaredQcmMap', [], templateFile, mapName)
+
+
 display(['COMPLETED: ',subjId])
 end
