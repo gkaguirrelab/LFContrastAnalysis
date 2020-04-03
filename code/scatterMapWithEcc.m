@@ -9,18 +9,19 @@ function [figHndl] = scatterMapWithEcc(subjId, mapOfInterest, varargin)
 %    with a the fields being a concatenation of all the input packets.
 %
 % Inputs:
-%    analysisParams             - Struct of important information for the
-%                                 analysis
-%    packetPocket               - Cell array of packets (one packet per
-%                                 run)
-%
+%    subjId                     - String with subject ID
+%    mapOfInterest              - String with map name. Either: 
+%                                 'minorAxis'
+%                                 'angle'
+%                                 'amplitude'
+%                                 'semi'
+%                                 'exponent'
+%                                 'rSqaured'
 % Outputs:
-%    analysisParams             - Returns analysisParams with any updates
-%    theFullPacket              - The concatenated packet
+%    figHndl                    - Figure Handle
 %
 % Optional key/value pairs:
-%    bootstrap                  - Logical. If true, will randomly sample
-%                                 with replacement the input packets.
+%    saveFigs                   - Logical flag to save the figure
 
 % MAB 03/10/20 Wrote it.
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
