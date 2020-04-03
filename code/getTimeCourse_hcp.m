@@ -1,4 +1,4 @@
-function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams)
+function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams,varargin)
 % Takes in the analysis params struct and returns a voxel by timepoint by
 % aquisistion matrix for all the runs found fro the specicied session(s)
 %
@@ -23,10 +23,17 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysi
 %    voxelIndex          - A cell of the lines of the input text file. (cell)
 %
 % Optional key/value pairs:
-%    none
-
+%    regressAttenEvents  - Option to either regress out attentional events
+%                          or keep them in.
+%    polyFitOrder        - Order of the polynomial fit for trend removal.
 % MAB 09/09/18
 
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('analysisParams',@isstruct);
+p.addParameter('regressAttenEvents',false,@islogical);
+p.addParameter('polyFitOrder',5,@isnumeric);
+p.addParameter('highpass',true,@isnumeric);
+p.parse(analysisParams,varargin{:});
 
 % Set up files and paths
 
@@ -53,6 +60,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     functionalRuns    = fullfile(functionalPath,functionalRuns);
     fullFileConfounds = fullfile(functionalPath,confoundFiles);
     
+    savePathROI  = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis','MNI_ROIs');
+    saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
+    maskFullFile = fullfile(savePathROI,saveName);
+    
     % Number of acquisitions
     analysisParams.numAcquisitions = length(functionalRuns);
     
@@ -63,21 +74,20 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Load existing cleaned data
     saveFileStatus = 0;
-    if exist(saveFullFile)
+    if exist(saveFullFile) && exist(maskFullFile)
         saveFileStatus = 1;
         disp('cleaned time series file found')
         load(saveFullFile)
         censorPoints{sessionNum,:} = saveCPoints;
+        [ maskMatrix ] = loadCIFTI(maskFullFile);
+        voxelIndex = find(maskMatrix);
         
     else
         
         %% Create restricted V1 mask
-        savePathROI  = fullfile(getpref(analysisParams.projectName,'projectRootDir'),'MNI','ROIs');
-        saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
-        maskFullFile = fullfile(savePathROI,saveName);
-        
         if exist(maskFullFile)
             [ maskMatrix ] = loadCIFTI(maskFullFile);
+            voxelIndex = find(maskMatrix);
         else
             %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
             pathToBensonMasks = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'), 'mriTOMEAnalysis','flywheelOutput','benson');
@@ -87,10 +97,12 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             maskMatrix = makeMaskFromRetinoCIFTI(analysisParams.areaNum, analysisParams.eccenRange, analysisParams.anglesRange, analysisParams.hemisphere, ...
                 'saveName', maskFullFile, 'pathToBensonMasks', pathToBensonMasks, 'pathToTemplateFile', pathToTemplateFile, ...
                 'pathToBensonMappingFile', pathToBensonMappingFile, 'threshold', analysisParams.threshold);
+            voxelIndex = find(maskMatrix);
         end
         
         %% Extract Signal from voxels
-        saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns','voxelTimeSeries.mat');
+        voxelsSaveName = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2))];
+        saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
             theVars = load(saveVoxelTimeSeriesName);
             voxelTimeSeries = theVars.voxelTimeSeries;
@@ -147,9 +159,11 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
+            
+            % Get the censored time-point times 
             [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(analysisParams,movementRegressorsFull(:,1:6),...
-                                                        'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
-                
+                'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
+            
             relativeMovementRegressors = movementRegressorsFull(:,7:12);
             
             % get attention event regressor
@@ -177,10 +191,14 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % Set up packet
             thePacket.kernel = [];
             thePacket.metaData = [];
-            if unique(eventsRegressor) == 0
-                thePacket.stimulus.values = [confoundRegressors];
+            if p.Results.regressAttenEvents
+                if unique(eventsRegressor) == 0
+                    thePacket.stimulus.values = [confoundRegressors];
+                else
+                    thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
+                end
             else
-                thePacket.stimulus.values = [confoundRegressors; eventsRegressor];
+                thePacket.stimulus.values = [confoundRegressors];
             end
             
             defaultParamsInfo.nInstances = size(thePacket.stimulus.values,1);
@@ -221,8 +239,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 
                 % Linear detrending of the timecourse
                 S = cTimeSeries - nanVec;
-                f = fit(timeBase',S','poly1', 'Exclude', find(isnan(cTimeSeries)));
+                f = fit(timeBase',S',['poly' num2str(p.Results.polyFitOrder)], 'Exclude', find(isnan(cTimeSeries)));
                 cleanRunData(vxl,:,jj) = S - f(timeBase)';
+
             end
             clear thePacket
         end

@@ -42,6 +42,11 @@ for ii = 1:size(packetPocket,1)
             fitOBJ = tfeNakaRushtonDirection(directions);
             params = fitParams(srt:stp);
             
+        case 'nrFullTCPred'
+            directions = analysisParams.directionCoding(1:analysisParams.theDimension, :);
+            fitOBJ = tfeNakaRushtonDirection(directions);
+            params = fitParams;
+            
         case 'qcmPred'
             fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
             params = fitParams;
@@ -64,17 +69,16 @@ for ii = 1:size(packetPocket,1)
                 if ~all(isnan(params.paramMainMatrix))
                     nanBlockStatus = false;
                     if any(isnan(params.paramMainMatrix))
-                      
                         params.paramMainMatrix(find(isnan(params.paramMainMatrix))) = 0;
                     end
                     theModelPreds = fitOBJ.computeResponse(params,packetPocket.stimulus,packetPocket.kernel);
                     theModelPreds.plotColor   = p.Results.plotColor;
-                    
                 else
                     theModelPreds.values = nan(size(packetPocket.response.timebase));
                     theModelPreds.timebase = packetPocket.response.timebase;
                     theModelPreds.plotColor   = p.Results.plotColor;
                 end
+
             case 'meanIAMP'
                 if ii == 1
                     theModelPreds{ii,jj} = fitOBJ.computeResponse(params.sessionOne,packetPocket{ii,jj}.stimulus,packetPocket{ii,jj}.kernel);

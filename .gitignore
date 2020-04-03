@@ -3,3 +3,6 @@
 *.m~
 /tempIAMPOutput.mat
 /tempQCMOutput.mat
+
+code/.DS_Store
+.DS_Store

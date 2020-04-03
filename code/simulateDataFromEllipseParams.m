@@ -51,7 +51,7 @@ params.crfOffset   = p.Results.crfOffset;
 params.noiseSd     = p.Results.noiseSD;
 params.noiseInverseFrequencyPower = p.Results.noiseInverseFrequencyPower;
 
-for sessionNum = 1:analysisParams.numSessions
+for sessionNum = 1:length(analysisParams.session)
     trialOrderDir  = fullfile(getpref(analysisParams.projectName,'projectPath'), analysisParams.projectNickname, 'DataFiles', analysisParams.expSubjID,analysisParams.sessionDate{sessionNum},analysisParams.sessionNumber{sessionNum});
     trialOrderFile = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'experimentFiles','dataFiles.txt');
     trialOrderFiles = textFile2cell(trialOrderFile);
@@ -86,7 +86,7 @@ for sessionNum = 1:analysisParams.numSessions
         deltaT = analysisParams.TR*1000;
         timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
         
-        theKernel = generateHRFKernel(6,12,10,timebase);
+        theKernel = analysisParams.HRF;
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];

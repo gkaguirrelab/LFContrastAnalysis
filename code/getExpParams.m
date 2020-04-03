@@ -11,15 +11,18 @@ function [expParams] = getExpParams(dataParamFile,TR, varargin)
 %  TR               = The reption time of the scan. This is in seconds
 %
 % Outputs:
-%   expParams       = A Nx3 matrix. Columns are (in order) 1. Stimulus block
-%                     start time in TRs 2. Stimulus block end time in TRs 3. 
-%                     the contrast condition. The number of rows is equal to
-%                     the number of blocks in the experiment.
+%   expParams       = A Nx4 matrix. Columns are (in order) 
+%                     1. Stimulus block start time in TRs 
+%                     2. Stimulus block end time in TRs.
+%                     3. The contrast condition code. [1, .5, .25, .125, .0625 0] 
+%                     4. The driection contition code.
+%                     The number of rows is equal to the number of blocks 
+%                     in the experiment.
 %
 % Optional key/value pairs:
 %   stripInitialTRs = Strip the initial 2 TRs from the scan (we need this  
-%                     for the one sample data set we collected. This may
-%                     change) 
+%                     for a data set we collected that had 2 dumt TRs in the 
+%                     beginning) 
 %
 % Examples are provided in the source code.
 %

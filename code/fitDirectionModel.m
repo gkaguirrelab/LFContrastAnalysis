@@ -25,6 +25,7 @@ function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisPar
 %                         containing initial parameters for search.
 %                         See tfe.fitResponse for more.
 %  'talkToMe'           - print model fit to screen
+%  'fitErrorScalar'     - scale factor (default 10000) to be passed to error function
 %
 % Optional key/value pairs for NR model fits:
 %  'lockOffsetToZero'   - default false
@@ -51,8 +52,9 @@ p.addParameter('commonAmp',false,@islogical);
 p.addParameter('commonSemi',false,@islogical);
 p.addParameter('commonExp',false,@islogical);
 p.addParameter('commonOffset',true,@islogical);
-p.addParameter('initialParams',[],@(x)(isempty(x) | isstruct(x)));
-p.addParameter('talkToMe', true, @islogical)
+p.addParameter('initialParams',[],@(x)(iscell(x) || isstruct(x)));
+p.addParameter('talkToMe', true, @islogical);
+p.addParameter('fitErrorScalar',10000,@isnumeric);
 
 p.parse(analysisParams,modelType,packetPocket,varargin{:});
 
@@ -63,7 +65,13 @@ switch modelType
         fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
         for ii = 1:length(packetPocket)
             % Fit the packet
-            [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams);
+            if isempty(p.Results.initialParams)
+                [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams, ...
+                    'fitErrorScalar',p.Results.fitErrorScalar);
+            else
+                [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams{1}, ...
+                    'fitErrorScalar',p.Results.fitErrorScalar);
+            end
             if p.Results.talkToMe
                 fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
                 fitOBJ.paramPrint(fitParamsCell{ii})

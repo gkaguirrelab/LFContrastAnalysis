@@ -71,7 +71,7 @@ switch subjID
         
         % Clip fisrt 2 TRs from time series?
         analysisParams.numClipFramesStart = 0;
-        analysisParams.numClipFramesEnd   = 2;
+        analysisParams.numClipFramesEnd   = 0;
         analysisParams.expLengthTR        = 360;
         
     case 'KAS25'
@@ -219,15 +219,6 @@ end
 
 %% Add common params
 
-% set the preprocessing method that was used to ananlyze the data.
-analysisParams.preproc = 'hcp';
-
-analysisParams.showPlots = true;
-
-% SIMULATE MODE
-analysisParams.analysisSimulate = false;
-analysisParams.simulationMethod = 'QCM'; % 'QCM' or 'IAMP'
-
 % Info needed to make the V1 mask  from benson maps
 analysisParams.areaNum     = 1;
 analysisParams.eccenRange  = [0 20];
@@ -246,4 +237,9 @@ analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDurat
 
 % Plotting params
 analysisParams.numSamples = 25;
+
+% create timebase
+totalTime =analysisParams.expLengthTR*analysisParams.TR; 
+deltaT = analysisParams.TR;
+analysisParams.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
 
