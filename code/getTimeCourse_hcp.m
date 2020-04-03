@@ -86,6 +86,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         %% Create restricted V1 mask
         if exist(maskFullFile)
+            display(sprintf('ROI Found: %s',saveName))
             [ maskMatrix ] = loadCIFTI(maskFullFile);
             voxelIndex = find(maskMatrix);
         else
