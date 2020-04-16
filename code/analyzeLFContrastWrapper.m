@@ -24,7 +24,7 @@ end
 
 % Make scatter plots
 subjIds = {'KAS25','KAS25_replication','LZ23','LZ23_replication','AP26','AP26_replication'};
-maps = {'minorAxis','angle','rSqaured'};
+maps = {'minorAxis','angle'};
 for kk = 1:length(subjIds)
     for ll = 1:length(maps)
         scatterMapWithEcc(subjIds{kk}, maps{ll});
