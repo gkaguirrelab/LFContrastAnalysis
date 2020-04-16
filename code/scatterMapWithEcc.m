@@ -119,11 +119,14 @@ if strcmp(mapOfInterest, 'minorAxis') | strcmp(mapOfInterest, 'angle')
     % Convert R^2 to color scale
     r2AlphaVals = r2SatterPoints./max(r2SatterPoints);
     
+    [r,m,b] = regression(eccSatterPoints',paramScatterPoints')
+    
     for ii = 1:length(eccSatterPoints)
         scttrPltHndl= scatter(eccSatterPoints(ii),paramScatterPoints(ii), markerAreaPtsSquared, 'o', ...
             'LineWidth', 1.0, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', 1-((r2AlphaVals(ii).*[.9 .9 .9])+0.1));
         set(scttrPltHndl, 'MarkerFaceAlpha', r2AlphaVals(ii));
     end
+    
 else
     
     scttrPltHndl= scatter(eccSatterPoints,paramScatterPoints, markerAreaPtsSquared, 'o', ...

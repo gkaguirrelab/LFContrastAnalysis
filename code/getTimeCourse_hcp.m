@@ -30,7 +30,7 @@ function [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysi
 
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
-p.addParameter('regressAttenEvents',false,@islogical);
+p.addParameter('regressAttenEvents',true,@islogical);
 p.addParameter('polyFitOrder',5,@isnumeric);
 p.addParameter('highpass',true,@isnumeric);
 p.parse(analysisParams,varargin{:});
@@ -169,7 +169,13 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             
             % get attention event regressor
             responseStruct.timeStep = analysisParams.timeStep;
-            [~, eventsRegressor] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
+            [~, eventDeltas] = getAttentionEventTimes(block, responseStruct, 'timebase', thePacket.stimulus.timebase);
+            
+            % Convolve with hrf
+            eventStruct.values = eventDeltas;
+            eventStruct.timebase = timeBase;
+            outputStruct = applyKernel(temporalFit,eventStruct,analysisParams.HRF);
+            eventsRegressor = outputStruct.values;
             
             %mean center the regressors
             relativeMovementRegressors = relativeMovementRegressors - nanmean(relativeMovementRegressors);
