@@ -1,4 +1,4 @@
-function [analysisParams, theFullPacket] = concatPackets(analysisParams, packetPocket, varargin)
+function [analysisParams, theFullPacket,runOrder] = concatPackets(analysisParams, packetPocket, varargin)
 % Takes in the packets and concatenates all the fields.
 %
 % Syntax:

@@ -28,6 +28,7 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('subjId',@ischar);
 p.addRequired('mapOfInterest',@ischar);
 p.addParameter('saveFigs',true,@islogical)
+p.addParameter('dotColor',[1 0.5 0.5],@isvector)
 p.parse(subjId,mapOfInterest,varargin{:});
 
 % load subject params
@@ -125,16 +126,17 @@ if strcmp(mapOfInterest, 'minorAxis') | strcmp(mapOfInterest, 'angle')
     
     for ii = 1:length(eccSatterPoints)
         scttrPltHndl= scatter(eccSatterPoints(ii),paramScatterPoints(ii), markerAreaPtsSquared, 'o', ...
-            'LineWidth', 1.0, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', 1-((r2AlphaVals(ii).*[.9 .9 .9])+0.1));
+            'LineWidth', 1.0, 'MarkerFaceColor', p.Results.dotColor, 'MarkerEdgeColor', 1-((r2AlphaVals(ii).*[.9 .9 .9])+0.1));
         set(scttrPltHndl, 'MarkerFaceAlpha', r2AlphaVals(ii));
     end
-    pts = regLine(eccSatterPoints);
-    l1 = plot(eccSatterPoints,pts,'Color',[1 0.5 0.5],'LineWidth',2);
+    xPts = [min(eccSatterPoints), max(eccSatterPoints)];
+    yPts = regLine(xPts);
+    l1 = line(xPts,yPts,'Color',p.Results.dotColor,'LineWidth',2);
     
 else
     
     scttrPltHndl= scatter(eccSatterPoints,paramScatterPoints, markerAreaPtsSquared, 'o', ...
-        'LineWidth', 1.0, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0.5 0.5]);
+        'LineWidth', 1.0, 'MarkerFaceColor', p.Results.dotColor, 'MarkerEdgeColor', p.Results.dotColor);
     set(scttrPltHndl, 'MarkerFaceAlpha', 0.6);
 end
 
@@ -145,8 +147,10 @@ xlabel('Eccentricity (Degrees)');
 switch mapOfInterest
     case 'minorAxis'
         yString = 'Minor Axis Ratio';
+        ylim([0 1]);
     case 'angle'
         yString = 'Ellipse Angle (Degrees)';
+        ylim([-100 100]);
     case 'amplitude'
         yString = 'Non-Linearity Amplitude';
     case 'semi'
@@ -155,6 +159,7 @@ switch mapOfInterest
         yString = 'Non-Linearity Exponent' ;
     case 'rSqaured'
         yString = 'R Sqaured';
+        ylim([0 1]);
 end
 
 ylabel(yString);

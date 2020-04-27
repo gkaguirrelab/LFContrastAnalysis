@@ -137,24 +137,30 @@ qcmParamsMat     = [];
 crfQCMBoot       = [];
 tcQCMBoot        = [];
 for ii = 1:numIter
-    [analysisParams, theFullPacketBoot] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
+    [analysisParams, theFullPacketBoot,runOrder(ii,:)] = concatPackets(analysisParams, iampTimeCoursePacketPocket,'bootstrap',true);
     timeCoursePacketBoot = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
     
     % fit the IAMP model
     defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
-    [iampParamsBoot,fValBoot(ii),iampResps] = iampOBJ.fitResponse(theFullPacketBoot,...
+    [iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
         'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-    iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
-    iampResponseBoot = [iampResponseBoot; iampResps.values];
+     iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
+    
     
     % Fit the time course with the QCM -- { } is because this expects a cell
     [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBoot,'fitErrorScalar',1000,'talkToMe',false);
     qcmParamsMat = [qcmParamsMat,qcmTcOBJ.paramsToVec(qcmCrfParamsBoot{1})];
+    
+    % TO PUT ERROR BARS ON THE QCM CRF
     crfQCMBootStruct = qcmTcOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
     crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
     
+    % get the IAMP time course prediction for the bootstrap to calc error bars
+    iampResps = computeResponse(iampOBJ,iampParamsBoot,theFullPacket.stimulus,theFullPacket.kernel);
+    iampResponseBoot = [iampResponseBoot; iampResps.values];
+    
     % get the QCM time course prediction for the bootstrap to calc error bars
-    qcmTimeCourseBoot = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, timeCoursePacketBoot, 'plotColor', [0, 1, 0]);
+    qcmTimeCourseBoot = responseFromPacket('qcmPred', analysisParams, qcmCrfParamsBoot{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
     tcQCMBoot         = [tcQCMBoot; qcmTimeCourseBoot{1}.values];
 end
 
@@ -244,5 +250,10 @@ if analysisParams.showPlots
         print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
     end
 end
+
+%% Check the CI on the timecourse -- Ploting run 1
+figure; hold on 
+plot(timeCoursePlot.timecourse{1}.timebase, [tcQCMBoot(:,1:360)]','Color',[.1 .4 .8 .5])
+plot(timeCoursePlot.qcm{1}.timebase,timeCoursePlot.qcm{1}.values, 'Color',[.1 .2 1],'LineWidth',2)
 display(['COMPLETED: ',subjId])
 end
