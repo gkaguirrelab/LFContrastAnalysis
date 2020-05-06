@@ -1,4 +1,18 @@
 [
+
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "Psychtoolbox-3",
+		"pathPlacement": "append",
+		"subfolder": "Psychtoolbox",
+		"toolboxRoot": "",
+		"type": "include",
+		"update": "",
+		"url": ""
+	},
 	{
 		"flavor": "",
 		"hook": "",
@@ -45,7 +59,7 @@
 		"localHookTemplate": "Configuration/BrainardLabToolboxLocalHookTemplate.m",
 		"name": "BrainardLabToolbox",
 		"pathPlacement": "append",
-		"subfolder": ["Plotting","Ellipsoids", "OneLiners"],
+		"subfolder": "",
 		"toolboxRoot": "",
 		"type": "git",
 		"update": "",

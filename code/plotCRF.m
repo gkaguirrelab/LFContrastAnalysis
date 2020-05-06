@@ -139,6 +139,8 @@ for ii = 1:size(analysisParams.directionCoding,2)
         xlabel('Contrast')
         title(sprintf('LM stim = %s', num2str(analysisParams.LMVectorAngles(ii))));
         ylim([-0.3 1.4]);
+        xlim([0 0.6]);
+        set(gca,'xscale','log')
         set(gca, 'FontName', 'Helvetica', 'FontSize', 14,'FontWeight', 'normal');
         
     end
