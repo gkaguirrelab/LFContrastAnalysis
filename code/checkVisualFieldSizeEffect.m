@@ -9,14 +9,16 @@ displaySPDs = (calStructOBJ.get('P_device'))';
 % Get the cone fundamentals 
 S = calStructOBJ.get('S');
 wavelengthAxis = SToWls(S);
-coneFundamentals = ComputeCIEConeFundamentals(S,2,30,3);
+[~,tempFundamentals] = ComputeCIEConeFundamentals(S,2,30,3);
+T_energy = EnergyToQuanta(S,T_quantal')';
+coneFundamentals = T_energy./max(T_energy')';
 
 % Speficy primary values for background
 backgroundPrimaries = [0.5 0.5 0.5]';
 
 % Speficy stimulus contrast
 LminusM_Modulation = [0.06 -0.06 0]';
-LplusM_Modulation = [0.41 0.41 0]';
+LplusM_Modulation = [0.4 0.4 0]';
 
 % Compute cone excitations for the background
 backgroundSPD = backgroundPrimaries(1) * displaySPDs(1,:) + ...
