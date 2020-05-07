@@ -10,7 +10,7 @@ displaySPDs = (calStructOBJ.get('P_device'))';
 S = calStructOBJ.get('S');
 wavelengthAxis = SToWls(S);
 [~,tempFundamentals] = ComputeCIEConeFundamentals(S,2,30,3);
-T_energy = EnergyToQuanta(S,T_quantal')';
+T_energy = EnergyToQuanta(S,tempFundamentals')';
 coneFundamentals = T_energy./max(T_energy')';
 
 % Speficy primary values for background
