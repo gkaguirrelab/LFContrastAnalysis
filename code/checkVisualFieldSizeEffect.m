@@ -1,6 +1,3 @@
-% Load the Smith-Pokorny 2 deg cone fundamentals
-load('T_cones_ss2.mat','S_cones_ss2','T_cones_ss2');
-
 % Load Cal Data
 load('PTB3TestCal.mat','cals');
 % Get the latest calibration
@@ -9,17 +6,17 @@ load('PTB3TestCal.mat','cals');
 % Extract the spectral power distributions of the display's RGB primaries
 displaySPDs = (calStructOBJ.get('P_device'))';
 
-% Spline the Smith-Pokorny 2 deg cone fundamentals to match the wavelengthAxis
+% Get the cone fundamentals 
 S = calStructOBJ.get('S');
 wavelengthAxis = SToWls(S);
-coneFundamentals = SplineCmf(S_cones_ss2, T_cones_ss2, WlsToS(wavelengthAxis));
+coneFundamentals = ComputeCIEConeFundamentals(S,2,30,3);
 
 % Speficy primary values for background
 backgroundPrimaries = [0.5 0.5 0.5]';
 
 % Speficy stimulus contrast
-LminusM_Modulation = [0.07 -0.07 0]';
-LplusM_Modulation = [0.40 0.40 0]';
+LminusM_Modulation = [0.06 -0.06 0]';
+LplusM_Modulation = [0.41 0.41 0]';
 
 % Compute cone excitations for the background
 backgroundSPD = backgroundPrimaries(1) * displaySPDs(1,:) + ...
@@ -59,7 +56,9 @@ fieldSizes = 1:20;
 for ii = 1:length(fieldSizes)
     
     % Generate cone fundamentals for different visual field size
-    cieConeFund = ComputeCIEConeFundamentals(S,fieldSizes(ii),30,3);
+    [~,T_quantal] = ComputeCIEConeFundamentals(S,fieldSizes(ii),30,3);
+    T_energy = EnergyToQuanta(S,T_quantal')';
+    cieConeFund = T_energy./max(T_energy')';
     
     % Compute the background activations
     bkgrd = cieConeFund * backgroundSPD';
@@ -150,4 +149,3 @@ plot(LMratio,'k')
 xlabel('Eccentricity')
 ylabel('Ratio')
 title('L-M/L+M Ratio')
-ylim([0 1])
