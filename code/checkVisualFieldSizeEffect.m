@@ -1,15 +1,8 @@
-% Set paths to the cal data and con fundamentals
-[~, userID] = system('whoami');
-userID = strtrim(userID);
-pathToPTB = fullfile('/Users',userID,'Documents','MATLAB','toolboxes','Psychtoolbox-3','Psychtoolbox');
-pathToCalData = fullfile(pathToPTB ,'PsychCalDemoData','PTB3TestCal.mat');
-pathToConeFund = fullfile(pathToPTB,'PsychColorimetricData','PsychColorimetricMatFiles','T_cones_ss2.mat');
-
 % Load the Smith-Pokorny 2 deg cone fundamentals
-load(pathToConeFund,'S_cones_ss2','T_cones_ss2');
+load('T_cones_ss2.mat','S_cones_ss2','T_cones_ss2');
 
 % Load Cal Data
-load(pathToCalData,'cals');
+load('PTB3TestCal.mat','cals');
 % Get the latest calibration
 [calStructOBJ, ~] = ObjectToHandleCalOrCalStruct(cals{end});
 
@@ -64,15 +57,20 @@ fieldSizes = 1:20;
 
 % Loop over visual field sizes
 for ii = 1:length(fieldSizes)
-    % generate cone fundamentals for different visual field size
+    % Generate cone fundamentals for different visual field size
     cieConeFund = ComputeCIEConeFundamentals(S,fieldSizes(ii),30,3);
     
+    % Compute the background activations
     bkgrd = cieConeFund * backgroundSPD';
-    A = cieConeFund * LminusM_SPDs';
-    B = cieConeFund * LplusM_SPDs';
+    % compute the L-M activations
+    LminusM_Activations = cieConeFund * LminusM_SPDs';
+    % Compute the L+M activations
+    LplusM_Activations = cieConeFund * LplusM_SPDs';
     
-    LminusM_Contrast(:,ii) = (A - bkgrd) ./bkgrd;
-    LplusM_Contrast(:,ii)  = (B - bkgrd) ./bkgrd;
+    % Compute L-M Contrast
+    LminusM_Contrast(:,ii) = (LminusM_Activations - bkgrd) ./bkgrd;
+    % Compute L+M Contrast
+    LplusM_Contrast(:,ii)  = (LplusM_Activations - bkgrd) ./bkgrd;
     
 end
 
@@ -125,6 +123,7 @@ LplusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LplusM,kernel);
 % Compute the ratio of the L
 LMratio = LminusM_Response.values ./ LplusM_Response.values;
 
+% Plot some stuff
 figure;
 subplot(1,3,1)
 plot(LminusM_Response.values,'k')
