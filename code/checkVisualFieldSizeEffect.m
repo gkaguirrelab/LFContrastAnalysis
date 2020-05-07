@@ -26,7 +26,7 @@ backgroundPrimaries = [0.5 0.5 0.5]';
 
 % Speficy stimulus contrast ~10%
 LminusM_Modulation = [0.07 -0.07 0]';
-LplusM_Modulation = [0.07 0.07 0]';
+LplusM_Modulation = [0.40 0.40 0]';
 
 % Compute cone excitations for the background
 backgroundSPD = backgroundPrimaries(1) * displaySPDs(1,:) + ...
@@ -114,8 +114,7 @@ stimulusStruct_LplusM.values = LplusM_QcmStim;
 stimulusStruct_LplusM.timebase = 1:length(fieldSizes);
 
 % Get the HRF 
-[analysisParams] = loadHRF(analysisParams);
-kernel = analysisParams.HRF;
+kernel = [];
 
 % Compute the L-M QCM response
 LminusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LminusM,kernel);
@@ -125,3 +124,23 @@ LplusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LplusM,kernel);
 
 % Compute the ratio of the L
 LMratio = LminusM_Response.values ./ LplusM_Response.values;
+
+figure;
+subplot(1,3,1)
+plot(LminusM_Response.values,'k')
+xlabel('Eccentricity')
+ylabel('QCM Repsonse')
+ylim([0 0.6])
+title(sprintf('L-M Response %s%% Contrast',num2str(100*round(norm(LminusM_Modulation),2))))
+subplot(1,3,2)
+plot(LplusM_Response.values,'k')
+xlabel('Eccentricity')
+ylabel('QCM Repsonse')
+ylim([0 0.6])
+title(sprintf('L+M Response %s%% Contrast',num2str(100*round(norm(LplusM_Modulation),2))))
+subplot(1,3,3)
+plot(LMratio,'k')
+xlabel('Eccentricity')
+ylabel('Ratio')
+title('L-M/L+M Ratio')
+ylim([0 1])
