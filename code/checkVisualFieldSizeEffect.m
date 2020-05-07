@@ -17,7 +17,7 @@ coneFundamentals = SplineCmf(S_cones_ss2, T_cones_ss2, WlsToS(wavelengthAxis));
 % Speficy primary values for background
 backgroundPrimaries = [0.5 0.5 0.5]';
 
-% Speficy stimulus contrast ~10%
+% Speficy stimulus contrast
 LminusM_Modulation = [0.07 -0.07 0]';
 LplusM_Modulation = [0.40 0.40 0]';
 
@@ -57,37 +57,45 @@ fieldSizes = 1:20;
 
 % Loop over visual field sizes
 for ii = 1:length(fieldSizes)
+    
     % Generate cone fundamentals for different visual field size
     cieConeFund = ComputeCIEConeFundamentals(S,fieldSizes(ii),30,3);
     
     % Compute the background activations
     bkgrd = cieConeFund * backgroundSPD';
+    
     % compute the L-M activations
     LminusM_Activations = cieConeFund * LminusM_SPDs';
+    
     % Compute the L+M activations
     LplusM_Activations = cieConeFund * LplusM_SPDs';
     
     % Compute L-M Contrast
     LminusM_Contrast(:,ii) = (LminusM_Activations - bkgrd) ./bkgrd;
+    
     % Compute L+M Contrast
     LplusM_Contrast(:,ii)  = (LplusM_Activations - bkgrd) ./bkgrd;
     
 end
 
-% Turn the Contrast from above loop into inputs to the QCM
+% Turn the contrasts from above loop into inputs to the QCM
 % L-M direction
 % Get the angle and contrast
 [theta, contrast] = cart2pol(LminusM_Contrast(1,:),LminusM_Contrast(2,:));
+
 % X and y component for a unit vector in the direction of theta
 [LconesCont, MConesCont] = pol2cart(theta, 1);
+
 % package for the QCM stim
 LminusM_QcmStim = [LconesCont;MConesCont;contrast];
 
 % L+M direction
 % Get the angle and contrast
 [theta, contrast] = cart2pol(LplusM_Contrast(1,:),LplusM_Contrast(2,:));
+
 % X and y component for a unit vector in the direction of theta
 [LconesCont, MConesCont] = pol2cart(theta, 1);
+
 % package for the QCM stim
 LplusM_QcmStim = [LconesCont;MConesCont;contrast];
 
