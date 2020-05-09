@@ -48,37 +48,7 @@ fieldSizes = 1:20;
 [LminusM_QcmStim] = computeContrastStimWithCIE(S,fieldSizes,backgroundSPD,LminusM_SPDs);
 [LplusM_QcmStim] = computeContrastStimWithCIE(S,fieldSizes,backgroundSPD,LplusM_SPDs);
 
-% Run the QCM for KAS25
-analysisParams = getSubjectParams('KAS25');
-fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
 
-% Use paramters from the QCM fit to KAS25 measurement set 1
-params.Qvec        = [0.1661 46.1730];
-params.crfAmp      = 2.9998;
-params.crfExponent = 1.4826;
-params.crfSemi     = 0.2817;
-params.expFalloff  = 5.0501; % this does nothing and should be removed
-params.crfOffset   = -0.1737;
-
-% Create the Stimulus Struct for L-M
-stimulusStruct_LminusM.values = LminusM_QcmStim;
-stimulusStruct_LminusM.timebase = 1:length(fieldSizes);
-
-% Create the Stimulus Struct for L-M
-stimulusStruct_LplusM.values = LplusM_QcmStim;
-stimulusStruct_LplusM.timebase = 1:length(fieldSizes);
-
-% Get the HRF
-kernel = [];
-
-% Compute the L-M QCM response
-LminusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LminusM,kernel);
-
-% Compute the L-M QCM response
-LplusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LplusM,kernel);
-
-% Compute the ratio of the L
-LMratio = LminusM_Response.values ./ LplusM_Response.values;
 
 
 %% The nominal stimuli from our exteriment
@@ -147,7 +117,37 @@ LplusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LplusM,kernel);
 % Compute the ratio of the L
 LMratio = LminusM_Response.values ./ LplusM_Response.values;
 
+% Run the QCM for KAS25
+analysisParams = getSubjectParams('KAS25');
+fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
 
+% Use paramters from the QCM fit to KAS25 measurement set 1
+params.Qvec        = [0.1661 46.1730];
+params.crfAmp      = 2.9998;
+params.crfExponent = 1.4826;
+params.crfSemi     = 0.2817;
+params.expFalloff  = 5.0501; % this does nothing and should be removed
+params.crfOffset   = -0.1737;
+
+% Create the Stimulus Struct for L-M
+stimulusStruct_LminusM.values = LminusM_QcmStim;
+stimulusStruct_LminusM.timebase = 1:length(fieldSizes);
+
+% Create the Stimulus Struct for L-M
+stimulusStruct_LplusM.values = LplusM_QcmStim;
+stimulusStruct_LplusM.timebase = 1:length(fieldSizes);
+
+% Get the HRF
+kernel = [];
+
+% Compute the L-M QCM response
+LminusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LminusM,kernel);
+
+% Compute the L-M QCM response
+LplusM_Response = fitOBJ.computeResponse(params,stimulusStruct_LplusM,kernel);
+
+% Compute the ratio of the L
+LMratio = LminusM_Response.values ./ LplusM_Response.values;
 
 %% Plot some stuff
 figure;
