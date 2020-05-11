@@ -4,15 +4,19 @@
 dataPath = getpref('LFContrastAnalysis','projectPath');
 modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
 load(modulationPath)
+
 % Get the SDPs
 bkgrdSPD = background.SPDdifferentialDesired(:,1);
 
+% contrast scalars
 LminusM_ContrastScalar = .45;
 LplusM_ContrastScalar = .491;
 
+% Create the L-M SPD for the postitive arm of the modulation 
 directionNum = 1;
 LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*directedDirection{directionNum}.SPDdifferentialDesired(:,1));
 
+% Create the L+M SPD for the postitive arm of the modulation 
 directionNum = 3;
 LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*directedDirection{directionNum}.SPDdifferentialDesired(:,1));
 
@@ -23,12 +27,12 @@ wavelengthAxis = SToWls(S);
 T_energy = EnergyToQuanta(S,tempFundamentals')';
 coneFundamentals = T_energy./max(T_energy')';
 
-%
+% Compute the Contrast
 backgroundExcitations = coneFundamentals * bkgrdSPD;
 stimExcitations = coneFundamentals * LminusM_SPD_pos;
 LminusM_contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations;
 
-
+% Compute the Contrast
 stimExcitations = coneFundamentals * LplusM_SPD_pos;
 LplusM_contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations;
 
