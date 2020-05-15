@@ -50,38 +50,7 @@ fieldSizes = 1:20;
 
 
 
-
-%% The nominal stimuli from our exteriment
-
-% Load measuremets from session.
-
-% Get the SDPs
-directionNum = 1;
-bkgrdSPD = ConeDirectedDirections{directionNum}.describe.backgroundNominal.SPDdifferentialDesired;
-LminusM_SPD_pos = ConeDirectedDirections{directionNum}.describe.backgroundNominal.SPDdifferentialDesired+ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1);
-
-directionNum = 3;
-LplusM_SPD_pos = ConeDirectedDirections{directionNum}.describe.backgroundNominal.SPDdifferentialDesired+ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1);
-
-% Make the Cone fundamentals
-wavelengthAxis = SToWls(ConeDirectedDirections{directionNum}.calibration.describe.S);
-[~,tempFundamentals] = ComputeCIEConeFundamentals(ConeDirectedDirections{directionNum}.calibration.describe.S,2,30,3);
-T_energy = EnergyToQuanta(ConeDirectedDirections{directionNum}.calibration.describe.S,tempFundamentals')';
-coneFundamentals = T_energy./max(T_energy')';
-
-%
-backgroundExcitations = coneFundamentals * bkgrdSPD;
-stimExcitations = coneFundamentals * LminusM_SPD_pos;
-contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations
-norm(contrast(1:2))
-
-
-stimExcitations = coneFundamentals * LplusM_SPD_pos;
-contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations
-norm(contrast(1:2))
-% Visual Feild Size Spacing
-fieldSizes = 1:20;
-
+% Make the stim
 [LminusM_QcmStim] = computeContrastStimWithCIE(ConeDirectedDirections{directionNum}.calibration.describe.S,fieldSizes,bkgrdSPD',LminusM_SPD_pos');
 [LplusM_QcmStim] = computeContrastStimWithCIE(ConeDirectedDirections{directionNum}.calibration.describe.S,fieldSizes,bkgrdSPD',LplusM_SPD_pos');
 
