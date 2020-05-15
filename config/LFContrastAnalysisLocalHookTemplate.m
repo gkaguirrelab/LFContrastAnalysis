@@ -63,6 +63,7 @@ if ismac
     setpref(projectName,'projectPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
+    setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
@@ -70,6 +71,7 @@ elseif isunix
     setpref(projectName,'projectPath', fullfile(melaDatabasePath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
+    setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
