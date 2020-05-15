@@ -10,7 +10,7 @@ function [figHndl] = scatterMapWithEcc(subjId, mapOfInterest, varargin)
 %
 % Inputs:
 %    subjId                     - String with subject ID
-%    mapOfInterest              - String with map name. Either: 
+%    mapOfInterest              - String with map name. Either:
 %                                 'minorAxis'
 %                                 'angle'
 %                                 'amplitude'
@@ -40,7 +40,7 @@ hemi  = analysisParams.hemisphere;
 %% LOAD THE PARAMTER MAP
 % Path the subject map data
 dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
-mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
+mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID,'V1');
 
 switch mapOfInterest
     case 'minorAxis'
@@ -121,8 +121,8 @@ if strcmp(mapOfInterest, 'minorAxis') | strcmp(mapOfInterest, 'angle')
     r2AlphaVals = r2SatterPoints./max(r2SatterPoints);
     
     mdlr = fitlm(eccSatterPoints,paramScatterPoints,'RobustOpts','on');
-    params = mdlr.Coefficients.Variables;
-    regLine = @(x) params(2,1).*x + params(1,1);
+    regLineParams = mdlr.Coefficients.Variables;
+    regLine = @(x) regLineParams(2,1).*x + regLineParams(1,1);
     
     for ii = 1:length(eccSatterPoints)
         scttrPltHndl= scatter(eccSatterPoints(ii),paramScatterPoints(ii), markerAreaPtsSquared, 'o', ...
@@ -140,10 +140,14 @@ else
     set(scttrPltHndl, 'MarkerFaceAlpha', 0.6);
 end
 
-set(figHndl, 'Renderer', 'Painters');
+% add text
+modelTxtTheta = sprintf('slope = %s offset = %s',...
+                num2str(regLineParams(2,1),3), num2str(regLineParams(1,1),3));
+theTextHandle = text(gca, 1,.9 , modelTxtTheta, 'Interpreter', 'latex');
+set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
 xlabel('Eccentricity (Degrees)');
-
+set(figHndl, 'Renderer', 'Painters');
 switch mapOfInterest
     case 'minorAxis'
         yString = 'Minor Axis Ratio';
