@@ -75,11 +75,11 @@ for ii = 1:numSubPlots
     end
     
     if ~isempty(find(strcmp(fields(:), 'qcm')))
-        tempR2 = corr([timeCourse',qcmPred']).^2;
+        tempR2 = corrcoef(timeCourse',qcmPred','rows','complete').^2;
         qcmR2 = tempR2(1,2);
     end
-    if ~isempty(find(strcmp(fields(:), 'IAMP')))
-        tempR2 = corr([timeCourse',iampResp']).^2;
+    if ~isempty(find(strcmp(fields(:), 'IAMP')))qcmPred
+        tempR2 = corrcoef(timeCourse',iampResp','rows','complete').^2;
         iampR2 = tempR2(1,2);
     end
     
@@ -87,8 +87,12 @@ for ii = 1:numSubPlots
     ylabel('PSC')
     xlabel('Time mS')
     ylim([-1.5 1.5])
-    if ~isempty(find(strcmp(fields(:), 'IAMP')))
+    if ~isempty(find(strcmp(fields(:), 'IAMP'))) & ~isempty(find(strcmp(fields(:), 'qcm')))
         title(sprintf('Run %s: QCM R^{2} %s, IAMP R^{2} %s', num2str(ii),num2str(round(qcmR2,2)),num2str(round(iampR2,2))));
+    elseif ~isempty(find(strcmp(fields(:), 'IAMP')))
+         title(sprintf('Run %s: IAMP R^{2} %s', num2str(ii),num2str(round(iampR2,2))));
+    elseif  ~isempty(find(strcmp(fields(:), 'qcm')))
+         title(sprintf('Run %s: QCM R^{2} %s', num2str(ii),num2str(round(qcmR2,2))));
     else
         title(sprintf('Run %s', num2str(ii)));
     end

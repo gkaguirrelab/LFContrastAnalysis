@@ -32,7 +32,7 @@ p.addParameter('bootstrap',false,@islogical)
 p.parse(analysisParams,packetPocket,varargin{:});
 
 % Creat the full timebase
-numTimePoints = analysisParams.expLengthTR*analysisParams.numSessions*analysisParams.numAcquisitions;
+numTimePoints = analysisParams.expLengthTR*length(packetPocket);
 timebase = linspace(0,(numTimePoints-1)*analysisParams.TR,numTimePoints)*1000;
 
 % Initialize the packet
