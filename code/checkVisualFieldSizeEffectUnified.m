@@ -14,6 +14,7 @@ pupilSize = 3;
 
 % Which stimuli
 stimulusType = 'monitor';
+stimulusType = 'onelight';
 switch (stimulusType)
     case 'monitor'
         % Load calibration data and get latest calibration
@@ -51,12 +52,14 @@ switch (stimulusType)
         LplusM_Primaries = M\LplusM_Excitations;
         
         % Get the stimulus SPDs
-        LminusM_SPD_pos = sum(displaySPDs.*LminusM_Primaries,1);
-        LplusM_SPD_pos = sum(displaySPDs.*LplusM_Primaries,1);
+        LminusM_SPD_pos = displaySPDs*LminusM_Primaries;
+        LplusM_SPD_pos = displaySPDs*LplusM_Primaries;
+        
     case 'onelight' 
         % Load the nominal stimuli from our exteriment KAS25 Original session 1
         dataPath = getpref('LFContrastAnalysis','projectPath');
-        modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
+        %modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
+        modulationPath = fullfile(getpref('LFContrastAnalysis','dataDevPath'),'DirectionCorrectedPrimaries','test_mb_good','2020-05-18','correctedPrimaries.mat');
         theModulation = load(modulationPath);
         
         % Get the SDPs of the background
@@ -115,7 +118,7 @@ s = scatter(LminusM_fsContrast(1,:),LminusM_fsContrast(2,:),90,'MarkerEdgeColor'
 s.MarkerFaceAlpha = .4;
 s = scatter(LplusM_fsContrast(1,:),LplusM_fsContrast(2,:),90,'MarkerEdgeColor',[.5 0 .5],...
     'MarkerFaceColor',[.7 0 .7],'LineWidth',1.5);
-s.MarkerFaceAlpha = .4
+s.MarkerFaceAlpha = .4;
 line([-.1 .3], [0 0], 'Color', [.3 .3 .3], 'LineStyle', ':','LineWidth', 2);
 line([0 0], [-.1 .3], 'Color', [.3 .3 .3], 'LineStyle', ':','LineWidth', 2);
 axis square

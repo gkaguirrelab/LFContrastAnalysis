@@ -67,7 +67,7 @@ if ismac
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
-    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments''OLApproach_TrialSequenceMR','MRCRF'));
+    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments','OLApproach_TrialSequenceMR','MRCRF'));
 
 elseif isunix
     % Code to run on Linux plaform
@@ -77,7 +77,7 @@ elseif isunix
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
-    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments''OLApproach_TrialSequenceMR','MRCRF'));
+    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments','OLApproach_TrialSequenceMR','MRCRF'));
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
