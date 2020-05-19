@@ -40,16 +40,19 @@ switch userID
     case {'dhb'}
         melaMaterialsPath = ['/Users1/DropboxLab/MELA_materials'];
         melaDatabasePath  = ['/Users1/DropboxLab/MELA_data/'];
+        melaDatadevPath   = ['/Users1/DropboxLab/MELA_datadev/'];
         melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
     case {'michael'}
         melaMaterialsPath = ['/Users/' userID '/labDropbox/MELA_materials'];
         melaDatabasePath  = ['/Users/' userID '/labDropbox/MELA_data/'];
+        melaDatadevPath   = ['/Users/' userID '/labDropbox/MELA_datadev/'];
         melaAnalysisPath  = ['/Users/' userID '/labDropbox/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
     otherwise
         melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         melaDatabasePath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        melaDatadevPath  =  ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_datadev/'];
         melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
 end
@@ -64,6 +67,8 @@ if ismac
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
+    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments''OLApproach_TrialSequenceMR','MRCRF'));
+
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
@@ -72,6 +77,7 @@ elseif isunix
     setpref(projectName,'melaAnalysisPath', melaAnalysisPath);
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
+    setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments''OLApproach_TrialSequenceMR','MRCRF'));
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
