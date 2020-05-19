@@ -27,7 +27,7 @@ S = ConeDirectedDirections{directionNum}.calibration.describe.S;
 wavelengthAxis = SToWls(S);
 lambdaMaxShift = [];
 pupilDiameterMm = 8;
-fieldSizeDegrees = [2 2 2];
+fieldSizeDegrees = 2;
 photoreceptorClasses = {'LConeTabulatedAbsorbance','MConeTabulatedAbsorbance','SConeTabulatedAbsorbance'};
 fractionBleached = OLEstimateConePhotopigmentFractionBleached(S,bkgrdSPD,pupilDiameterMm,fieldSizeDegrees,observerAgeInYears,photoreceptorClasses);
 coneFundamentals = GetHumanPhotoreceptorSS(S,photoreceptorClasses,fieldSizeDegrees,observerAgeInYears,pupilDiameterMm,lambdaMaxShift,fractionBleached);
@@ -37,10 +37,11 @@ coneFundamentals = GetHumanPhotoreceptorSS(S,photoreceptorClasses,fieldSizeDegre
 backgroundExcitations = coneFundamentals * bkgrdSPD;
 stimExcitations = coneFundamentals * LminusM_SPD_pos;
 LminusM_contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations;
-
+sprintf('L minus M contrast: %0.4f',norm(LminusM_contrast(1:2)))
 % Compute the L+M Contrast
 stimExcitations = coneFundamentals * LplusM_SPD_pos;
 LplusM_contrast = (stimExcitations-backgroundExcitations)./backgroundExcitations;
+sprintf('L Plus M contrast: %0.4f',norm(LplusM_contrast(1:2)))
 
 
 % Visual Feild Size Spacing
@@ -128,7 +129,7 @@ function [QcmStim,contrasts] = computeContrastStimWithCIE(S,fieldSizes,backgroun
 for ii = 1:length(fieldSizes)
     
     % Generate cone fundamentals for different visual field size
-    cieConeFund =  GetHumanPhotoreceptorSS(S, [], fieldSizes(ii), 25);
+    coneFundamentals = GetHumanPhotoreceptorSS(S,photoreceptorClasses,fieldSizes{ii},observerAgeInYears,pupilDiameterMm,lambdaMaxShift,fractionBleached);
     
     
     % Compute the background activations
