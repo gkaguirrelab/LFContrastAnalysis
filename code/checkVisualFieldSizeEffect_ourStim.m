@@ -1,28 +1,37 @@
 % Load the nominal stimuli from our exteriment KAS25 Original session 1
-dataPath = getpref('LFContrastAnalysis','projectPath');
-modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
+% dataPath = getpref('LFContrastAnalysis','projectPath');
+% modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
+modulationPath = fullfile('/Users','michael','labDropbox','MELA_datadev','Experiments','OLApproach_TrialSequenceMR',...
+         'MRCRF','DirectionCorrectedPrimaries','test_mb_good','2020-05-18','correctedPrimaries.mat');
 load(modulationPath)
 
 % Get the SDPs of the background
-bkgrdSPD = background.SPDdifferentialDesired(:,1);
-
+bkgrdSPD = ConeDirectedBackground.SPDdifferentialDesired(:,1);
+bkgrdSPD = bkgrdSPD + ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
 % Set the contrast scalars. this is relative to the max contrast of stimuli used in
 % the experiment 
-LminusM_ContrastScalar = .45;
-LplusM_ContrastScalar = .491;
+LminusM_ContrastScalar = 1;
+LplusM_ContrastScalar = 1;
 
 % Create the L-M SPD for the postitive arm of the modulation
 directionNum = 1;
-LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
 
 % Create the L+M SPD for the postitive arm of the modulation
 directionNum = 3;
-LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
 
 % Make the Cone fundamentals for 2 degrees
-S = directedDirection{directionNum}.calibration.describe.S;
+observerAgeInYears = 25;
+S = ConeDirectedDirections{directionNum}.calibration.describe.S;
 wavelengthAxis = SToWls(S);
-coneFundamentals =  GetHumanPhotoreceptorSS(S, [], 2, 25);
+lambdaMaxShift = [];
+pupilDiameterMm = 8;
+fieldSizeDegrees = [2 2 2];
+photoreceptorClasses = {'LConeTabulatedAbsorbance','MConeTabulatedAbsorbance','SConeTabulatedAbsorbance'};
+fractionBleached = OLEstimateConePhotopigmentFractionBleached(S,bkgrdSPD,pupilDiameterMm,fieldSizeDegrees,observerAgeInYears,photoreceptorClasses);
+coneFundamentals = GetHumanPhotoreceptorSS(S,photoreceptorClasses,fieldSizeDegrees,observerAgeInYears,pupilDiameterMm,lambdaMaxShift,fractionBleached);
+%coneFundamentals =  GetHumanPhotoreceptorSS(S, [], 2, 25);
 
 % Compute the L-M Contrast
 backgroundExcitations = coneFundamentals * bkgrdSPD;
