@@ -63,27 +63,33 @@ switch (stimulusType)
         theModulation = load(modulationPath);
         
         % Get the SDPs of the background
-        bkgrdSPD = theModulation.background.SPDdifferentialDesired(:,1);
+        %bkgrdSPD = theModulation.background.SPDdifferentialDesired(:,1);
+        bkgrdSPD = theModulation.ConeDirectedBackground.SPDdifferentialDesired(:,1);
+        %bkgrdSPD = bkgrdSPD + theModulation.ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
         
         % Set the contrast scalars. this is relative to the max contrast of stimuli used in
         % the experiment.  These are set by hand to put responses for two
         % directions in a similar regime.
         % LminusM_ContrastScalar = .45;
         % LplusM_ContrastScalar = .491;
-        LminusM_ContrastScalar = 0.2;
-        LplusM_ContrastScalar = 0.5;
+        LminusM_ContrastScalar = 1;
+        LplusM_ContrastScalar = 1;
         
         % Get the L-M SPD for the postitive arm of the modulation
         directionNum = 1;
-        LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        %LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
         
         % Get the L+M SPD for the postitive arm of the modulation
         directionNum = 3;
-        LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        %LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        LplusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
         
         % Make the cone fundamentals for 2 degrees
-        S = theModulation.directedDirection{directionNum}.calibration.describe.S;
-        if (observerAge ~= theModulation.directedDirection{1}.describe.observerAge)
+        %S = theModulation.directedDirection{directionNum}.calibration.describe.S;
+        S = theModulation.ConeDirectedDirections{directionNum}.calibration.describe.S;
+
+        if (observerAge ~= theModulation.ConeDirectedDirections{directionNum}.describe.observerAge)
             error('Inconsistent observer age');
         end
         
