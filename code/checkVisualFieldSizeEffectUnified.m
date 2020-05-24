@@ -79,16 +79,25 @@ switch (stimulusType)
         LplusM_SPD_pos = displaySPDs*LplusM_Primaries;
         
     case 'onelight' 
-        % Load the nominal stimuli from our exteriment KAS25 Original session 1
-        dataPath = getpref('LFContrastAnalysis','projectPath');
-        %modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
-        modulationPath = fullfile(getpref('LFContrastAnalysis','dataDevPath'),'DirectionCorrectedPrimaries','test_mb_good','2020-05-18','correctedPrimaries.mat');
-        theModulation = load(modulationPath);
+        ORIGINAL = false;
+        if (ORIGINAL)
+            % Load the nominal stimuli from our exteriment KAS25 Original session 1
+            dataPath = getpref('LFContrastAnalysis','projectPath');
+            modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
+            theModulation = load(modulationPath);
+        else
+            % Load test modulation generated more recently
+            modulationPath = fullfile(getpref('LFContrastAnalysis','dataDevPath'),'DirectionCorrectedPrimaries','test_mb_good','2020-05-18','correctedPrimaries.mat');
+            theModulation = load(modulationPath);
+            theModulation.background = theModulation.ConeDirectedBackground;
+            theModulation.directedDirection = theModulation.ConeDirectedDirections;
+        end
         
         % Get the SDPs of the background
-        %bkgrdSPD = theModulation.background.SPDdifferentialDesired(:,1);
-        bkgrdSPD = theModulation.ConeDirectedBackground.SPDdifferentialDesired(:,1);
-        bkgrdSPD = bkgrdSPD + theModulation.ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
+        bkgrdSPD = theModulation.background.SPDdifferentialDesired(:,1);
+        bkgrdSPD = bkgrdSPD + theModulation.background.calibration.computed.pr650MeanDark(:,1);
+        % bkgrdSPD = theModulation.ConeDirectedBackground.SPDdifferentialDesired(:,1);
+        % bkgrdSPD = bkgrdSPD + theModulation.ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
         
         % Set the contrast scalars. this is relative to the max contrast of stimuli used in
         % the experiment.  These are set by hand to put responses for two
@@ -100,19 +109,19 @@ switch (stimulusType)
         
         % Get the L-M SPD for the postitive arm of the modulation
         directionNum = 1;
-        %LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
-        LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
+        LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        %LminusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
         
         % Get the L+M SPD for the postitive arm of the modulation
         directionNum = 3;
-        %LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
-        LplusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
+        LplusM_SPD_pos = bkgrdSPD+(LplusM_ContrastScalar*theModulation.directedDirection{directionNum}.SPDdifferentialDesired(:,1));
+        %LplusM_SPD_pos = bkgrdSPD+(LminusM_ContrastScalar*theModulation.ConeDirectedDirections{directionNum}.SPDdifferentialDesired(:,1));
         
         % Make the cone fundamentals for 2 degrees
         %S = theModulation.directedDirection{directionNum}.calibration.describe.S;
-        S = theModulation.ConeDirectedDirections{directionNum}.calibration.describe.S;
+        S = theModulation.directedDirection{directionNum}.calibration.describe.S;
 
-        if (observerAge ~= theModulation.ConeDirectedDirections{directionNum}.describe.observerAge)
+        if (observerAge ~= theModulation.directedDirection{directionNum}.describe.observerAge)
             error('Inconsistent observer age');
         end
         
@@ -214,26 +223,26 @@ title('L-M/L+M Ratio')
 index = find(fieldSizes == 2);
 fprintf('L-M: L, M, S contrasts here, 2 deg:                     %0.4f, %0.4f, %0.4f\n',LminusM_fsContrast(1,index),LminusM_fsContrast(2,index),LminusM_fsContrast(3,index));
 directionNum = 1;
-contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(1:3,1);
+contrastValidation = theModulation.directedDirection{directionNum}.describe.validation(1).contrastDesired(1:3,1);
 fprintf('L-M: L, M, S contrasts nominal from validation, 2 deg:  %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
 
 index = find(fieldSizes == 15);
 fprintf('L-M: L, M, S contrasts here, 15 deg:                    %0.4f, %0.4f, %0.4f\n',LminusM_fsContrast(1,index),LminusM_fsContrast(2,index),LminusM_fsContrast(3,index));
 directionNum = 1;
-contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(4:6,1);
+contrastValidation = theModulation.directedDirection{directionNum}.describe.validation(1).contrastDesired(4:6,1);
 fprintf('L-M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
 fprintf('\n')
 
 index = find(fieldSizes == 2);
 fprintf('L+M: L, M, S contrasts here, 2 deg:                     %0.4f, %0.4f, %0.4f\n',LplusM_fsContrast(1,index),LplusM_fsContrast(2,index),LplusM_fsContrast(3,index));
 directionNum = 3;
-contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(1:3,1);
+contrastValidation = theModulation.directedDirection{directionNum}.describe.validation(1).contrastDesired(1:3,1);
 fprintf('L+M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
 
 index = find(fieldSizes == 15);
 fprintf('L+M: L, M, S contrasts here, 15 deg:                    %0.4f, %0.4f, %0.4f\n',LplusM_fsContrast(1,index),LplusM_fsContrast(2,index),LplusM_fsContrast(3,index));
 directionNum = 3;
-contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(4:6,1);
+contrastValidation = theModulation.directedDirection{directionNum}.describe.validation(1).contrastDesired(4:6,1);
 fprintf('L+M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
 
 % Sub-function
