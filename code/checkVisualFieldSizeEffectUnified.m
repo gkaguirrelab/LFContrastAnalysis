@@ -1,6 +1,29 @@
 % Evaluate how contrasts and predicted MR response vary with eccentricity.
 % This version is for our stimuli.
 
+% We'll want to know this at some point
+%     theModulation.ConeDirectedDirections{directionNum}.describe.validation
+% 
+%     ans = 
+% 
+%     1×10 struct array with fields:
+% 
+%     background
+%     time
+%     differentialPrimaryValues
+%     measuredPrimaryValues
+%     receptors
+%     excitationDesired
+%     excitationActual
+%     contrastDesired
+%     contrastActual
+%     luminanceDesired
+%     luminanceActual
+%     label
+%     SPDbackground
+%     SPDcombined
+%     SPDdifferential
+
 % History:
 %   05/xx/20  mab  Wrote it.
 %   05/18/20  dhb  Adding comments, review
@@ -10,7 +33,7 @@ clear; close all;
 
 % Observer age for calcs
 observerAge = 25;
-pupilSize = 3;
+pupilSize = 6;
 
 % Which stimuli
 stimulusType = 'monitor';
@@ -65,7 +88,7 @@ switch (stimulusType)
         % Get the SDPs of the background
         %bkgrdSPD = theModulation.background.SPDdifferentialDesired(:,1);
         bkgrdSPD = theModulation.ConeDirectedBackground.SPDdifferentialDesired(:,1);
-        %bkgrdSPD = bkgrdSPD + theModulation.ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
+        bkgrdSPD = bkgrdSPD + theModulation.ConeDirectedBackground.calibration.computed.pr650MeanDark(:,1);
         
         % Set the contrast scalars. this is relative to the max contrast of stimuli used in
         % the experiment.  These are set by hand to put responses for two
@@ -186,6 +209,32 @@ plot(LMratio,'k')
 xlabel('Eccentricity')
 ylabel('Ratio')
 title('L-M/L+M Ratio')
+
+%% Report 2 and 15 degree contrasts we get here and compare with validation struct
+index = find(fieldSizes == 2);
+fprintf('L-M: L, M, S contrasts here, 2 deg:                     %0.4f, %0.4f, %0.4f\n',LminusM_fsContrast(1,index),LminusM_fsContrast(2,index),LminusM_fsContrast(3,index));
+directionNum = 1;
+contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(1:3,1);
+fprintf('L-M: L, M, S contrasts nominal from validation, 2 deg:  %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
+
+index = find(fieldSizes == 15);
+fprintf('L-M: L, M, S contrasts here, 15 deg:                    %0.4f, %0.4f, %0.4f\n',LminusM_fsContrast(1,index),LminusM_fsContrast(2,index),LminusM_fsContrast(3,index));
+directionNum = 1;
+contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(4:6,1);
+fprintf('L-M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
+fprintf('\n')
+
+index = find(fieldSizes == 2);
+fprintf('L+M: L, M, S contrasts here, 2 deg:                     %0.4f, %0.4f, %0.4f\n',LplusM_fsContrast(1,index),LplusM_fsContrast(2,index),LplusM_fsContrast(3,index));
+directionNum = 3;
+contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(1:3,1);
+fprintf('L+M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
+
+index = find(fieldSizes == 15);
+fprintf('L+M: L, M, S contrasts here, 15 deg:                    %0.4f, %0.4f, %0.4f\n',LplusM_fsContrast(1,index),LplusM_fsContrast(2,index),LplusM_fsContrast(3,index));
+directionNum = 3;
+contrastValidation = theModulation.ConeDirectedDirections{directionNum}.describe.validation(1).contrastDesired(4:6,1);
+fprintf('L+M: L, M, S contrasts nominal from validation, 15 deg: %0.4f, %0.4f, %0.4f\n',contrastValidation(1),contrastValidation(2),contrastValidation(3));
 
 % Sub-function
 function [QcmStim,contrasts] = computeContrastStimWithCIE(S,fieldSizes,age,pupilSize,backgroundSPD,stimulusSPD)
