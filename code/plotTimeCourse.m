@@ -78,7 +78,7 @@ for ii = 1:numSubPlots
         tempR2 = corrcoef(timeCourse',qcmPred','rows','complete').^2;
         qcmR2 = tempR2(1,2);
     end
-    if ~isempty(find(strcmp(fields(:), 'IAMP')))qcmPred
+    if ~isempty(find(strcmp(fields(:), 'IAMP')))
         tempR2 = corrcoef(timeCourse',iampResp','rows','complete').^2;
         iampR2 = tempR2(1,2);
     end

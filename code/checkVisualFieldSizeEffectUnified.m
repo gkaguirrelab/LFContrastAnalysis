@@ -82,7 +82,7 @@ switch (stimulusType)
             % Load the nominal stimuli from our exteriment KAS25,
             % measurement set 1. Session 1, 2018-10-13, Session 2, 2018-10-20
             dataPath = getpref('LFContrastAnalysis','projectPath');
-            modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-13-20','postExpValidations.mat');
+            modulationPath = fullfile(dataPath,'MRContrastResponseFunction','DirectionValidationFiles','KAS25','2018-10-13','postExpValidations.mat');
             theModulation = load(modulationPath);
         else
             % Load test modulation generated more recently.  Rename some

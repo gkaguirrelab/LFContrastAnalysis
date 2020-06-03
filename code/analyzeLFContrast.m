@@ -3,6 +3,17 @@ display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
+% use actual contrast values
+analysisParams.useMedianValidations = true;
+
+if analysisParams.useMedianValidations
+    % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
+    contrastType = '15DegNegative';
+    [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
+    analysisParams.directionCoding = contrastDirectionActual;
+    analysisParams.maxContrastPerDir = maxContrastActual;
+end
+
 analysisParams.preproc = 'hcp';
 
 analysisParams.saveFigs = true;
@@ -26,7 +37,7 @@ iampColor = [0.8902, 0.6235, 0.5529];
 %set the HRF
 [analysisParams] = loadHRF(analysisParams);
 
-if analysisParams.highpass 
+if analysisParams.highpass
     analysisParams.HRF.values = highpass(analysisParams.HRF.values ,5/288,1/.8);
 end
 
@@ -52,7 +63,7 @@ defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
 % Get directon/contrast form of time course and IAMP crf packet pockets.
 timeCoursePacket = makeDirectionTimeCoursePacketPocket({theFullPacket});
 
-% Make the CRF packet for plotting the stilumi in the nonlinearlty 
+% Make the CRF packet for plotting the stilumi in the nonlinearlty
 stimAndRespForPlot = makeDirectionCrfPacketPocket(analysisParams,iampParams);
 
 % run NR models if set to true
@@ -144,7 +155,7 @@ for ii = 1:numIter
     defaultParamsInfo.nInstances = size(theFullPacket.stimulus.values,1);
     [iampParamsBoot,fValBoot(ii),~] = iampOBJ.fitResponse(theFullPacketBoot,...
         'defaultParamsInfo', defaultParamsInfo, 'searchMethod','linearRegression');
-     iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
+    iampParamsMat = [iampParamsMat, iampParamsBoot.paramMainMatrix];
     
     
     % Fit the time course with the QCM -- { } is because this expects a cell
@@ -189,8 +200,8 @@ ciQCMParams.exp   =ciQCM(4,:);
 ciQCMParams.semi  =ciQCM(5,:);
 
 % Calc error for QCM CRF
- respQCMCrfCI = prctile(crfQCMBoot,[upperCiVal lowerCiVal]);
- crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
+respQCMCrfCI = prctile(crfQCMBoot,[upperCiVal lowerCiVal]);
+crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
 
 % Calc SEM for QCM TC Prediction
 ciQcmTC =prctile(tcQCMBoot,[upperCiVal lowerCiVal]);
@@ -199,22 +210,28 @@ timeCoursePlot.qcm = addErrorBarsToTimeCouse(errorQcmTC,timeCoursePlot.qcm);
 
 %% MAKE THE PLOTS
 
-% Plot the CRF
+%contrastType
 if analysisParams.showPlots
     
+    if analysisParams.useMedianValidations
+        figSavePath = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID,'actualContrast');
+    else
+        figSavePath =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID);
+    end
+    
+    % Plot the CRF
     crfHndl = plotCRF(analysisParams, crfPlot, crfStimulus, iampParams,semIAMPParams,...
-                     'subtractBaseline', true, 'iampColor',iampColor,'indivBootCRF',[]);
+        'subtractBaseline', true, 'iampColor',iampColor,'indivBootCRF',[]);
     
     if analysisParams.saveFigs
-        figNameCrf =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        figNameCrf =  fullfile(figSavePath,[analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname...
+                      '_' analysisParams.preproc '_' contrastType '.pdf']);
         set(crfHndl, 'Renderer', 'Painters');
         FigureSave(figNameCrf,crfHndl,'pdf');
     end
-end
-
-% Plot the time course prediction
-if analysisParams.showPlots
+    
+    
+    % Plot the time course prediction
     tcHndl = plotTimeCourse(analysisParams, timeCoursePlot, zeros(20,1), 20);
     
     if analysisParams.saveFigs
@@ -225,34 +242,31 @@ if analysisParams.showPlots
         set(tcHndl, 'PaperSize',figureSizeInches);
         set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         % Full file name
-        figNameTc =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        figNameTc =  fullfile(figSavePath,[analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname...
+                     '_' analysisParams.preproc '_' contrastType '.pdf']);
         % Save it
         print(tcHndl, figNameTc, '-dpdf', '-r300');
     end
-end
-
-%Plot isoresponce contour
-if analysisParams.showPlots
- 
+    
+    %Plot isoresponce contour
     eqContrastPts = computeEquivContrast(stimAndRespForPlot,qcmTcParams{1});
     [ellipseNonlinHndl] = plotEllipseAndNonLin(qcmTcParams{1},'plotColor', qcmColor,...
-                                 'qcmCI',ciQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
-                        
+        'qcmCI',ciQCMParams,'dispParams',true,'addEqContrastPts', eqContrastPts);
+    
     if analysisParams.saveFigs
         set(ellipseNonlinHndl, 'Renderer', 'Painters');
         figureSizeInches = [13.5 6];
         set(ellipseNonlinHndl, 'PaperUnits', 'inches');
         set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
         set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
-        figNameEllipseNonlin = fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-            [analysisParams.expSubjID,'_Ellipse_Nonlin_' analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+        figNameEllipseNonlin = fullfile(figSavePath,[analysisParams.expSubjID,'_Ellipse_Nonlin_' ...
+                               analysisParams.sessionNickname '_' analysisParams.preproc '_' contrastType '.pdf']);
         print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
     end
 end
 
 %% Check the CI on the timecourse -- Ploting run 1
-figure; hold on 
+figure; hold on
 plot(timeCoursePlot.timecourse{1}.timebase, [tcQCMBoot(:,1:360)]','Color',[.1 .4 .8 .5])
 plot(timeCoursePlot.qcm{1}.timebase,timeCoursePlot.qcm{1}.values, 'Color',[.1 .2 1],'LineWidth',2)
 display(['COMPLETED: ',subjId])
