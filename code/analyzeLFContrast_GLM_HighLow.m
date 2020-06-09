@@ -1,14 +1,16 @@
+function [regLineParams] =  analyzeLFContrast_GLM_HighLow(subjId)
+
 % High/Log Contrast change with ecc.
-subjId = 'AP26_replication';
+
 display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
-analysisParams.preproc = 'hcp';
+analysisParams.preproc  = 'hcp';
+analysisParams.saveMaps = false;
+analysisParams.showFigs = false;
 
 hemi = 'combined';
-
-analysisParams = getSubjectParams(subjId);
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
 mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
@@ -93,23 +95,23 @@ for ii = 1:size(fullCleanData,1)
     lPlusM_lowContrast(voxelIndex(ii),:)   = theParams(4);
 end
 
-
-% write out minor axis ratio
-mapName = fullfile(mapSavePath,['lMinusM_highContrast_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(lMinusM_highContrast', [], templateFile, mapName)
-
-% write out minor axis ratio
-mapName = fullfile(mapSavePath,['lMinusM_lowContrast_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(lMinusM_lowContrast', [], templateFile, mapName)
-
-% write out minor axis ratio
-mapName = fullfile(mapSavePath,['lPlusM_highContrast_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(lPlusM_highContrast', [], templateFile, mapName)
-
-% write out minor axis ratio
-mapName = fullfile(mapSavePath,['lPlusM_lowContrast_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(lPlusM_lowContrast', [], templateFile, mapName)
-
+if analysisParams.saveMaps
+    % write out minor axis ratio
+    mapName = fullfile(mapSavePath,['lMinusM_highContrast_', analysisParams.sessionNickname '.dscalar.nii']);
+    makeWholeBrainMap(lMinusM_highContrast', [], templateFile, mapName)
+    
+    % write out minor axis ratio
+    mapName = fullfile(mapSavePath,['lMinusM_lowContrast_', analysisParams.sessionNickname '.dscalar.nii']);
+    makeWholeBrainMap(lMinusM_lowContrast', [], templateFile, mapName)
+    
+    % write out minor axis ratio
+    mapName = fullfile(mapSavePath,['lPlusM_highContrast_', analysisParams.sessionNickname '.dscalar.nii']);
+    makeWholeBrainMap(lPlusM_highContrast', [], templateFile, mapName)
+    
+    % write out minor axis ratio
+    mapName = fullfile(mapSavePath,['lPlusM_lowContrast_', analysisParams.sessionNickname '.dscalar.nii']);
+    makeWholeBrainMap(lPlusM_lowContrast', [], templateFile, mapName)
+end
 
 %% LOAD THE RETINO MAPS
 % Path the benson atlas maps
@@ -156,8 +158,6 @@ lMinusMColorLine = [244,194,194]./255;
 lPlusMColorDot   = [42,82,190]./255;
 lPlusMColorLine  = [204,204,255]./255;
 
-figHndl = figure;
-
 % Set the figure's size in inches
 figureSizeInches = [20 12];
 figHndl.Units = 'inches';
@@ -165,98 +165,108 @@ figHndl.Units = 'inches';
 markerSize = 7;
 markerAreaPtsSquared = markerSize^2;
 
-subplot(1,2,1);
-hold on;
-axis square
-scttrPlt1= scatter(eccSatterPoints,lMinusM_highContrast(maskIndex), markerAreaPtsSquared, 'o', ...
-    'LineWidth', 1.0, 'MarkerFaceColor', lMinusMColorDot, 'MarkerEdgeColor', lMinusMColorDot);
-set(scttrPlt1, 'MarkerFaceAlpha', 0.6);
 
-scttrPlt2= scatter(eccSatterPoints,lPlusM_highContrast(maskIndex), markerAreaPtsSquared, 'o', ...
-    'LineWidth', 1.0, 'MarkerFaceColor', lPlusMColorDot, 'MarkerEdgeColor', lPlusMColorDot);
-set(scttrPlt2, 'MarkerFaceAlpha', 0.6);
-
-mdlr = fitlm(eccSatterPoints,lMinusM_highContrast(maskIndex),'RobustOpts','on');
-regLineParams = mdlr.Coefficients.Variables;
-regLine = @(x) regLineParams(2,1).*x + regLineParams(1,1);
+mdlr = fitlm(eccSatterPoints,lMinusM_highContrast(maskIndex),'RobustOpts','off');
+regLineParams.high.lMinusM = mdlr.Coefficients.Variables;
+regLine = @(x) regLineParams.high.lMinusM(2,1).*x + regLineParams.high.lMinusM(1,1);
 xPts = [min(eccSatterPoints), max(eccSatterPoints)];
-yPts = regLine(xPts);
-l1 = line(xPts,yPts,'Color',lMinusMColorLine,'LineWidth',3);
-
-mdlr = fitlm(eccSatterPoints,lPlusM_highContrast(maskIndex),'RobustOpts','on');
-regLineParams = mdlr.Coefficients.Variables;
-regLine = @(x) regLineParams(2,1).*x + regLineParams(1,1);
-yPts = regLine(xPts);
-l2 = line(xPts,yPts,'Color',lPlusMColorLine,'LineWidth',3);
-
-ylim([-0.5,1.0])
-xlabel('Eccentricity')
-ylabel('GLM Beta Weight')
-title('High Contrast Condition');
-set(gca, ...
-    'XColor', [0.2 0.2 0.2], ...
-    'YColor', [0.2 0.2 0.2], ...
-    'FontName', 'Helvetica', ...
-    'FontSize', 14, ...
-    'FontWeight', 'normal', ...
-    'TickLength',[0.01 0.01], ...
-    'TickDir', 'out', ...
-    'LineWidth', 0.7, ...
-    'Box', 'off');
+yPts1 = regLine(xPts);
 
 
-subplot(1,2,2);
-axis square
-hold on;
-scttrPlt3= scatter(eccSatterPoints,lMinusM_lowContrast(maskIndex), markerAreaPtsSquared, 'o', ...
-    'LineWidth', 1.0, 'MarkerFaceColor', lMinusMColorDot, 'MarkerEdgeColor', lMinusMColorDot);
-set(scttrPlt3, 'MarkerFaceAlpha', 0.6);
+mdlr = fitlm(eccSatterPoints,lPlusM_highContrast(maskIndex),'RobustOpts','off');
+regLineParams.high.lPlusM = mdlr.Coefficients.Variables;
+regLine = @(x) regLineParams.high.lPlusM(2,1).*x + regLineParams.high.lPlusM(1,1);
+yPts2 = regLine(xPts);
 
-scttrPlt4= scatter(eccSatterPoints,lPlusM_lowContrast(maskIndex), markerAreaPtsSquared, 'o', ...
-    'LineWidth', 1.0, 'MarkerFaceColor', lPlusMColorDot, 'MarkerEdgeColor', lPlusMColorDot);
-set(scttrPlt4, 'MarkerFaceAlpha', 0.6);
 
-mdlr = fitlm(eccSatterPoints,lMinusM_lowContrast(maskIndex),'RobustOpts','on');
-regLineParams = mdlr.Coefficients.Variables;
-regLine = @(x) regLineParams(2,1).*x + regLineParams(1,1);
-yPts = regLine(xPts);
-l3 = line(xPts,yPts,'Color',lMinusMColorLine,'LineWidth',3);
 
-mdlr = fitlm(eccSatterPoints,lPlusM_lowContrast(maskIndex),'RobustOpts','on');
-regLineParams = mdlr.Coefficients.Variables;
-regLine = @(x) regLineParams(2,1).*x + regLineParams(1,1);
-yPts = regLine(xPts);
-l4 = line(xPts,yPts,'Color',lPlusMColorLine,'LineWidth',3);
+if analysisParams.showFigs
+    
+    subplot(1,2,1);
+    hold on;
+    axis square
+    scttrPlt1= scatter(eccSatterPoints,lMinusM_highContrast(maskIndex), markerAreaPtsSquared, 'o', ...
+        'LineWidth', 1.0, 'MarkerFaceColor', lMinusMColorDot, 'MarkerEdgeColor', lMinusMColorDot);
+    set(scttrPlt1, 'MarkerFaceAlpha', 0.6);
+    
+    scttrPlt2= scatter(eccSatterPoints,lPlusM_highContrast(maskIndex), markerAreaPtsSquared, 'o', ...
+        'LineWidth', 1.0, 'MarkerFaceColor', lPlusMColorDot, 'MarkerEdgeColor', lPlusMColorDot);
+    set(scttrPlt2, 'MarkerFaceAlpha', 0.6);
+    l1 = line(xPts,yPts1,'Color',lMinusMColorLine,'LineWidth',3);
+    l2 = line(xPts,yPts2,'Color',lPlusMColorLine,'LineWidth',3);
+    
+    ylim([-0.5,1.0])
+    xlabel('Eccentricity')
+    ylabel('GLM Beta Weight')
+    title('High Contrast Condition');
+    set(gca, ...
+        'XColor', [0.2 0.2 0.2], ...
+        'YColor', [0.2 0.2 0.2], ...
+        'FontName', 'Helvetica', ...
+        'FontSize', 14, ...
+        'FontWeight', 'normal', ...
+        'TickLength',[0.01 0.01], ...
+        'TickDir', 'out', ...
+        'LineWidth', 0.7, ...
+        'Box', 'off');
+end
 
-ylim([-0.5,1.0])
-xlabel('Eccentricity')
-ylabel('GLM Beta Weight')
-title('Low Contrast Condition');
-set(gca, ...
-    'XColor', [0.2 0.2 0.2], ...
-    'YColor', [0.2 0.2 0.2], ...
-    'FontName', 'Helvetica', ...
-    'FontSize', 14, ...
-    'FontWeight', 'normal', ...
-    'TickLength',[0.01 0.01], ...
-    'TickDir', 'out', ...
-    'LineWidth', 0.7, ...
-    'Box', 'off');
-legend([scttrPlt3,scttrPlt4],{'L-M', 'L+M'})
+mdlr = fitlm(eccSatterPoints,lMinusM_lowContrast(maskIndex),'RobustOpts','off');
+regLineParams.low.lMinusM = mdlr.Coefficients.Variables;
+regLine = @(x) regLineParams.low.lMinusM(2,1).*x + regLineParams.low.lMinusM(1,1);
+yPts3 = regLine(xPts);
 
-set(figHndl, 'PaperSize',figureSizeInches);
-set(figHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
-% Full file name
-figName =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-    [analysisParams.expSubjID,'_scatter_High_Low_Contrast_GLM' analysisParams.sessionNickname '_hcp.pdf']);
-% Save it
-print(figHndl, figName, '-dpdf', '-r300');
 
+mdlr = fitlm(eccSatterPoints,lPlusM_lowContrast(maskIndex),'RobustOpts','off');
+regLineParams.low.lPlusM = mdlr.Coefficients.Variables;
+regLine = @(x) regLineParams.low.lPlusM(2,1).*x + regLineParams.low.lPlusM(1,1);
+yPts4 = regLine(xPts);
+
+
+if analysisParams.showFigs
+    subplot(1,2,2);
+    axis square
+    hold on;
+    scttrPlt3= scatter(eccSatterPoints,lMinusM_lowContrast(maskIndex), markerAreaPtsSquared, 'o', ...
+        'LineWidth', 1.0, 'MarkerFaceColor', lMinusMColorDot, 'MarkerEdgeColor', lMinusMColorDot);
+    set(scttrPlt3, 'MarkerFaceAlpha', 0.6);
+    
+    scttrPlt4= scatter(eccSatterPoints,lPlusM_lowContrast(maskIndex), markerAreaPtsSquared, 'o', ...
+        'LineWidth', 1.0, 'MarkerFaceColor', lPlusMColorDot, 'MarkerEdgeColor', lPlusMColorDot);
+    set(scttrPlt4, 'MarkerFaceAlpha', 0.6);
+    
+    l3 = line(xPts,yPts3,'Color',lMinusMColorLine,'LineWidth',3);
+    l4 = line(xPts,yPts4,'Color',lPlusMColorLine,'LineWidth',3);
+    
+    ylim([-0.5,1.0])
+    xlabel('Eccentricity')
+    ylabel('GLM Beta Weight')
+    title('Low Contrast Condition');
+    set(gca, ...
+        'XColor', [0.2 0.2 0.2], ...
+        'YColor', [0.2 0.2 0.2], ...
+        'FontName', 'Helvetica', ...
+        'FontSize', 14, ...
+        'FontWeight', 'normal', ...
+        'TickLength',[0.01 0.01], ...
+        'TickDir', 'out', ...
+        'LineWidth', 0.7, ...
+        'Box', 'off');
+    legend([scttrPlt3,scttrPlt4],{'L-M', 'L+M'})
+    
+    set(figHndl, 'PaperSize',figureSizeInches);
+    set(figHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
+    % Full file name
+    figName =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
+        [analysisParams.expSubjID,'_scatter_High_Low_Contrast_GLM' analysisParams.sessionNickname '_hcp.pdf']);
+    % Save it
+    print(figHndl, figName, '-dpdf', '-r300');
+end
 
 display(['COMPLETED: ',subjId])
 
 
-
+end
 
 
 
