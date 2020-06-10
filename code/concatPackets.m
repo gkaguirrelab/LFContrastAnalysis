@@ -6,7 +6,7 @@ function [analysisParams, theFullPacket,runOrder] = concatPackets(analysisParams
 %
 % Description:
 %    This function takes in a cell array of packets and returns one packet
-%    with a the fields being a concatenation of all the input packets. 
+%    with a the fields being a concatenation of all the input packets.
 %
 % Inputs:
 %    analysisParams             - Struct of important information for the
@@ -16,11 +16,11 @@ function [analysisParams, theFullPacket,runOrder] = concatPackets(analysisParams
 %
 % Outputs:
 %    analysisParams             - Returns analysisParams with any updates
-%    theFullPacket              - The concatenated packet 
+%    theFullPacket              - The concatenated packet
 %
 % Optional key/value pairs:
 %    bootstrap                  - Logical. If true, will randomly sample
-%                                 with replacement the input packets.  
+%                                 with replacement the input packets.
 
 % MAB 03/10/20 Wrote it.
 
@@ -54,14 +54,18 @@ theFullPacket.metaData.stimDirections = [];
 theFullPacket.metaData.stimContrasts  = [];
 theFullPacket.metaData.lmsContrast    = [];
 
- if p.Results.bootstrap == true
+if p.Results.bootstrap == true
+    if length(packetPocket) < 20
+        runOrder = randi([1 10],1,length(packetPocket));
+    elseif length(packetPocket) == 20
         runOrder = [ randi([1 10],1,10) ,  randi([11 20],1,10)];
-    else 
-        runOrder = 1:20;
- end
-    
-for ii = 1:length(packetPocket)
+    end
+else
+    runOrder = 1:20;
+end
 
+for ii = 1:length(packetPocket)
+    
     % The Response
     theFullPacket.response.values   = [theFullPacket.response.values packetPocket{runOrder(ii)}.response.values];
     % The Stimulus

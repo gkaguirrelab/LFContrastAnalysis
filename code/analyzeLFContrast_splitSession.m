@@ -1,4 +1,7 @@
-function [] = analyzeLFContrast(subjId)
+%function [] = analyzeLFContrast_splitSession(subjId)
+
+subjId = 'KAS25';
+
 display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
@@ -15,7 +18,7 @@ analysisParams.highpass = false;
 
 
 % number of bootstrap iterations
-numIter = 200;
+numIter = 10;
 
 %turn on or off plotting
 analysisParams.showPlots = true;
@@ -119,41 +122,37 @@ timeCoursePlot.timecourse = [timeCoursePlotSessionOne,timeCoursePlotSessionTwo];
 
 %% Bootstrap
 % init vars
-iampParamsMat    = [];
-iampResponseBoot = [];
-qcmParamsMat     = [];
+qcmParamsMatOne  = [];
+qcmParamsMatTwo  = [];
 crfQCMBoot       = [];
 tcQCMBoot        = [];
 for ii = 1:numIter
     % Session One
-    [analysisParams, theFullPacketBootOne,runOrderOne(ii,:)] = concatPackets(analysisParams, iampTimeCoursePacketPocket{1:10},'bootstrap',true);
-    timeCoursePacketBootOne = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
+    [analysisParams, theFullPacketBootOne,runOrderOne(ii,:)] = concatPackets(analysisParams, iampTimeCoursePacketPocket(1:10),'bootstrap',true);
+    timeCoursePacketBootOne = makeDirectionTimeCoursePacketPocket({theFullPacketBootOne});
+    [qcmTcOBJ,qcmParamsBootOne] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBootOne,'fitErrorScalar',1000,'talkToMe',false);
+    qcmParamsMatOne = [qcmParamsMatOne,qcmTcOBJ.paramsToVec(qcmParamsBootOne{1})];
     
     % Session Two
-    [analysisParams, theFullPacketBootTwo,runOrderTwo(ii,:)] = concatPackets(analysisParams, iampTimeCoursePacketPocket{11:20},'bootstrap',true);
-    timeCoursePacketBootTwo = makeDirectionTimeCoursePacketPocket({theFullPacketBoot});
+    [analysisParams, theFullPacketBootTwo,runOrderTwo(ii,:)] = concatPackets(analysisParams, iampTimeCoursePacketPocket(11:20),'bootstrap',true);
+    timeCoursePacketBootTwo = makeDirectionTimeCoursePacketPocket({theFullPacketBootTwo});
+    [qcmTcOBJ,qcmParamsBootTwo] = fitDirectionModel(analysisParams, 'qcmFit', timeCoursePacketBootTwo,'fitErrorScalar',1000,'talkToMe',false);
+    qcmParamsMatTwo = [qcmParamsMatTwo,qcmTcOBJ.paramsToVec(qcmParamsBootTwo{1})];
     
     
-    % Fit the time course with the QCM session one packets
-    [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', theFullPacketBootOne,'fitErrorScalar',1000,'talkToMe',false);
-    qcmParamsMat = [qcmParamsMat,qcmTcOBJ.paramsToVec(qcmCrfParamsBoot{1})];
+    % Predict the responses for CRF with params from QCM
+    crfRespQcmBootOne = qcmTcOBJ.computeResponse(qcmParamsBootTwo{1},crfStimulusSessionOne,[]);
+    crfRespQcmBootTwo = qcmTcOBJ.computeResponse(qcmParamsBootOne{1},crfStimulusSessionTwo,[]);
     
+    crfResp = [crfRespQcmBootOne.values,crfRespQcmBootTwo.values];
+    crfQCMBoot = [crfQCMBoot; crfResp];
     
-    % Fit the time course with the QCM session two packets
-    [qcmTcOBJ,qcmCrfParamsBoot] = fitDirectionModel(analysisParams, 'qcmFit', theFullPacketBootTwo,'fitErrorScalar',1000,'talkToMe',false);
-    qcmParamsMat = [qcmParamsMat,qcmTcOBJ.paramsToVec(qcmCrfParamsBoot{1})];
-    
-    % TO PUT ERROR BARS ON THE QCM CRF
-    crfQCMBootStruct = qcmTcOBJ.computeResponse(qcmCrfParamsBoot{1},crfStimulus,[]);
-    crfQCMBoot = [crfQCMBoot; crfQCMBootStruct.values];
-    
-    % get the IAMP time course prediction for the bootstrap to calc error bars
-    iampResps = computeResponse(iampOBJ,iampParamsBoot,theFullPacket.stimulus,theFullPacket.kernel);
-    iampResponseBoot = [iampResponseBoot; iampResps.values];
     
     % get the QCM time course prediction for the bootstrap to calc error bars
-    qcmTimeCourseBoot = responseFromPacket('qcmPred', analysisParams, qcmCrfParamsBoot{1}, timeCoursePacket, 'plotColor', [0, 1, 0]);
-    tcQCMBoot         = [tcQCMBoot; qcmTimeCourseBoot{1}.values];
+    qcmTimeCourseBootOne = responseFromPacket('qcmPred', analysisParams, qcmParamsBootTwo{1}, timeCoursePacketBootOne, 'plotColor', splitSessionColor);
+    qcmTimeCourseBoottwo = responseFromPacket('qcmPred', analysisParams, qcmParamsBootOne{1}, timeCoursePacketBootTwo, 'plotColor', splitSessionColor);
+    tcQcmResp = [qcmTimeCourseBootOne{1}.values,qcmTimeCourseBoottwo{1}.values];
+    tcQCMBoot = [tcQCMBoot; tcQcmResp];
 end
 
 %% Get error bars on stuff
@@ -161,28 +160,24 @@ ciPercent = 68;
 upperCiVal = 100 - ((100 - ciPercent)/2);
 lowerCiVal = ((100 - ciPercent)/2);
 
-% Calc Error for IAMP betas
-ciIampParams = prctile(iampParamsMat',[upperCiVal lowerCiVal]);
-ciIampParams = abs(ciIampParams - iampParams.paramMainMatrix');
-semIAMPParams = iampParams;
-semIAMPParams.paramMainMatrix =ciIampParams;
-
-% Calc error for IAMP TC Prediction
-ciIampTC = prctile(iampResponseBoot,[upperCiVal lowerCiVal]);
-errorIampTC = abs(ciIampTC -qcmTimeCourse{1}.values);
-timeCoursePlot.IAMP = addErrorBarsToTimeCouse(errorIampTC,timeCoursePlot.IAMP);
-
 % Calc error for QCM Params
-ciQCM = prctile(qcmParamsMat',[upperCiVal lowerCiVal])';
-ciQCMParams.mar   =ciQCM(1,:);
-ciQCMParams.angle =ciQCM(2,:);
-ciQCMParams.amp   =ciQCM(3,:);
-ciQCMParams.exp   =ciQCM(4,:);
-ciQCMParams.semi  =ciQCM(5,:);
+ciQcmOne = prctile(qcmParamsMatOne',[upperCiVal lowerCiVal])';
+ciQCMParamsOne.mar   =ciQcmOne(1,:);
+ciQCMParamsOne.angle =ciQcmOne(2,:);
+ciQCMParamsOne.amp   =ciQcmOne(3,:);
+ciQCMParamsOne.exp   =ciQcmOne(4,:);
+ciQCMParamsOne.semi  =ciQcmOne(5,:);
+
+ciQcmTwo = prctile(qcmParamsMatTwo',[upperCiVal lowerCiVal])';
+ciQCMParamsTwo.mar   =ciQcmTwo(1,:);
+ciQCMParamsTwo.angle =ciQcmTwo(2,:);
+ciQCMParamsTwo.amp   =ciQcmTwo(3,:);
+ciQCMParamsTwo.exp   =ciQcmTwo(4,:);
+ciQCMParamsTwo.semi  =ciQcmTwo(5,:);
 
 % Calc error for QCM CRF
 respQCMCrfCI = prctile(crfQCMBoot,[upperCiVal lowerCiVal]);
-crfPlot.respQCMCrf.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.respQCMCrf.values);
+crfPlot.QcmCrfSplit.shaddedErrorBars  = abs(respQCMCrfCI -crfPlot.QcmCrfSplit.values);
 
 % Calc SEM for QCM TC Prediction
 ciQcmTC =prctile(tcQCMBoot,[upperCiVal lowerCiVal]);
