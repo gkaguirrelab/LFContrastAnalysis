@@ -1,6 +1,4 @@
-%function [] = analyzeLFContrast_splitSession(subjId)
-
-subjId = 'KAS25';
+function [] = analyzeLFContrast_splitSession(subjId)
 
 display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
@@ -18,7 +16,7 @@ analysisParams.highpass = false;
 
 
 % number of bootstrap iterations
-numIter = 10;
+numIter = 200;
 
 %turn on or off plotting
 analysisParams.showPlots = true;
@@ -149,8 +147,8 @@ for ii = 1:numIter
     
     
     % get the QCM time course prediction for the bootstrap to calc error bars
-    qcmTimeCourseBootOne = responseFromPacket('qcmPred', analysisParams, qcmParamsBootTwo{1}, timeCoursePacketBootOne, 'plotColor', splitSessionColor);
-    qcmTimeCourseBoottwo = responseFromPacket('qcmPred', analysisParams, qcmParamsBootOne{1}, timeCoursePacketBootTwo, 'plotColor', splitSessionColor);
+    qcmTimeCourseBootOne = responseFromPacket('qcmPred', analysisParams, qcmParamsBootTwo{1}, timeCoursePacketSessionOne, 'plotColor', splitSessionColor);
+    qcmTimeCourseBoottwo = responseFromPacket('qcmPred', analysisParams, qcmParamsBootOne{1}, timeCoursePacketSessionTwo, 'plotColor', splitSessionColor);
     tcQcmResp = [qcmTimeCourseBootOne{1}.values,qcmTimeCourseBoottwo{1}.values];
     tcQCMBoot = [tcQCMBoot; tcQcmResp];
 end
@@ -217,3 +215,4 @@ if analysisParams.showPlots
     
 end
 
+end
