@@ -45,11 +45,15 @@ qcmCI        = p.Results.qcmCI;
 circlePoints = UnitCircleGenerate(nQCMPoints);
 
 % Create transformation found from fitting the QCM
-scaleMat = [1,0;0,qcmParams.Qvec(1)];
-rotMat   = deg2rotm(-1*qcmParams.Qvec(2));
-
+S = [1,0;0,1/qcmParams.Qvec(1)];
+%rotMat   = deg2rotm(-1*qcmParams.Qvec(2));
+V = deg2rotm(qcmParams.Qvec(2));
 % Apply transformation
-ellipsePoints = (circlePoints' * scaleMat * rotMat)';
+
+M = S'* V';
+Minv = inv(M);
+ellipsePoints = Minv*circlePoints;
+%ellipsePoints = (circlePoints' * scaleMat * rotMat)';
 
 % Plot it
 figHndl = figure;
