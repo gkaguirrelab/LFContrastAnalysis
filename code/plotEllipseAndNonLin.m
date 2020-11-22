@@ -39,21 +39,11 @@ xSampleBase  = p.Results.xSampleBase;
 qcmCI        = p.Results.qcmCI;
 
 %% Ellipse Figure
-% Get the eq. contrast needed for a normalized ellipse
-
-% Generate a circle of calculated eq. contrast radius
+% Calculate the Minv matrix to tranform a unit circle to the ellipse and do it
+[~,Minv,~] = EllipsoidMatricesGenerate([1 1./qcmParams.Qvec(1) qcmParams.Qvec(2)]','dimension',2);
 circlePoints = UnitCircleGenerate(nQCMPoints);
-
-% Create transformation found from fitting the QCM
-S = [1,0;0,1/qcmParams.Qvec(1)];
-%rotMat   = deg2rotm(-1*qcmParams.Qvec(2));
-V = deg2rotm(qcmParams.Qvec(2));
-% Apply transformation
-
-M = S'* V';
-Minv = inv(M);
 ellipsePoints = Minv*circlePoints;
-%ellipsePoints = (circlePoints' * scaleMat * rotMat)';
+
 
 % Plot it
 figHndl = figure;
@@ -232,8 +222,8 @@ set(gca, ...
     'LineWidth'   , 2         , ...
     'ActivePositionProperty', 'OuterPosition',...
     'xscale','log');
-ylim([0 4]);
-xlim([0 1]);
+ylim([-.5 4]);
+xlim([0 1.3]);
 set(gcf, 'Color', 'white' );
 axis square
 

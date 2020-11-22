@@ -52,7 +52,7 @@ directionVecs = direction .* magitude;
 dimension = size(direction,1);
 
 % Generate the Q matrix to transform the stimuli to eqiv. contrast
-[~,~,Q] = EllipsoidMatricesGenerate([1 qcmParams.Qvec]','dimension',dimension);
+[~,~,Q] = EllipsoidMatricesGenerate([1 1./qcmParams.Qvec(1) qcmParams.Qvec(2)]','dimension',dimension);
 
 % Transform the stimuli to eqiv. contrast
 
