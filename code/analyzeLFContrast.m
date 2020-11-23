@@ -3,16 +3,16 @@ display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
-% use actual contrast values
-analysisParams.useMedianValidations = true;
-
-if analysisParams.useMedianValidations
-    % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
-    contrastType = '15DegNegative';
-    [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
-    analysisParams.directionCoding = contrastDirectionActual;
-    analysisParams.maxContrastPerDir = maxContrastActual;
-end
+% % use actual contrast values
+% analysisParams.useMedianValidations = false;
+% 
+% if analysisParams.useMedianValidations
+%     % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
+%     contrastType = '15DegNegative';
+%     [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
+%     analysisParams.directionCoding = contrastDirectionActual;
+%     analysisParams.maxContrastPerDir = maxContrastActual;
+% end
 
 analysisParams.preproc = 'hcp';
 
@@ -225,7 +225,7 @@ if analysisParams.showPlots
     
     if analysisParams.saveFigs
         figNameCrf =  fullfile(figSavePath,[analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname...
-                      '_' analysisParams.preproc '_' contrastType '.pdf']);
+                      '_' analysisParams.preproc '.pdf']);
         set(crfHndl, 'Renderer', 'Painters');
         FigureSave(figNameCrf,crfHndl,'pdf');
     end
@@ -243,7 +243,7 @@ if analysisParams.showPlots
         set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         % Full file name
         figNameTc =  fullfile(figSavePath,[analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname...
-                     '_' analysisParams.preproc '_' contrastType '.pdf']);
+                     '_' analysisParams.preproc '.pdf']);
         % Save it
         print(tcHndl, figNameTc, '-dpdf', '-r300');
     end
@@ -260,7 +260,7 @@ if analysisParams.showPlots
         set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
         set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         figNameEllipseNonlin = fullfile(figSavePath,[analysisParams.expSubjID,'_Ellipse_Nonlin_' ...
-                               analysisParams.sessionNickname '_' analysisParams.preproc '_' contrastType '.pdf']);
+                               analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
         print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
     end
 end
