@@ -3,23 +3,29 @@ display(['STARTING - Main Analysis: ',subjId])
 % Load the subject relevant info
 analysisParams = getSubjectParams(subjId);
 
-% % use actual contrast values
-% analysisParams.useMedianValidations = false;
-% 
-% if analysisParams.useMedianValidations
-%     % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
-%     contrastType = '15DegNegative';
-%     [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
-%     analysisParams.directionCoding = contrastDirectionActual;
-%     analysisParams.maxContrastPerDir = maxContrastActual;
-% end
 
 analysisParams.preproc = 'hcp';
 
-analysisParams.saveFigs = true;
+analysisParams.saveFigs = false;
+
+
+% use actual contrast values
+% if you use this you will want to add back the contrastType str to file
+% name of figure name. as of now, saves them with same name 
+analysisParams.useMedianValidations = false;
+
+ if analysisParams.useMedianValidations
+    % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
+    contrastType = '15DegNegative';
+    [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
+    analysisParams.directionCoding = contrastDirectionActual;
+    analysisParams.maxContrastPerDir = maxContrastActual;
+end
+
+
 
 % Number of bootstrap iterations
-numIter  = 200;
+numIter  = 2;
 
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
