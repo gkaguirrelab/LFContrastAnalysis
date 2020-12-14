@@ -27,7 +27,7 @@ p.addRequired('qcmParams',@isstruct);
 p.addParameter('qcmCI',[],@isstruct);
 p.addParameter('nQCMPoints',100,@isnumeric);
 p.addParameter('plotColor',[0.3 0.45 0.81],@isvector);
-p.addParameter('xSampleBase',[0.001:0.005:1],@isnumeric);
+p.addParameter('xSampleBase',[0.001:0.005:1.23],@isnumeric);
 p.addParameter('dispParams',true,@islogical);
 p.addParameter('addEqContrastPts',[],@isstruct);
 p.parse(qcmParams,varargin{:});
@@ -198,11 +198,11 @@ if p.Results.dispParams
     end
     
     % Add the above text to the plot
-    theTextHandle = text(gca, 1/500,3.8 , modelTxtAmp, 'Interpreter', 'latex');
+    theTextHandle = text(gca, 1/500,1.3 , modelTxtAmp, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, 1/500,3.5, modelTxtExp, 'Interpreter', 'latex');
+    theTextHandle = text(gca, 1/500,1.15, modelTxtExp, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
-    theTextHandle = text(gca, 1/500,3.2 , modelTxtSemi, 'Interpreter', 'latex');
+    theTextHandle = text(gca, 1/500,1 , modelTxtSemi, 'Interpreter', 'latex');
     set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 end
 
@@ -216,13 +216,13 @@ set(gca, ...
     'YGrid'       , 'on'      , ...
     'XColor'      , [.3 .3 .3], ...
     'YColor'      , [.3 .3 .3], ...
-    'YTick'       , 0:1:4    , ...
+    'YTick'       , -.5:.25:1.5    , ...
     'XTick'       , [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0], ...
     'XTickLabel'  , {'0%','1%','2%','5%','10%','20%','50%','100%'}, ...
     'LineWidth'   , 2         , ...
     'ActivePositionProperty', 'OuterPosition',...
     'xscale','log');
-ylim([-.5 4]);
+ylim([-.4 1.5]);
 xlim([0 1.3]);
 set(gcf, 'Color', 'white' );
 axis square
