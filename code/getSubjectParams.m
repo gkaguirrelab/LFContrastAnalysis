@@ -218,9 +218,10 @@ end
 
 
 %% Add common params
-
+analysisParams.useSubcortROI = false;
+analysisParams.subcortROI    = 'LGN_probability.dscalar.nii';
 % Info needed to make the V1 mask  from benson maps
-analysisParams.areaNum     = 1;
+analysisParams.areaNum     = '1';
 analysisParams.eccenRange  = [0 20];
 analysisParams.anglesRange  = [0 180];
 analysisParams.hemisphere   = 'combined';

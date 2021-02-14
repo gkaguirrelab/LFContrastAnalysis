@@ -61,16 +61,28 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     fullFileConfounds = fullfile(functionalPath,confoundFiles);
     
     savePathROI  = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis','MNI_ROIs');
-    saveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2)),'.dscalar.nii'];
-    maskFullFile = fullfile(savePathROI,saveName);
+    
+    if analysisParams.useSubcortROI
+        roiSaveName        = analysisParams.subcortROI;
+    else
+        voxelsSaveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2))];
+        roiSaveName        = [voxelsSaveName,'.dscalar.nii'];
+    end
+    maskFullFile = fullfile(savePathROI,roiSaveName);
     
     % Number of acquisitions
     analysisParams.numAcquisitions = length(functionalRuns);
     
     % Save vars name
-    saveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
+    if analysisParams.useSubcortROI
+        [~,tmp,~] = fileparts(analysisParams.subcortROI);
+        [~,regionName,~] = fileparts(tmp);
+        dataSaveName =[analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_',regionName, '_hcp.mat'];
+    else
+        dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
+    end
     savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
-    saveFullFile = fullfile(savePath,saveName);
+    saveFullFile = fullfile(savePath,dataSaveName);
     
     % Load existing cleaned data
     saveFileStatus = 0;
@@ -86,7 +98,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         
         %% Create restricted V1 mask
         if exist(maskFullFile)
-            display(sprintf('ROI Found: %s',saveName))
+            display(sprintf('ROI Found: %s',roiSaveName))
             [ maskMatrix ] = loadCIFTI(maskFullFile);
             voxelIndex = find(maskMatrix);
         else
@@ -102,7 +114,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         
         %% Extract Signal from voxels
-        voxelsSaveName = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2))];
+        if analysisParams.useSubcortROI
+            voxelsSaveName = regionName;
+        end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
             theVars = load(saveVoxelTimeSeriesName);
