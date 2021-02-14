@@ -1,4 +1,4 @@
-function [analysisParams, iampTimeCoursePacketPocket] = generateRunPackets(analysisParams, fullCleanData, varargin)
+function [analysisParams, iampTimeCoursePacketPocket, expParams] = generateRunPackets(analysisParams, fullCleanData, varargin)
 % Takes in the clean time series data and the analysis params and fits the IAMP model.
 %
 % Syntax:
@@ -77,7 +77,7 @@ for sessionNum = 1:analysisParams.numSessions
         
         % Load and process the data param file
         load(dataParamFile);
-        expParams = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
+        expParams{sessionNum}.timing(:,:,jj) = getExpParams(dataParamFile,analysisParams.TR,'hrfOffset', false, 'stripInitialTRs', false);
         
         % restore warning state
         warning(warningState);
@@ -90,7 +90,7 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for IAMP
         % Stim coding: 80% = 1, 40% = 2, 20% = 3, 10% = 4, 5% = 5, 0% = 6;
-        regMat=  createRegressors(expParams,analysisParams.baselineCondNum,totalTime,deltaT);
+        regMat=  createRegressors(expParams{sessionNum}.timing(:,:,jj),analysisParams.baselineCondNum,totalTime,deltaT);
         
         % this converts the 21xt regression matrix to 41xt martix to
         % code for the 40 total conditions + baseline
@@ -104,7 +104,7 @@ for sessionNum = 1:analysisParams.numSessions
         
         % make stimulus values for QCM
         contrastCoding = [analysisParams.contrastCoding, 0];
-        LMSContrastMat = LMSContrastValuesFromParams(expParams,contrastCoding,directionCoding,maxContrast,totalTime,deltaT);
+        LMSContrastMat = LMSContrastValuesFromParams(expParams{sessionNum}.timing(:,:,jj),contrastCoding,directionCoding,maxContrast,totalTime,deltaT);
         directionPrecision = 4;
         indDirectionDirections = round(directionCoding(1:analysisParams.theDimension,:),directionPrecision);
         LMSContrastMat(3,:) = [];
