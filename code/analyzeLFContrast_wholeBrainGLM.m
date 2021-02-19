@@ -8,7 +8,7 @@ dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'
 mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
 templateFile   = fullfile(dropBoxPath,'surfaceMaps','templates','template.dscalar.nii');
 
-%set the HRF
+%% load the HRF
 [analysisParams] = loadHRF(analysisParams);
 
 %% Set up stuff
@@ -21,7 +21,7 @@ iampOBJ = tfeIAMP('verbosity','none');
 %% Get the cleaned time series
 [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams,'wholeBrain',true);
 % reshape the data to voxels x time point(all 20 runs)
-timeCourses = [
+timeCourses = [];
 for ii = 1:size(fullCleanData,3)
     timeCourses = [timeCourses,fullCleanData(:,:,ii)];
 end
