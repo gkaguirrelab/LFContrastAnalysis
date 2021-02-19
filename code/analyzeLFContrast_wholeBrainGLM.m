@@ -8,6 +8,9 @@ dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'
 mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
 templateFile   = fullfile(dropBoxPath,'surfaceMaps','templates','template.dscalar.nii');
 
+%set the HRF
+[analysisParams] = loadHRF(analysisParams);
+
 %% Set up stuff
 % Initialize the maps
 rSquaredQcmMap = zeros(91282,1);
@@ -22,10 +25,6 @@ timeCourses = [
 for ii = 1:size(fullCleanData,3)
     timeCourses = [timeCourses,fullCleanData(:,:,ii)];
 end
-
-%% load the HRF
-[analysisParams] = loadHRF(analysisParams);
-
 
 %% Initialize the packet 
 % Get a packet for each run (1-20)
