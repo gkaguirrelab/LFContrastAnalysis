@@ -83,10 +83,9 @@ figure; hold on;
 scatter(theFullPacket.response.values,iampResidual,'MarkerEdgeColor',iampColor);
 scatter(theFullPacket.response.values,qcmResidual,'MarkerEdgeColor',qcmColor);
 axis square;
-hline = refline(-1,0);
-hline.Color = 'k';
-hline.LineStyle = '--';
-hline.LineWidth = 1;
+% plot axes
+line([-3 3], [0 0], 'Color', [.15 .15 .15], 'LineStyle', ':','LineWidth', 2);
+line([0 0], [-3 3], 'Color', [.15 .15 .15], 'LineStyle', ':','LineWidth', 2);
 title('Residual Scatter Plot');
 ylabel('Residuals');
 xlabel('Data');
@@ -94,7 +93,7 @@ legend('GLM','QCM')
 set(gca, 'FontName', 'Helvetica', 'FontSize', 14,'FontWeight', 'normal');
 
 %% Take the SDM matrix and find the onset times
-counter = 0;
+    counter = 0;
 meanResidValIAMP= [];
 for ii = 1:analysisParams.numSessions
     indx = 1;
@@ -123,8 +122,8 @@ for ii = 1:analysisParams.numSessions
             % get the mean residual for a fixed number of TRs after the
             % stimulus onset (lag)
             lag = 4; %in TRs
-            meanResidValIAMP(direction,contrast,indx) = mean(iampResidual(startPt+lag:stopPt));
-            meanResidValQCM(direction,contrast,indx) = mean(qcmResidual(startPt+lag:stopPt));
+            meanResidValIAMP(direction,contrast,indx) = nanmean(iampResidual(startPt+lag:stopPt));
+            meanResidValQCM(direction,contrast,indx) = nanmean(qcmResidual(startPt+lag:stopPt));
         end
         indx = indx+1;
         counter = counter +360;
