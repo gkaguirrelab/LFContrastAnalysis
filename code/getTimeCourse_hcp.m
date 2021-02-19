@@ -32,7 +32,8 @@ p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('analysisParams',@isstruct);
 p.addParameter('regressAttenEvents',true,@islogical);
 p.addParameter('polyFitOrder',5,@isnumeric);
-p.addParameter('highpass',true,@isnumeric);
+p.addParameter('highpass',false,@islogical);
+p.addParameter('wholeBrain',false,@islogical);
 p.parse(analysisParams,varargin{:});
 
 % Set up files and paths
@@ -64,6 +65,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     if analysisParams.useSubcortROI
         roiSaveName        = analysisParams.subcortROI;
+    elseif p.Results.wholeBrain
+        voxelsSaveName     = 'wholeBrain';
+        roiSaveName        = [voxelsSaveName,'.dscalar.nii'];
     else
         voxelsSaveName     = ['V', num2str(analysisParams.areaNum), '_', analysisParams.hemisphere, '_ecc_', num2str(analysisParams.eccenRange(1)), '_to_', num2str(analysisParams.eccenRange(2))];
         roiSaveName        = [voxelsSaveName,'.dscalar.nii'];
@@ -78,8 +82,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         [~,tmp,~] = fileparts(analysisParams.subcortROI);
         [~,regionName,~] = fileparts(tmp);
         dataSaveName =[analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_',regionName, '_hcp.mat'];
-    else
+    elseif p.Results.wholeBrain
         dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
+    else
+        dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_wholeBrain_hcp.mat'];
     end
     savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,dataSaveName);
@@ -97,7 +103,10 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     else
         
         %% Create restricted V1 mask
-        if exist(maskFullFile)
+        if p.Results.wholeBrain
+            maskMatrix = ones(91282,1);
+            voxelIndex = find(maskMatrix);
+        elseif exist(maskFullFile)
             display(sprintf('ROI Found: %s',roiSaveName))
             [ maskMatrix ] = loadCIFTI(maskFullFile);
             voxelIndex = find(maskMatrix);
@@ -116,6 +125,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         %% Extract Signal from voxels
         if analysisParams.useSubcortROI
             voxelsSaveName = regionName;
+        elseif p.Results.wholeBrain
+            voxelsSaveName = wholeBrain;
         end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
@@ -175,7 +186,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             fclose(fileID);
             movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
             
-            % Get the censored time-point times 
+            % Get the censored time-point times
             [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(analysisParams,movementRegressorsFull(:,1:6),...
                 'plotMotion',false, 'distMetric', 'l2','addBuffer',[1,1]);
             
@@ -262,7 +273,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
                 S = cTimeSeries - nanVec;
                 f = fit(timeBase',S',['poly' num2str(p.Results.polyFitOrder)], 'Exclude', find(isnan(cTimeSeries)));
                 cleanRunData(vxl,:,jj) = S - f(timeBase)';
-
+                
             end
             clear thePacket
         end
