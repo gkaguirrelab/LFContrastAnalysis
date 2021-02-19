@@ -126,7 +126,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         if analysisParams.useSubcortROI
             voxelsSaveName = regionName;
         elseif p.Results.wholeBrain
-            voxelsSaveName = wholeBrain;
+            voxelsSaveName = 'wholeBrain';
         end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
