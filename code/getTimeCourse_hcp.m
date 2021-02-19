@@ -83,9 +83,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         [~,regionName,~] = fileparts(tmp);
         dataSaveName =[analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_',regionName, '_hcp.mat'];
     elseif p.Results.wholeBrain
-        dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
-    else
         dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_wholeBrain_hcp.mat'];
+    else
+        dataSaveName = [analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_V', num2str(analysisParams.areaNum),'_ecc_' num2str(analysisParams.eccenRange(1)) ,'_to_' ,num2str(analysisParams.eccenRange(2)) ,'_hcp.mat'];
     end
     savePath = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis',analysisParams.sessionFolderName{sessionNum},'cleanTimeCourse');
     saveFullFile = fullfile(savePath,dataSaveName);
@@ -130,7 +130,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
-            theVars = load(saveVoxelTimeSeriesName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
+            theVars = load(saveVoxelTimeSeriesName);
             voxelTimeSeries = theVars.voxelTimeSeries;
         else
             for ii = 1:length(functionalRuns)
