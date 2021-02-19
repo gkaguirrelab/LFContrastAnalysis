@@ -97,7 +97,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         disp('cleaned time series file found')
         load(saveFullFile)
         censorPoints{sessionNum,:} = saveCPoints;
-        [ maskMatrix ] = loadCIFTI(maskFullFile);
+        [ maskMatrix ] = loadCIFTI(maskFullFile,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
         voxelIndex = find(maskMatrix);
         
     else
@@ -108,7 +108,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             voxelIndex = find(maskMatrix);
         elseif exist(maskFullFile)
             display(sprintf('ROI Found: %s',roiSaveName))
-            [ maskMatrix ] = loadCIFTI(maskFullFile);
+            [ maskMatrix ] = loadCIFTI(maskFullFile,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
             voxelIndex = find(maskMatrix);
         else
             %melaAnalysisPath = '/Users/michael/labDropbox/MELA_analysis/';
@@ -130,12 +130,12 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
         if exist(saveVoxelTimeSeriesName)
-            theVars = load(saveVoxelTimeSeriesName);
+            theVars = load(saveVoxelTimeSeriesName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
             voxelTimeSeries = theVars.voxelTimeSeries;
         else
             for ii = 1:length(functionalRuns)
                 % load nifti for functional run
-                cifti = loadCIFTI(functionalRuns{ii});
+                cifti = loadCIFTI(functionalRuns{ii},'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
                 voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
                 
             end

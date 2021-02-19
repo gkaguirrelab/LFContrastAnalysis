@@ -43,18 +43,28 @@ switch userID
         melaDatadevPath   = ['/Users1/DropboxLab/MELA_datadev/'];
         melaAnalysisPath  = ['/Users1/DropboxLab/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
+        workbenchPath     = '/Applications/workbench/bin_macosx64/';
     case {'michael'}
         melaMaterialsPath = ['/Users/' userID '/labDropbox/MELA_materials'];
         melaDatabasePath  = ['/Users/' userID '/labDropbox/MELA_data/'];
         melaDatadevPath   = ['/Users/' userID '/labDropbox/MELA_datadev/'];
         melaAnalysisPath  = ['/Users/' userID '/labDropbox/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
+        workbenchPath     = '/Applications/workbench/bin_macosx64/';
+    case {'michaelab'}
+        melaMaterialsPath = ['/Users/' userID '/labDropbox/MELA_materials'];
+        melaDatabasePath  = ['/Users/' userID '/labDropbox/MELA_data/'];
+        melaDatadevPath   = ['/Users/' userID '/labDropbox/MELA_datadev/'];
+        melaAnalysisPath  = ['/Users/' userID '/labDropbox/MELA_analysis/'];
+        figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
+        workbenchPath     = ['/home/' userID '/code/workbench/bin_linux64/']
     otherwise
         melaMaterialsPath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         melaDatabasePath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
         melaDatadevPath  =  ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_datadev/'];
         melaAnalysisPath  = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
         figureSavePath    = fullfile(melaAnalysisPath,projectName,'Figures');
+        workbenchPath     = '/Applications/workbench/bin_macosx64/';
 end
 
 %% Specify where output goes
@@ -68,7 +78,7 @@ if ismac
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments','OLApproach_TrialSequenceMR','MRCRF'));
-
+    setpref(projectName,'wbPath', workbenchPath);
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'analysisScratchDir','/tmp/flywheel');
@@ -78,6 +88,7 @@ elseif isunix
     setpref(projectName,'figureSavePath', figureSavePath);
     setpref(projectName,'materialsPath',fullfile(melaMaterialsPath,'Experiments','OLApproach_TrialSequenceMR'));
     setpref(projectName,'dataDevPath', fullfile(melaDatadevPath,'Experiments','OLApproach_TrialSequenceMR','MRCRF'));
+    setpref(projectName,'wbPath', workbenchPath);
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
