@@ -129,11 +129,11 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             voxelsSaveName = 'wholeBrain';
         end
         saveVoxelTimeSeriesName = fullfile(functionalPath,'tfMRI_LFContrast_AllRuns',['voxelTimeSeries_' voxelsSaveName '.mat']);
+        totalNumTP =  analysisParams.numClipFramesStart+ analysisParams.numClipFramesEnd + analysisParams.expLengthTR;
         if exist(saveVoxelTimeSeriesName)
             theVars = load(saveVoxelTimeSeriesName);
             voxelTimeSeries = theVars.voxelTimeSeries;
         else
-            totalNumTP =  analysisParams.numClipFramesStart+ analysisParams.numClipFramesEnd + analysisParams.expLengthTR;
             voxelTimeSeries = ones(length(voxelIndex),totalNumTP,analysisParams.numAcquisitions);
             for ii = 1:length(functionalRuns)
                 % load nifti for functional run
@@ -190,7 +190,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             formatSpec = '%f';
             textVector = fscanf(fileID,formatSpec);
             fclose(fileID);
-            movementRegressorsFull     = reshape(textVector,[fields_per_line,numTimePoints])';
+            movementRegressorsFull     = reshape(textVector,[fields_per_line,totalNumTP])';
             
             % Get the censored time-point times
             [cPoints{sessionNum,jj}, percentCensored] = findCensoredPoints(analysisParams,movementRegressorsFull(:,1:6),...
