@@ -133,13 +133,16 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             theVars = load(saveVoxelTimeSeriesName);
             voxelTimeSeries = theVars.voxelTimeSeries;
         else
+            totalNumTP =  analysisParams.numClipFramesStart+ analysisParams.numClipFramesEnd + analysisParams.expLengthTR;
+            voxelTimeSeries = ones(length(voxelIndex),totalNumTP,analysisParams.numAcquisitions);
             for ii = 1:length(functionalRuns)
                 % load nifti for functional run
                 cifti = loadCIFTI(functionalRuns{ii},'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
-                voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:);
-                
+                voxelTimeSeries(:,:,ii) = cifti(logical(maskMatrix),:); 
             end
-            save(saveVoxelTimeSeriesName,'voxelTimeSeries')
+            clear cifti
+            save(saveVoxelTimeSeriesName,'voxelTimeSeries','-v7.3');
+            
         end
         
         % Clip initial frames if specified
@@ -151,6 +154,9 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         %% Construct the model object
         temporalFit = tfeIAMP('verbosity','none');
+        
+        %% init cleanesd data matrix 
+        cleanRunData = ones(size(voxelTimeSeries));
         
         %% Create a cell of stimulusStruct (one struct per run)
         for jj = 1:analysisParams.numAcquisitions
@@ -207,7 +213,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             relativeMovementRegressors = relativeMovementRegressors ./ nanstd(relativeMovementRegressors);
             
             %check for nans
-            nanCol = find(all(isnan(relativeMovementRegressors),1))
+            nanCol = find(all(isnan(relativeMovementRegressors),1));
             
             if ~isempty(nanCol)
                 relativeMovementRegressors(:,nanCol) = [];
@@ -240,7 +246,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
             % convert to percent signal change relative to the mean
             voxelMeanVec = mean(runData,2);
             PSC = 100*((runData - voxelMeanVec)./voxelMeanVec);
-            
+            clear runData
             sprintf('session %s, run %s', num2str(sessionNum), num2str(jj))
             
             % loop over voxels --> returns a "cleaned" time series
@@ -279,7 +285,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         %% Save out the clean time series brick
         saveCPoints = cPoints(sessionNum,:);
-        save(saveFullFile,'cleanRunData','maskMatrix','saveCPoints');
+        save(saveFullFile,'cleanRunData','maskMatrix','saveCPoints','-v7.3');
         clear voxelTimeSeries
     end
     
