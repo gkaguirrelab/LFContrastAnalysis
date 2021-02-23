@@ -92,7 +92,14 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     % Load existing cleaned data
     saveFileStatus = 0;
-    if exist(saveFullFile) && exist(maskFullFile)
+    if p.Results.wholeBrain && exist(saveFullFile)
+        saveFileStatus = 1;
+        disp('cleaned time series file found')
+        load(saveFullFile)
+        censorPoints{sessionNum,:} = saveCPoints;
+        maskMatrix = ones(91282,1);
+        voxelIndex = find(maskMatrix);
+    elseif exist(saveFullFile) && exist(maskFullFile)
         saveFileStatus = 1;
         disp('cleaned time series file found')
         load(saveFullFile)
