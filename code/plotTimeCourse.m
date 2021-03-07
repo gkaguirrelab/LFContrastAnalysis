@@ -59,6 +59,9 @@ for ii = 1:numSubPlots
         elseif strcmp('IAMP',fields{jj})
             response = theModelResp{ii}.values + baselineShift(ii);
             iampResp = response;
+        elseif strcmp('lcm',fields{jj})
+            response = theModelResp{ii}.values + baselineShift(ii);
+            lcmResp = response;
         else
             response = theModelResp{ii}.values + baselineShift(ii);
         end
@@ -82,6 +85,10 @@ for ii = 1:numSubPlots
         tempR2 = corrcoef(timeCourse',iampResp','rows','complete').^2;
         iampR2 = tempR2(1,2);
     end
+    if ~isempty(find(strcmp(fields(:), 'lcm')))
+        tempR2 = corrcoef(timeCourse',lcmResp','rows','complete').^2;
+        lcmR2 = tempR2(1,2);
+    end
     
     % put info
     ylabel('PSC')
@@ -89,10 +96,14 @@ for ii = 1:numSubPlots
     ylim([-1.5 1.5])
     if ~isempty(find(strcmp(fields(:), 'IAMP'))) & ~isempty(find(strcmp(fields(:), 'qcm')))
         title(sprintf('Run %s: QCM R^{2} %s, IAMP R^{2} %s', num2str(ii),num2str(round(qcmR2,2)),num2str(round(iampR2,2))));
+    elseif  ~isempty(find(strcmp(fields(:), 'lcm'))) & ~isempty(find(strcmp(fields(:), 'qcm')))
+        title(sprintf('Run %s: QCM R^{2} %s, LCM R^{2} %s', num2str(ii),num2str(round(qcmR2,2)),num2str(round(lcmR2,2))));
     elseif ~isempty(find(strcmp(fields(:), 'IAMP')))
-         title(sprintf('Run %s: IAMP R^{2} %s', num2str(ii),num2str(round(iampR2,2))));
+        title(sprintf('Run %s: IAMP R^{2} %s', num2str(ii),num2str(round(iampR2,2))));
     elseif  ~isempty(find(strcmp(fields(:), 'qcm')))
-         title(sprintf('Run %s: QCM R^{2} %s', num2str(ii),num2str(round(qcmR2,2))));
+        title(sprintf('Run %s: QCM R^{2} %s', num2str(ii),num2str(round(qcmR2,2))));
+    elseif  ~isempty(find(strcmp(fields(:), 'lcm')))
+        title(sprintf('Run %s: LCM R^{2} %s', num2str(ii),num2str(round(lcmR2,2))));
     else
         title(sprintf('Run %s', num2str(ii)));
     end
