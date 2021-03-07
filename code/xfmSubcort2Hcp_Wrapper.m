@@ -1,9 +1,10 @@
 %% UNCOMMENT AND RUN THIS IF YOU HAVE NOT DONE SO SINCE STARTIN MATLAB!!
 %    bash_path=getenv ('PATH');
 %    setenv( 'PATH',[bash_path,':/Applications/freesurfer7',':/Applications/freesurfer7/bin']);
-%    setenv( 'PATH',[bash_path,':/Users/mbarnett/Documents/Code/ANTs/bin/ANTs-build/Examples/']);
-%    setenv( 'PATH',[bash_path,':/Applications/workbench/bin_macosx64/']);
+%    setenv( 'PATH',[bash_path,':/Users/mbarnett/Documents/Code/ANTs/bin/ANTs-build/Examples']);
+%    setenv( 'PATH',[bash_path,':/Applications/workbench/bin_macosx64']);
 %    setenv('FREESURFER_HOME','/Applications/freesurfer7')
+
 
 %% The good stuff
 % subject ID

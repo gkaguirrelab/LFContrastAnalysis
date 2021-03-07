@@ -22,8 +22,8 @@ function [] = xfmSubcort2Hcp(origMgzPath, thalamSegPath, mni_2mm, empty_cifti_co
 %
 %    bash_path=getenv ('PATH');
 %    setenv( 'PATH',[bash_path,':/Applications/freesurfer7',':/Applications/freesurfer7/bin']);
-%    setenv( 'PATH',[bash_path,':/Users/mbarnett/Documents/Code/ANTs/bin/ANTs-build/Examples/']);
-%    setenv( 'PATH',[bash_path,':/Applications/workbench/bin_macosx64/']);
+%    setenv( 'PATH',[bash_path,':/Users/mbarnett/Documents/Code/ANTs/bin/ANTs-build/Examples']);
+%    setenv( 'PATH',[bash_path,':/Applications/workbench/bin_macosx64']);
 %    setenv('FREESURFER_HOME','/Applications/freesurfer7')
 %  
 %         Change '/Applications/freesurfer7' to match where you have 
