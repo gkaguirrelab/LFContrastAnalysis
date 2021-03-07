@@ -219,7 +219,8 @@ end
 
 %% Add common params
 analysisParams.useSubcortROI = false;
-analysisParams.subcortROI    = 'LGN_probability.dscalar.nii';
+% rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
+analysisParams.subcortROI    = 'KAS25_LGN_ROI.dscalar.nii';
 % Info needed to make the V1 mask  from benson maps
 analysisParams.areaNum     = '1';
 analysisParams.eccenRange  = [0 20];
