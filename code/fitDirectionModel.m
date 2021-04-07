@@ -34,6 +34,7 @@ function [fitOBJ,fitParamsCell, objFitResponses] = fitDirectionModel(analysisPar
 %  'commonExp'          - default false
 %  'commonOffset'       - default true
 
+
 % History:
 %   MAB 09/09/18
 %   MAB 01/06/19      -- changed from runIAMP_QCM to fit_IAMP and removed QCM
@@ -77,7 +78,24 @@ switch modelType
                 fitOBJ.paramPrint(fitParamsCell{ii})
             end
         end
-        
+    case 'qcmFitAngelLockedToZero'
+        clear defaultParamsInfo
+        defaultParamsInfo.noOffset = false;
+        fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension, 'lockedAngle', 0);
+        for ii = 1:length(packetPocket)
+            % Fit the packet
+            if isempty(p.Results.initialParams)
+                [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams, ...
+                    'fitErrorScalar',p.Results.fitErrorScalar);
+            else
+                [fitParamsCell{ii},fVal,objFitResponses{ii}] = fitOBJ.fitResponse(packetPocket{ii},'defaultParamsInfo',defaultParamsInfo,'initialParams',p.Results.initialParams{1}, ...
+                    'fitErrorScalar',p.Results.fitErrorScalar);
+            end
+            if p.Results.talkToMe
+                fprintf('\nQCMDirection parameters from direction fit to IAMP betas:\n');
+                fitOBJ.paramPrint(fitParamsCell{ii})
+            end
+        end
     case 'nrFit'
         
         uniqueDirections = round(analysisParams.directionCoding(1:analysisParams.theDimension,:),4);
