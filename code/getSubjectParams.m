@@ -1,7 +1,10 @@
-function analysisParams = getSubjectParams(subjID)
+function analysisParams = getSubjectParams(subjId,varargin)
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('subjID',@ischar);
+p.addParameter('roiType','V1',@ischar);
+p.parse(subjId,varargin{:});
 
-
-switch subjID
+switch subjId
     case 'LZ23'
         % Convenience variables
         analysisParams.projectName       = 'LFContrastAnalysis';
@@ -218,15 +221,47 @@ end
 
 
 %% Add common params
-analysisParams.useSubcortROI = false;
-% rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
-analysisParams.subcortROI    = 'KAS25_LGN_ROI.dscalar.nii';
-% Info needed to make the V1 mask  from benson maps
-analysisParams.areaNum     = '1';
-analysisParams.eccenRange  = [0 20];
-analysisParams.anglesRange  = [0 180];
-analysisParams.hemisphere   = 'combined';
-analysisParams.threshold    = 0.9;
+
+switch p.Results.roiType
+    case 'V1'
+        % Info needed to make the V1 mask  from benson maps
+        analysisParams.areaNum     = '1';
+        analysisParams.eccenRange  = [0 20];
+        analysisParams.anglesRange  = [0 180];
+        analysisParams.hemisphere   = 'combined';
+        analysisParams.threshold    = 0.9;
+        analysisParams.useSubcortROI = false;
+        
+    case 'V2'
+        analysisParams.areaNum     = '2';
+        analysisParams.eccenRange  = [0 20];
+        analysisParams.anglesRange  = [0 180];
+        analysisParams.hemisphere   = 'combined';
+        analysisParams.threshold    = 0.9;
+        analysisParams.useSubcortROI = false;
+        
+    case 'V3'
+        analysisParams.areaNum     = '3';
+        analysisParams.eccenRange  = [0 20];
+        analysisParams.anglesRange  = [0 180];
+        analysisParams.hemisphere   = 'combined';
+        analysisParams.threshold    = 0.9;
+        analysisParams.useSubcortROI = false;
+        
+    case 'LGN'
+        analysisParams.useSubcortROI = true;
+        % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
+        analysisParams.subcortROI    = [analysisParams.expSubjID '_LGN_ROI.dscalar.nii'];
+    case 'V4'
+        analysisParams.useSubcortROI = true;
+        % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
+        analysisParams.subcortROI    = [analysisParams.expSubjID '_wang_V4.dscalar.nii'];
+    case 'VO1'
+        analysisParams.useSubcortROI = true;
+        % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
+        analysisParams.subcortROI    = [analysisParams.expSubjID '_wang_VO1.dscalar.nii'];
+end
+
 
 % Define the TR
 analysisParams.TR = 0.800;
@@ -241,7 +276,7 @@ analysisParams.numFramesPerBlock = analysisParams.TR * analysisParams.blockDurat
 analysisParams.numSamples = 25;
 
 % create timebase
-totalTime =analysisParams.expLengthTR*analysisParams.TR; 
+totalTime =analysisParams.expLengthTR*analysisParams.TR;
 deltaT = analysisParams.TR;
 analysisParams.timebase = linspace(0,totalTime-deltaT,totalTime/deltaT);
 
