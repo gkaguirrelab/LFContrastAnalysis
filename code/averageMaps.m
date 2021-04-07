@@ -23,7 +23,7 @@ function [] = averageMaps(subjIds, mapOfInterest, varargin)
 % Optional key/value pairs:
 %    saveFigs                   - Logical flag to save the figure
 %    mapCoverage                - Nickname for the map vertices fit. This
-%                                 is the folder name in the subject folder 
+%                                 is the folder name in the subject folder
 %                                 in surfaceMaps. ('V1', 'EVC',
 %                                 'wholebrain')
 
@@ -44,7 +44,7 @@ for ii = 1:length(subjIds)
     %% LOAD THE PARAMTER MAP
     % Path the subject map data
     dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
-    mapReadPath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID,p.Results.mapCoverage);  
+    mapReadPath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID,p.Results.mapCoverage);
     
     switch mapOfInterest
         case 'minorAxis'
@@ -59,9 +59,11 @@ for ii = 1:length(subjIds)
             subjMapName = fullfile(mapReadPath,['nlExpMap_', analysisParams.sessionNickname '_allAreas.dscalar.nii']);
         case 'rSqaured'
             subjMapName = fullfile(mapReadPath,['rSquaredMapQcm_', analysisParams.sessionNickname '_allAreas.dscalar.nii']);
+        case 'rSqauredDiff'
+            subjMapName = fullfile(mapReadPath,['rSquaredDiffMap_', analysisParams.sessionNickname '.dscalar.nii']);
         case 'wholeBrainRsquared'
             subjMapName = fullfile(mapReadPath,['GLM_', analysisParams.sessionNickname '_wholeBrain.dscalar.nii']);
-    end  
+    end
     % Load the paramter map
     mapVals(:,ii) = loadCIFTI(subjMapName);
     
@@ -95,6 +97,8 @@ switch mapOfInterest
         outMapName = fullfile(mapSavePath,['nlExpMap_Average_allAreas.dscalar.nii']);
     case 'rSqaured'
         outMapName = fullfile(mapSavePath,['rSquaredMapQcm_Average_allAreas.dscalar.nii']);
+    case 'rSqauredDiff'
+        outMapName = fullfile(mapSavePath,['rSquaredDiffMap_Average_allAreas.dscalar.nii']);
     case 'wholeBrainRsquared'
         outMapName = fullfile(mapSavePath,['glm_r_squared_Average_wholebrain.dscalar.nii']);
 end
