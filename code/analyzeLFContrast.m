@@ -1,20 +1,27 @@
-function [] = analyzeLFContrast(subjId)
-display(['STARTING - Main Analysis: ',subjId])
-% Load the subject relevant info
-analysisParams = getSubjectParams(subjId);
+function [] = analyzeLFContrast(subjId,varargin)
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('subjID',@ischar);
+p.addParameter('roiType','V1',@ischar);
+p.addParameter('plotCheckCI',false,@islogical);
+p.addParameter('saveFigs',false,@islogical);
+p.addParameter('useMedianValidations',false,@islogical);
+p.parse(subjId,varargin{:});
 
+display(['STARTING - Main Analysis: ',subjId])
+
+% Load the subject relevant info
+analysisParams = getSubjectParams(subjId,'roiType',p.Results.roiType);
 
 analysisParams.preproc = 'hcp';
 
-analysisParams.saveFigs = false;
-
+analysisParams.saveFigs = p.Results.saveFigs;
 
 % use actual contrast values
 % if you use this you will want to add back the contrastType str to file
-% name of figure name. as of now, saves them with same name 
-analysisParams.useMedianValidations = false;
+% name of figure name. as of now, saves them with same name
+analysisParams.useMedianValidations = p.Results.useMedianValidations;
 
- if analysisParams.useMedianValidations
+if analysisParams.useMedianValidations
     % use '2DegPostive', '2DegNegative', '15DegPostive',or '15DegNegative'.
     contrastType = '15DegNegative';
     [maxContrastActual,contrastDirectionActual] = getSubjectActualContrast(contrastType);
@@ -25,7 +32,7 @@ end
 
 
 % Number of bootstrap iterations
-numIter  = 2;
+numIter  = 30;
 
 % Flag for running all the NR models
 analysisParams.runNRModels = false;
@@ -231,7 +238,7 @@ if analysisParams.showPlots
     
     if analysisParams.saveFigs
         figNameCrf =  fullfile(figSavePath,[analysisParams.expSubjID,'_CRF_' analysisParams.sessionNickname...
-                      '_' analysisParams.preproc '.pdf']);
+            '_' p.Results.roiType '.pdf']);
         set(crfHndl, 'Renderer', 'Painters');
         FigureSave(figNameCrf,crfHndl,'pdf');
     end
@@ -249,7 +256,7 @@ if analysisParams.showPlots
         set(tcHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         % Full file name
         figNameTc =  fullfile(figSavePath,[analysisParams.expSubjID,'_TimeCourse_' analysisParams.sessionNickname...
-                     '_' analysisParams.preproc '.pdf']);
+            '_' p.Results.roiType '.pdf']);
         % Save it
         print(tcHndl, figNameTc, '-dpdf', '-r300');
     end
@@ -266,14 +273,17 @@ if analysisParams.showPlots
         set(ellipseNonlinHndl, 'PaperSize',figureSizeInches);
         set(ellipseNonlinHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
         figNameEllipseNonlin = fullfile(figSavePath,[analysisParams.expSubjID,'_Ellipse_Nonlin_' ...
-                               analysisParams.sessionNickname '_' analysisParams.preproc '.pdf']);
+            analysisParams.sessionNickname '_' p.Results.roiType '.pdf']);
         print(ellipseNonlinHndl, figNameEllipseNonlin, '-dpdf', '-r300');
     end
 end
 
 %% Check the CI on the timecourse -- Ploting run 1
-figure; hold on
-plot(timeCoursePlot.timecourse{1}.timebase, [tcQCMBoot(:,1:360)]','Color',[.1 .4 .8 .5])
-plot(timeCoursePlot.qcm{1}.timebase,timeCoursePlot.qcm{1}.values, 'Color',[.1 .2 1],'LineWidth',2)
-display(['COMPLETED: ',subjId])
+if p.Results.plotCheckCI
+    figure; hold on
+    plot(timeCoursePlot.timecourse{1}.timebase, [tcQCMBoot(:,1:360)]','Color',[.1 .4 .8 .5])
+    plot(timeCoursePlot.qcm{1}.timebase,timeCoursePlot.qcm{1}.values, 'Color',[.1 .2 1],'LineWidth',2)
+    display(['COMPLETED: ',subjId])
+end
+
 end
