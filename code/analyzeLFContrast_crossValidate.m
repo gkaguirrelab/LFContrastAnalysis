@@ -16,7 +16,7 @@ analysisParams.highpass = false;
 analysisParams.showPlots = true;
 qcmColor  = [0.4078, 0.2784, 0.5765];
 iampColor = [0.8902, 0.6235, 0.5529];
-
+lcmColor  = [0.7 , .12, .1];
 %% Load the relevant data (SDM, HRF, TC)
 
 %set the HRF
@@ -43,9 +43,12 @@ qcmTestPackets = makeDirectionTimeCoursePacketPocket(iampTestPackets);
 
 % Construct the model object
 iampOBJ = tfeIAMP('verbosity','none');
+LCMObj = tfeLCMDirection('verbosity','none','dimension',2);
 
 % init vars
 timeCoursePlot.qcm = [];
+timeCoursePlot.qcmLock = [];
+timeCoursePlot.lcm = [];
 timeCoursePlot.IAMP = [];
 timeCoursePlot.timecourse = [];
 rSquaredQcm = [];
@@ -87,13 +90,30 @@ for ii = 1:length(iampTrainPackets)
         nrAmpExp = responseFromPacket('nrFullTCPred', analysisParams, nrCrfParamsAmpExp{1}, {theQcmTestPacket}, 'plotColor', [0, .66, 1]);
     end
     
+    % Fit the time course with the LCM
+    [fitLCMParams,fVal,fitResponseStructLCM] = LCMObj.fitResponse(theQcmTrainPacket);
+    
     % Fit the time course with the QCM -- { } is because this expects a cell
     [qcmTcOBJ,qcmTcParams] = fitDirectionModel(analysisParams, 'qcmFit', {theQcmTrainPacket},'fitErrorScalar',1000,'talkToMe',false);
     
-    % Get the time course predicitions fromt the QCM params fit to the CRF
+    % Fit the time course with the QCM where the angel is locked to zero-- { } is because this expects a cell
+    [qcmLockedTcOBJ,qcmLockedTcParams] = fitDirectionModel(analysisParams, 'qcmFitAngelLockedToZero', {theQcmTrainPacket},'fitErrorScalar',1000,'talkToMe',false);
+    
+    % Get the time course predicitions from the QCM params 
     qcmTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmTcParams{1}, {theQcmTestPacket}, 'plotColor', qcmColor);
     qcmChopped = chopUpTimeCourse(qcmTimeCourse{1},2);
     [timeCoursePlot.qcm] = [timeCoursePlot.qcm,qcmChopped];
+    
+    % Get the time course predicitions from the QCM Locked params 
+    qcmLockedTimeCourse = responseFromPacket('qcmPred', analysisParams, qcmLockedTcParams{1}, {theQcmTestPacket}, 'plotColor', qcmColor);
+    qcmLockedChopped = chopUpTimeCourse(qcmLockedTimeCourse{1},2);
+    [timeCoursePlot.qcmLock] = [timeCoursePlot.qcmLock,qcmLockedChopped];
+    
+    % LCM
+    LCMResponseStruct = LCMObj.computeResponse(fitLCMParams,theQcmTestPacket.stimulus,theQcmTestPacket.kernel,'AddNoise',false);
+    LCMResponseStruct.plotColor = lcmColor;
+    lcmChopped   = chopUpTimeCourse(LCMResponseStruct,20);
+    [timeCoursePlot.lcm] = [timeCoursePlot.lcm,lcmChopped];
     
     iampTimeCourse = responseFromPacket('IAMP', analysisParams, iampParams, theIampTestPacket, 'plotColor', iampColor);
     iampChopped = chopUpTimeCourse(iampTimeCourse,2);
@@ -106,11 +126,21 @@ for ii = 1:length(iampTrainPackets)
     
     %% Calc R squared
     % put correltation values on each iteration
-
+    
     % QCM R^2
     qcmCorrVec =  [theTimeCourse.values',qcmTimeCourse{1}.values'];
     qcmCorrVals = corrcoef(qcmCorrVec(:,1),qcmCorrVec(:,2),'rows','complete').^2;
     rSquaredQcm(ii) = qcmCorrVals(1,2);
+    
+    % QCM Locked R^2
+    qcmLockedCorrVec =  [theTimeCourse.values',qcmLockedTimeCourse{1}.values'];
+    qcmLockedCorrVals = corrcoef(qcmLockedCorrVec(:,1),qcmLockedCorrVec(:,2),'rows','complete').^2;
+    rSquaredQcmLocked(ii) = qcmLockedCorrVals(1,2);
+    
+    % LCM R^2
+    lcmCorrVec =  [theTimeCourse.values',LCMResponseStruct.values'];
+    lcmCorrVals = corrcoef(lcmCorrVec(:,1),lcmCorrVec(:,2),'rows','complete').^2;
+    rSquaredLcm(ii) = lcmCorrVals(1,2);
     
     % GLM R^2
     iampCorrVec =  [theTimeCourse.values',iampTimeCourse.values'];
@@ -133,7 +163,7 @@ for ii = 1:length(iampTrainPackets)
         nrExpCorrVals = corrcoef(nrExpCorrVec(:,1),nrExpCorrVec(:,2),'rows','complete').^2;
         rSquaredNrExp(ii) = nrExpCorrVals(1,2);
         
-        % NR common amplitude, and exponent R^2 
+        % NR common amplitude, and exponent R^2
         nrAmpExpCorrVec =  [theTimeCourse.values',nrAmpExp{1}.values'];
         nrAmpExpCorrVals = corrcoef(nrAmpExpCorrVec(:,1),nrAmpExpCorrVec(:,2),'rows','complete').^2;
         rSquaredNrAmpExp(ii) = nrAmpExpCorrVals(1,2);
@@ -142,20 +172,24 @@ for ii = 1:length(iampTrainPackets)
 end
 
 % calculate the mean R^2 for each model
-rSquaredQcmMean = mean(rSquaredQcm);
-rSquaredIampMean = mean(rSquaredIamp);
-rSquaredNrMean   = mean(rSquaredNr);
-rSquaredNrAmpMean= mean(rSquaredNrAmp);
-rSquaredNrExpMean= mean(rSquaredNrExp);
-rSquaredNrAmpExpMean= mean(rSquaredNrAmpExp);
+rSquaredQcmMean      = mean(rSquaredQcm);
+rSquaredQcmLockedMean = mean(rSquaredQcmLocked);
+rSquaredLcmMean      = mean(rSquaredLcm);
+rSquaredIampMean     = mean(rSquaredIamp);
+rSquaredNrMean       = mean(rSquaredNr);
+rSquaredNrAmpMean    = mean(rSquaredNrAmp);
+rSquaredNrExpMean    = mean(rSquaredNrExp);
+rSquaredNrAmpExpMean = mean(rSquaredNrAmpExp);
 
 % get the percentile range
 ciPercent = 68;
 upperCiVal = 100 - ((100 - ciPercent)/2);
 lowerCiVal = ((100 - ciPercent)/2);
 
-% get the CI 
+% get the CI
 qcmRsquaredUpLow      = prctile(rSquaredQcm,[upperCiVal lowerCiVal]);
+qcmLockedRsquaredUpLow = prctile(rSquaredQcmLocked,[upperCiVal lowerCiVal]);
+lcmRsquaredUpLow      = prctile(rSquaredLcm,[upperCiVal lowerCiVal]);
 iampRsquaredUpLow     = prctile(rSquaredIamp,[upperCiVal lowerCiVal]);
 nrRsquaredUpLow       = prctile(rSquaredNr,[upperCiVal lowerCiVal]);
 nrAmpRsquaredUpLow    = prctile(rSquaredNrAmp,[upperCiVal lowerCiVal]);
@@ -164,6 +198,8 @@ nrAmpExpRsquaredUpLow = prctile(rSquaredNrAmpExp,[upperCiVal lowerCiVal]);
 
 % center the error bars around the mean
 qcmRsquaredCI      = abs(qcmRsquaredUpLow-rSquaredQcmMean);
+qcmLockedRsquaredCI = abs(qcmLockedRsquaredUpLow-rSquaredQcmLockedMean);
+lcmRsquaredCI      = abs(lcmRsquaredUpLow-rSquaredLcmMean);
 iampRsquaredCI     = abs(iampRsquaredUpLow-rSquaredIampMean);
 nrRsquaredCI       = abs(nrRsquaredUpLow-rSquaredNrMean);
 nrAmpRsquaredCI    = abs(nrAmpRsquaredUpLow-rSquaredNrAmpMean);
@@ -173,12 +209,12 @@ nrAmpExpRsquaredCI = abs(nrAmpExpRsquaredUpLow-rSquaredNrAmpExpMean);
 %% Plot it
 crossValR2 = figure; hold on;
 set(gca,'Box', 'off','linewidth',3,'FontSize',12);
-X = categorical({'GLM','NR','NR Amp','NR Exp','NR AmpExp','QCM'});
-X = reordercats(X,{'GLM','NR','NR Amp','NR Exp','NR AmpExp','QCM'});
-b = bar(X,[rSquaredIampMean;rSquaredQcmMean;rSquaredNrMean;rSquaredNrAmpMean;rSquaredNrExpMean;rSquaredNrAmpExpMean]);
-er = errorbar(X,[rSquaredIampMean;rSquaredQcmMean;rSquaredNrMean;rSquaredNrAmpMean;rSquaredNrExpMean;rSquaredNrAmpExpMean],...
-    [iampRsquaredCI(2), nrRsquaredCI(2),nrAmpRsquaredCI(2),nrExpRsquaredCI(2),nrAmpExpRsquaredCI(2), qcmRsquaredCI(2)], ...
-    [iampRsquaredCI(1), nrRsquaredCI(1),nrAmpRsquaredCI(1),nrExpRsquaredCI(1),nrAmpExpRsquaredCI(1), qcmRsquaredCI(1)]);
+X = categorical({'GLM','NR','NR Amp','NR Exp','NR AmpExp','LCM','QCM','QCM locked'});
+X = reordercats(X,{'GLM','NR','NR Amp','NR Exp','NR AmpExp','LCM','QCM','QCM locked'});
+b = bar(X,[rSquaredIampMean;rSquaredNrMean;rSquaredNrAmpMean;rSquaredNrExpMean;rSquaredNrAmpExpMean;rSquaredLcmMean;rSquaredQcmMean;rSquaredQcmLockedMean]);
+er = errorbar(X,[rSquaredIampMean;rSquaredNrMean;rSquaredNrAmpMean;rSquaredNrExpMean;rSquaredNrAmpExpMean;rSquaredLcmMean;rSquaredQcmMean;rSquaredQcmLockedMean],...
+    [iampRsquaredCI(2), nrRsquaredCI(2),nrAmpRsquaredCI(2),nrExpRsquaredCI(2),nrAmpExpRsquaredCI(2), lcmRsquaredCI(2), qcmRsquaredCI(2), qcmLockedRsquaredCI(2)], ...
+    [iampRsquaredCI(1), nrRsquaredCI(1),nrAmpRsquaredCI(1),nrExpRsquaredCI(1),nrAmpExpRsquaredCI(1), lcmRsquaredCI(1), qcmRsquaredCI(1), qcmLockedRsquaredCI(1)]);
 er.Color = [0 0 0];
 er.LineStyle = 'none';
 er.LineWidth = 2;
@@ -188,7 +224,9 @@ b.CData(2,:) = [98,189,105]./255;
 b.CData(3,:) = [90,171,97]./255;
 b.CData(4,:) = [53,136,86]./255;
 b.CData(5,:) = [37, 82, 59]./255;
-b.CData(6,:) = qcmColor;
+b.CData(6,:) = lcmColor;
+b.CData(7,:) = qcmColor;
+b.CData(8,:) = qcmColor-.16;
 b.EdgeColor = [0,0,0];
 b.LineWidth = 2;
 hXLabel = xlabel('Models');
@@ -213,25 +251,34 @@ modelTxtNrExp   = ['{NR Exp: ' num2str(round(rSquaredNrExpMean,2))...
     ' CI [' num2str(round(nrExpRsquaredUpLow(2),2)) ', ' num2str(round(nrExpRsquaredUpLow(1),2)) ']}'];
 modelTxtNrAmpExp  = ['{NR AmpExp: ' num2str(round(rSquaredNrAmpExpMean,2))...
     ' CI [' num2str(round(nrAmpExpRsquaredUpLow(2),2)) ', ' num2str(round(nrAmpExpRsquaredUpLow(1),2)) ']}'];
+modelTxtLcm   = ['{LCM: ' num2str(round(rSquaredLcmMean,2))...
+    ' CI [' num2str(round(lcmRsquaredUpLow(2),2)) ', ' num2str(round(lcmRsquaredUpLow(1),2)) ']}'];
+modelTxtQcmLock   = ['{QCM Locked: ' num2str(round(rSquaredQcmLockedMean,2))...
+    ' CI [' num2str(round(qcmLockedRsquaredUpLow(2),2)) ', ' num2str(round(qcmLockedRsquaredUpLow(1),2)) ']}'];
 
-theTextHandle = text(gca, .59,.95 , modelTxtQcm, 'Interpreter', 'latex');
+theTextHandle = text(gca, .59,.95 , modelTxtIamp, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
-theTextHandle = text(gca, .59,0.87, modelTxtIamp, 'Interpreter', 'latex');
+theTextHandle = text(gca, .59,0.87, modelTxtNr, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
-theTextHandle = text(gca, .59,0.79, modelTxtNr, 'Interpreter', 'latex');
+theTextHandle = text(gca, .59,0.79, modelTxtNrAmp, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
-theTextHandle = text(gca, .59,0.71, modelTxtNrAmp, 'Interpreter', 'latex');
+theTextHandle = text(gca, .59,0.71, modelTxtNrExp, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
-theTextHandle = text(gca, .59,0.63, modelTxtNrExp, 'Interpreter', 'latex');
+theTextHandle = text(gca, 4,0.95, modelTxtNrAmpExp, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
-theTextHandle = text(gca, .59,0.55, modelTxtNrAmpExp, 'Interpreter', 'latex');
+theTextHandle = text(gca, 4,0.87, modelTxtLcm, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
+theTextHandle = text(gca, 4,0.79, modelTxtQcm, 'Interpreter', 'latex');
+set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+
+theTextHandle = text(gca, 4,0.71, modelTxtQcmLock, 'Interpreter', 'latex');
+set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 %% Save it
 if analysisParams.saveFigs
     set(crossValR2, 'Renderer', 'Painters');
