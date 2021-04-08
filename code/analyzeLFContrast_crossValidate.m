@@ -181,30 +181,15 @@ rSquaredNrAmpMean    = mean(rSquaredNrAmp);
 rSquaredNrExpMean    = mean(rSquaredNrExp);
 rSquaredNrAmpExpMean = mean(rSquaredNrAmpExp);
 
-% get the percentile range
-ciPercent = 68;
-upperCiVal = 100 - ((100 - ciPercent)/2);
-lowerCiVal = ((100 - ciPercent)/2);
-
-% get the CI
-qcmRsquaredUpLow      = prctile(rSquaredQcm,[upperCiVal lowerCiVal]);
-qcmLockedRsquaredUpLow = prctile(rSquaredQcmLocked,[upperCiVal lowerCiVal]);
-lcmRsquaredUpLow      = prctile(rSquaredLcm,[upperCiVal lowerCiVal]);
-iampRsquaredUpLow     = prctile(rSquaredIamp,[upperCiVal lowerCiVal]);
-nrRsquaredUpLow       = prctile(rSquaredNr,[upperCiVal lowerCiVal]);
-nrAmpRsquaredUpLow    = prctile(rSquaredNrAmp,[upperCiVal lowerCiVal]);
-nrExpRsquaredUpLow    = prctile(rSquaredNrExp,[upperCiVal lowerCiVal]);
-nrAmpExpRsquaredUpLow = prctile(rSquaredNrAmpExp,[upperCiVal lowerCiVal]);
-
-% center the error bars around the mean
-qcmRsquaredCI      = abs(qcmRsquaredUpLow-rSquaredQcmMean);
-qcmLockedRsquaredCI = abs(qcmLockedRsquaredUpLow-rSquaredQcmLockedMean);
-lcmRsquaredCI      = abs(lcmRsquaredUpLow-rSquaredLcmMean);
-iampRsquaredCI     = abs(iampRsquaredUpLow-rSquaredIampMean);
-nrRsquaredCI       = abs(nrRsquaredUpLow-rSquaredNrMean);
-nrAmpRsquaredCI    = abs(nrAmpRsquaredUpLow-rSquaredNrAmpMean);
-nrExpRsquaredCI    = abs(nrExpRsquaredUpLow-rSquaredNrExpMean);
-nrAmpExpRsquaredCI = abs(nrAmpExpRsquaredUpLow-rSquaredNrAmpExpMean);
+% get error bars around the mean
+qcmRsquaredCI      = std(rSquaredQcm)./sqrt(lenght(rSquaredQcm));
+qcmLockedRsquaredCI = std(rSquaredQcmLocked)./sqrt(lenght(rSquaredQcmLocked));
+lcmRsquaredCI      = std(rSquaredLcm)./sqrt(lenght(rSquaredLcm));
+iampRsquaredCI     = std(rSquaredIamp)./sqrt(lenght(rSquaredIamp));
+nrRsquaredCI       = std(rSquaredNr)./sqrt(lenght(rSquaredNr));
+nrAmpRsquaredCI    = std(rSquaredNrAmp)./sqrt(lenght(rSquaredNrAmp));
+nrExpRsquaredCI    = std(rSquaredNrExp)./sqrt(lenght(rSquaredNrExp));
+nrAmpExpRsquaredCI = std(rSquaredNrAmpExp)./sqrt(lenght(rSquaredNrAmpExp));
 
 %% Plot it
 crossValR2 = figure; hold on;
