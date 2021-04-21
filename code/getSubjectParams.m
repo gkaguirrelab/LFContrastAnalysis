@@ -247,19 +247,22 @@ switch p.Results.roiType
         analysisParams.hemisphere   = 'combined';
         analysisParams.threshold    = 0.9;
         analysisParams.useSubcortROI = false;
-        
+    case 'EVC'
+        analysisParams.useROI = true;
+        % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
+        analysisParams.ROI    = ['combined.EVC.dscalar.nii'];    
     case 'LGN'
-        analysisParams.useSubcortROI = true;
+        analysisParams.useROI = true;
         % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
-        analysisParams.subcortROI    = [analysisParams.expSubjID '_LGN_ROI.dscalar.nii'];
+        analysisParams.ROI    = [analysisParams.expSubjID '_LGN_ROI.dscalar.nii'];
     case 'V4'
-        analysisParams.useSubcortROI = true;
+        analysisParams.useROI = true;
         % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
-        analysisParams.subcortROI    = [analysisParams.expSubjID '_wang_V4.dscalar.nii'];
+        analysisParams.ROI    = [analysisParams.expSubjID '_wang_V4.dscalar.nii'];
     case 'VO1'
-        analysisParams.useSubcortROI = true;
+        analysisParams.useROI = true;
         % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
-        analysisParams.subcortROI    = [analysisParams.expSubjID '_wang_VO1.dscalar.nii'];
+        analysisParams.ROI    = [analysisParams.expSubjID '_wang_VO1.dscalar.nii'];
 end
 
 
