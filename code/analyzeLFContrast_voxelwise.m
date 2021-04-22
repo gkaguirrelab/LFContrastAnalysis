@@ -1,8 +1,14 @@
-function [] = analyzeLFContrast_voxelwise(subjId)
+function [] = analyzeLFContrast_voxelwise(subjId,varargin)
+p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
+p.addRequired('subjID',@ischar);
+p.addParameter('roiType','V1',@ischar);
+p.parse(subjId,varargin{:});
 
-display(['STARTING - Making Maps: ',subjId])
+
+display(['STARTING - Making Voxelwise Maps: ',subjId])
 % Get subject specific params: 'LZ23', 'KAS25', 'AP26'
-analysisParams = getSubjectParams(subjId);
+analysisParams = getSubjectParams(subjId, 'roiType',p.Results.roiType);
+
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
 mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
