@@ -23,6 +23,10 @@ rSquaredDiffMap = zeros(91282,1);
 % Create the fit object
 fitOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
 
+
+%% load the HRF
+[analysisParams] = loadHRF(analysisParams);
+
 %% Get the cleaned time series
 [fullCleanData, analysisParams, voxelIndex] = getTimeCourse_hcp(analysisParams);
 % reshape the data to voxels x time point(all 20 runs)
@@ -30,10 +34,6 @@ timeCourses = [];
 for ii = 1:size(fullCleanData,3)
     timeCourses = [timeCourses,fullCleanData(:,:,ii)];
 end
-
-%% load the HRF
-[analysisParams] = loadHRF(analysisParams);
-
 
 %% Initialize the packet
 % Get a packet for each run (1-20)
