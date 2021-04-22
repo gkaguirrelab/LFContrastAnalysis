@@ -1,4 +1,4 @@
-function [figHndl] = calcEllipseDistWithEcc(subjId, varargin)
+function [paramsStore,paramsStore2] = calcEllipseDistWithEcc(subjId, varargin)
 % Calculate the L-M and L+M ellipse distance with eccentriciry and plots it
 %
 % Syntax:
@@ -19,7 +19,7 @@ function [figHndl] = calcEllipseDistWithEcc(subjId, varargin)
 % MAB 03/10/20 Wrote it.
 p = inputParser; p.KeepUnmatched = true; p.PartialMatching = false;
 p.addRequired('subjId',@ischar);
-p.addParameter('saveFigs',true,@islogical)
+p.addParameter('saveFigs',false,@islogical)
 p.parse(subjId,varargin{:});
 
 % load subject params
@@ -98,7 +98,9 @@ lPlusMmap = zeros(91282,1);
 kernel = []; 
 % = loadHRF(analysisParams);
 
-targetResponse = 0.01;
+targetResponse = 0.3;
+count = 0;
+count2 = 0;
 for ii = 1:length(voxelIndex)
     qcmParams.Qvec        = [minorAxisVals(voxelIndex(ii)), angleVals(voxelIndex(ii))];
     qcmParams.crfAmp      = ampVals(voxelIndex(ii));
@@ -109,6 +111,17 @@ for ii = 1:length(voxelIndex)
     
     
     [lPlusMDist(ii), lMinusMDist(ii)] = invertQCMforCardinal(targetResponse,qcmParams);
+    if any(isnan(lPlusMDist(ii))) | any(isnan(lMinusMDist(ii)))
+        count = count +1;
+        paramsStore{count} = qcmParams;
+        paramsStore{count}.index = voxelIndex(ii);
+    end
+    
+    if lPlusMDist(ii)> 100 | lMinusMDist(ii) > 100
+        count2 = count2 +1;
+        paramsStore2{count2} = qcmParams;
+        paramsStore2{count2}.index = voxelIndex(ii);
+    end
     
     lMinusMmap(voxelIndex(ii)) = lMinusMDist(ii);
     lPlusMmap(voxelIndex(ii))  = lPlusMDist(ii);
@@ -117,7 +130,7 @@ for ii = 1:length(voxelIndex)
     lPlusMstim  = [cosd(45),sind(45),lPlusMDist(ii)]';
     lMinusMstim = [cosd(315),sind(315),lMinusMDist(ii)]';
     
-    testStim.values = [lPlusMstim,lMinusMstim]
+    testStim.values = [lPlusMstim,lMinusMstim];
     testStim.timebase = [1,2];
     defaultParamsInfo.noOffset = false;
     qcmTcOBJ = tfeQCMDirection('verbosity','none','dimension',analysisParams.theDimension);
@@ -125,6 +138,8 @@ for ii = 1:length(voxelIndex)
     theModelPred = qcmTcOBJ.computeResponse(qcmParams,testStim,kernel);
     
 end
+display(count)
+display(length(voxelIndex))
 %% APPLY THE MASK and remove nans
 eccSatterPoints    = eccMap(voxelIndex);
 if any(isnan(lPlusMDist))
@@ -133,8 +148,20 @@ if any(isnan(lPlusMDist))
     lMinusMDist(nanMask) = [];
     eccSatterPoints(nanMask) = [];
 end
-% lPlusMDist = 1./lPlusMDist;
-% lMinusMDist= 1./lMinusMDist;
+
+%% remove very large outlier vetices
+% mask point > 2 st dev 
+LpMmask = (lPlusMDist > 2*std(lPlusMDist) | lPlusMDist > 100 );
+lPlusMDist(LpMmask) = [];
+LmMmask = (lMinusMDist > 2*std(lMinusMDist) | lMinusMDist > 100 );
+lMinusMDist(LmMmask) = [];
+
+eccSatterPointsLpM = eccSatterPoints;
+eccSatterPointsLmM = eccSatterPoints;
+
+eccSatterPointsLpM(LpMmask) = [];
+eccSatterPointsLmM(LmMmask) = [];
+
 %% PLOT IT
 figHndl = figure;
 hold on;
@@ -147,45 +174,44 @@ markerAreaPtsSquared = markerSize^2;
 lPlusM_color = [107, 107, 107]./255;
 lMinusM_color= [156, 28, 19]./255;
 
-lPlusM_lm = fitlm(eccSatterPoints,lPlusMDist,'RobustOpts','on');
+lPlusM_lm = fitlm(eccSatterPointsLpM,lPlusMDist,'RobustOpts','on');
 regLinelPlusMParams = lPlusM_lm .Coefficients.Variables;
 regLinelPlusM = @(x) regLinelPlusMParams(2,1).*x + regLinelPlusMParams(1,1);
 
-lMinusM_lm = fitlm(eccSatterPoints,lMinusMDist,'RobustOpts','on');
+lMinusM_lm = fitlm(eccSatterPointsLmM,lMinusMDist,'RobustOpts','on');
 regLinelMinusMParams = lMinusM_lm .Coefficients.Variables;
 regLinelMinusM = @(x) regLinelMinusMParams(2,1).*x + regLinelMinusMParams(1,1);
 
-scatter(eccSatterPoints,lMinusMDist, markerAreaPtsSquared, 'o', ...
+scatter(eccSatterPointsLmM,lMinusMDist, markerAreaPtsSquared, 'o', ...
     'LineWidth', 1.0, 'MarkerFaceColor',lMinusM_color, 'MarkerEdgeColor',lMinusM_color*.8);
 
-scatter(eccSatterPoints,lPlusMDist, markerAreaPtsSquared, 'o', ...
+scatter(eccSatterPointsLpM,lPlusMDist, markerAreaPtsSquared, 'o', ...
     'LineWidth', 1.0, 'MarkerFaceColor',lPlusM_color, 'MarkerEdgeColor',lPlusM_color*.8);
 
 
 xPts = [min(eccSatterPoints), max(eccSatterPoints)];
 
 yPtslPlusM = regLinelPlusM(xPts);
-line(xPts,yPtslPlusM,'Color',lPlusM_color,'LineWidth',2);
+p1 = line(xPts,yPtslPlusM,'Color',lPlusM_color*1.4,'LineWidth',3);
 
 yPtslMinusM = regLinelMinusM(xPts);
-line(xPts,yPtslMinusM,'Color',lMinusM_color,'LineWidth',2);
+p2 = line(xPts,yPtslMinusM,'Color',lMinusM_color*1.25,'LineWidth',3);
 
 % add text
 modelTxtTheta = sprintf('L+M slope = %s offset = %s',...
     num2str(regLinelPlusMParams(2,1),3), num2str(regLinelPlusMParams(1,1),3));
-theTextHandle = text(gca, 1,.9 , modelTxtTheta, 'Interpreter', 'latex');
-set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+theTextHandle = text(gca, 1,4.6 , modelTxtTheta, 'Interpreter', 'latex');
+set(theTextHandle,'FontSize', 13, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 
 modelTxtTheta = sprintf('L-M slope = %s offset = %s',...
     num2str(regLinelMinusMParams(2,1),3), num2str(regLinelMinusMParams(1,1),3));
-theTextHandle = text(gca, 1,.8 , modelTxtTheta, 'Interpreter', 'latex');
-set(theTextHandle,'FontSize', 12, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
+theTextHandle = text(gca, 1,4.2 , modelTxtTheta, 'Interpreter', 'latex');
+set(theTextHandle,'FontSize', 13, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 xlabel('Eccentricity (Degrees)');
 
 yString = 'Distance to Ellipse (Threshold)';
-%ylim([0 3]);
-
-
+ylim([0 5]);
+legend([p1 p2],{'L+M','L-M'});
 ylabel(yString);
 
 title(sprintf('Threshold By Eccentricity - target %s',num2str(targetResponse)));
@@ -207,7 +233,7 @@ if p.Results.saveFigs
     set(figHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
     % Full file name
     figName =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_scatter_' mapOfInterest '_' analysisParams.sessionNickname '_hcp.pdf']);
+        [analysisParams.expSubjID,'_scatter_cardinalEllipseDist_' analysisParams.sessionNickname '_hcp.pdf']);
     % Save it
     print(figHndl, figName, '-dpdf', '-r300');
 end

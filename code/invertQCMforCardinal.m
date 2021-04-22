@@ -31,10 +31,10 @@ c = Q(2,2);
 %    r = sqrt(eqContrast/(a*cosd(?)^2 + 2*b*cosd(?)*sind(?) + c*sind(?)^2))
 
 theta = 45;
-lPlusMDist = sqrt(eqContrast./(a*cosd(theta).^2 + 2*b*cosd(theta)*sind(theta) + c*sind(theta).^2)); 
+lPlusMDist = sqrt((eqContrast.^2)./(a*cosd(theta).^2 + 2*b*cosd(theta)*sind(theta) + c*sind(theta).^2)); 
 
 theta = 315;
-lMinusMDist = sqrt(eqContrast./(a*cosd(theta).^2 + 2*b*cosd(theta)*sind(theta) + c*sind(theta).^2)); 
+lMinusMDist = sqrt((eqContrast.^2)./(a*cosd(theta).^2 + 2*b*cosd(theta)*sind(theta) + c*sind(theta).^2)); 
 end
 
 end
