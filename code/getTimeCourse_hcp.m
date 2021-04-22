@@ -63,8 +63,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     
     savePathROI  = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),'LFContrastAnalysis','MNI_ROIs');
     
-    if analysisParams.useSubcortROI
-        roiSaveName        = analysisParams.subcortROI;
+    if analysisParams.useROI
+        roiSaveName        = analysisParams.ROI;
     elseif p.Results.wholeBrain
         voxelsSaveName     = 'wholeBrain';
         roiSaveName        = [voxelsSaveName,'.dscalar.nii'];
@@ -78,8 +78,8 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
     analysisParams.numAcquisitions = length(functionalRuns);
     
     % Save vars name
-    if analysisParams.useSubcortROI
-        [~,tmp,~] = fileparts(analysisParams.subcortROI);
+    if analysisParams.useROI
+        [~,tmp,~] = fileparts(analysisParams.ROI);
         [~,regionName,~] = fileparts(tmp);
         dataSaveName =[analysisParams.subjID,'_',analysisParams.sessionDate{sessionNum},'_area_',regionName, '_hcp.mat'];
     elseif p.Results.wholeBrain
@@ -130,7 +130,7 @@ for sessionNum = 1:length(analysisParams.sessionFolderName)
         end
         
         %% Extract Signal from voxels
-        if analysisParams.useSubcortROI
+        if analysisParams.useROI
             voxelsSaveName = regionName;
         elseif p.Results.wholeBrain
             voxelsSaveName = 'wholeBrain';

@@ -230,7 +230,7 @@ switch p.Results.roiType
         analysisParams.anglesRange  = [0 180];
         analysisParams.hemisphere   = 'combined';
         analysisParams.threshold    = 0.9;
-        analysisParams.useSubcortROI = false;
+        analysisParams.useROI = false;
         
     case 'V2'
         analysisParams.areaNum     = '2';
@@ -238,7 +238,7 @@ switch p.Results.roiType
         analysisParams.anglesRange  = [0 180];
         analysisParams.hemisphere   = 'combined';
         analysisParams.threshold    = 0.9;
-        analysisParams.useSubcortROI = false;
+        analysisParams.useROI = false;
         
     case 'V3'
         analysisParams.areaNum     = '3';
@@ -246,7 +246,7 @@ switch p.Results.roiType
         analysisParams.anglesRange  = [0 180];
         analysisParams.hemisphere   = 'combined';
         analysisParams.threshold    = 0.9;
-        analysisParams.useSubcortROI = false;
+        analysisParams.useROI = false;
     case 'EVC'
         analysisParams.useROI = true;
         % rois located in Dropbox/MELA_analysis/LFContrastAnalysis/MNI_ROIs/KAS25_LGN_ROI.dscalar.nii
