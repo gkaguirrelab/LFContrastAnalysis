@@ -11,7 +11,7 @@ analysisParams = getSubjectParams(subjId, 'roiType',p.Results.roiType);
 
 sessionDir     = fullfile(getpref(analysisParams.projectName,'projectRootDir'),analysisParams.expSubjID);
 dropBoxPath     = fullfile(getpref(analysisParams.projectName,'melaAnalysisPath'),analysisParams.projectName);
-mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID);
+mapSavePath    = fullfile(dropBoxPath,'surfaceMaps',analysisParams.expSubjID,p.Results.roiType);
 templateFile   = fullfile(dropBoxPath,'surfaceMaps','templates','template.dscalar.nii');
 
 %% Set up stuff
