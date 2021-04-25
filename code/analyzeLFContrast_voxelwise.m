@@ -97,44 +97,44 @@ end
 % write out minor axis ratio
 ciftiVec = qcmParamMap(:,1);
 mapName        = fullfile(mapSavePath,['minorAxisMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out angle
 ciftiVec = qcmParamMap(:,2);
 mapName        = fullfile(mapSavePath,['angleMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out amp
 ciftiVec = qcmParamMap(:,3);
 mapName        = fullfile(mapSavePath,['nlAmpMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out semi
 ciftiVec = qcmParamMap(:,4);
 mapName        = fullfile(mapSavePath,['nlSemiMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out exp
 ciftiVec = qcmParamMap(:,5);
 mapName        = fullfile(mapSavePath,['nlExpMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out offset
 ciftiVec = qcmParamMap(:,7);
 mapName        = fullfile(mapSavePath,['nlOffset_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(ciftiVec', [], templateFile, mapName)
+makeWholeBrainMap(ciftiVec', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out mean QCM R squared map
 mapName        = fullfile(mapSavePath,['rSquaredMapQcm_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(rSquaredQcmMap', [], templateFile, mapName)
+makeWholeBrainMap(rSquaredQcmMap', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out mean IAMP R squared map
 mapName        = fullfile(mapSavePath,['rSquaredMapIamp_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(rSquaredIampMap', [], templateFile, mapName)
+makeWholeBrainMap(rSquaredIampMap', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 % write out mean R squared diff map
 mapName        = fullfile(mapSavePath,['rSquaredDiffMap_', analysisParams.sessionNickname '.dscalar.nii']);
-makeWholeBrainMap(rSquaredDiffMap', [], templateFile, mapName)
+makeWholeBrainMap(rSquaredDiffMap', [], templateFile, mapName,'workbenchPath',getpref(analysisParams.projectName,'wbPath'));
 
 display(['COMPLETED: ',subjId])
 end
