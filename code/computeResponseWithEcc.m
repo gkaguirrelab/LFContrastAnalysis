@@ -172,7 +172,7 @@ theTextHandle = text(gca, 1,4.2 , modelTxtTheta, 'Interpreter', 'latex');
 set(theTextHandle,'FontSize', 13, 'Color', [0.3 0.3 0.3], 'BackgroundColor', [1 1 1]);
 xlabel('Eccentricity (Degrees)');
 
-yString = 'Distance to Ellipse (Threshold)';
+yString = 'Response';
 ylim([-.5 5]);
 legend([p1 p2],{'L+M','L-M'});
 ylabel(yString);
@@ -196,7 +196,7 @@ if p.Results.saveFigs
     set(figHndl, 'PaperPosition', [0 0 figureSizeInches(1) figureSizeInches(2)]);
     % Full file name
     figName =  fullfile(getpref(analysisParams.projectName,'figureSavePath'),analysisParams.expSubjID, ...
-        [analysisParams.expSubjID,'_scatter_cardinalEllipseDist_' analysisParams.sessionNickname '_hcp.pdf']);
+        [analysisParams.expSubjID,'_scatterEllipseRespEcc_' analysisParams.sessionNickname '_hcp.pdf']);
     % Save it
     print(figHndl, figName, '-dpdf', '-r300');
 end
