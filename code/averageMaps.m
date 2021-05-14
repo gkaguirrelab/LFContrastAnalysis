@@ -57,8 +57,10 @@ for ii = 1:length(subjIds)
             subjMapName = fullfile(mapReadPath,['nlSemiMap_', analysisParams.sessionNickname '_allAreas.dscalar.nii']);
         case 'exponent'
             subjMapName = fullfile(mapReadPath,['nlExpMap_', analysisParams.sessionNickname '_allAreas.dscalar.nii']);
-        case 'rSqaured'
-            subjMapName = fullfile(mapReadPath,['rSquaredMapQcm_', analysisParams.sessionNickname '_allAreas.dscalar.nii']);
+        case 'rSqauredGLM'
+            subjMapName = fullfile(mapReadPath,['rSquaredMapIamp_', analysisParams.sessionNickname '.dscalar.nii']);
+        case 'rSqauredQCM'
+            subjMapName = fullfile(mapReadPath,['rSquaredMapQcm_', analysisParams.sessionNickname '.dscalar.nii']);
         case 'rSqauredDiff'
             subjMapName = fullfile(mapReadPath,['rSquaredDiffMap_', analysisParams.sessionNickname '.dscalar.nii']);
         case 'wholeBrainRsquared'
@@ -86,19 +88,21 @@ templateFile   = fullfile(dropBoxPath,'surfaceMaps','templates','template.dscala
 mapSavePath =  fullfile(dropBoxPath,'surfaceMaps','averageSub');
 switch mapOfInterest
     case 'minorAxis'
-        outMapName = fullfile(mapSavePath,['minorAxisMap_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['minorAxisMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'angle'
-        outMapName = fullfile(mapSavePath,['angleMap_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['angleMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'amplitude'
-        outMapName = fullfile(mapSavePath,['nlAmpMap_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['nlAmpMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'semi'
-        outMapName = fullfile(mapSavePath,['nlSemiMap_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['nlSemiMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'exponent'
-        outMapName = fullfile(mapSavePath,['nlExpMap_Average_allAreas.dscalar.nii']);
-    case 'rSqaured'
-        outMapName = fullfile(mapSavePath,['rSquaredMapQcm_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['nlExpMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
+    case 'rSqauredGLM'
+        outMapName = fullfile(mapSavePath,['rSquaredMapGlm_Average_' p.Results.mapCoverage '.dscalar.nii']);
+    case 'rSqauredQCM'
+        outMapName = fullfile(mapSavePath,['rSquaredMapQcm_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'rSqauredDiff'
-        outMapName = fullfile(mapSavePath,['rSquaredDiffMap_Average_allAreas.dscalar.nii']);
+        outMapName = fullfile(mapSavePath,['rSquaredDiffMap_Average_' p.Results.mapCoverage '.dscalar.nii']);
     case 'wholeBrainRsquared'
         outMapName = fullfile(mapSavePath,['glm_r_squared_Average_wholebrain.dscalar.nii']);
 end
